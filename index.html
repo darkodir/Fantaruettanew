@@ -58,7 +58,6 @@
 
       <!-- Azioni e Blocco Formazioni -->
       <div class="flex items-center gap-2 flex-wrap">
-        <!-- Interruttore Blocco Formazioni -->
         <button id="btnLockToggle" onclick="toggleLineupLock()" class="px-3 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 bg-emerald-950/60 border-emerald-500/40 text-emerald-300">
           <span id="lockIcon">🔓</span>
           <span id="lockText">Formazioni Aperte</span>
@@ -93,7 +92,6 @@
 
       <!-- Tabellone Risultato Scontro -->
       <div id="matchBanner" class="bg-gradient-to-r from-gray-900 via-[#182030] to-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-around text-center">
-        <!-- Casa -->
         <div class="flex-1">
           <div id="homeName" class="text-lg sm:text-xl font-black text-amber-300">Casa</div>
           <div id="homeScore" class="font-teko text-5xl font-bold text-white leading-none mt-1">--</div>
@@ -102,7 +100,6 @@
         <div class="px-4 text-center">
           <span class="text-xs font-bold text-amber-500 uppercase px-2.5 py-1 bg-amber-500/10 rounded-full border border-amber-500/30">VS</span>
         </div>
-        <!-- Trasferta -->
         <div class="flex-1">
           <div id="awayName" class="text-lg sm:text-xl font-black text-blue-300">Trasferta</div>
           <div id="awayScore" class="font-teko text-5xl font-bold text-white leading-none mt-1">--</div>
@@ -122,7 +119,6 @@
         </button>
       </div>
 
-      <!-- Selettore Modulo Mantra Reattivo -->
       <div class="flex items-center gap-2">
         <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">Modulo Mantra:</span>
         <select id="moduleSelect" onchange="onModuleChange(this.value)" class="bg-gray-900 border border-gray-700 text-xs rounded-lg px-3 py-1.5 text-amber-300 font-black focus:outline-none focus:border-amber-400">
@@ -169,7 +165,6 @@
     <div class="bg-[#10141d] border border-amber-500/40 w-full max-w-lg rounded-3xl p-6 shadow-2xl space-y-5 text-gray-200 relative overflow-hidden">
       <div class="absolute -top-12 -right-12 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-      <!-- Header Carta e Punteggio -->
       <div class="flex items-start justify-between border-b border-gray-800 pb-4">
         <div class="flex items-center gap-3">
           <div class="card-limited w-16 h-22 rounded-xl p-2 flex flex-col items-center justify-center text-center shadow-lg relative">
@@ -194,7 +189,6 @@
         </div>
       </div>
 
-      <!-- Scomposizione: Decisive vs All-Around Score -->
       <div class="grid grid-cols-2 gap-3">
         <div class="bg-gray-900/80 border border-gray-800 rounded-2xl p-3">
           <div class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Decisive Score</div>
@@ -217,7 +211,6 @@
         </div>
       </div>
 
-      <!-- Griglia Statistiche di Partita (Opta Matrix) -->
       <div>
         <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Statistiche Dettagliate Opta</h4>
         <div class="grid grid-cols-3 gap-2 text-center">
@@ -248,7 +241,6 @@
         </div>
       </div>
 
-      <!-- Azioni Slot (Abilitate solo se le formazioni sono aperte) -->
       <div id="scActionsBox" class="pt-3 border-t border-gray-800 flex items-center justify-between">
         <button onclick="closeSorareCardModal()" class="px-4 py-2 rounded-xl text-xs font-bold bg-gray-800 hover:bg-gray-700 text-gray-300 transition">
           Chiudi
@@ -264,13 +256,13 @@
         </div>
 
         <div id="scLockedWarning" class="hidden text-xs text-amber-400/90 font-bold flex items-center gap-1.5">
-          <span>🔒</span> Formazioni bloccate (Partita iniziata)
+          <span>🔒</span> Formazioni bloccate
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal Selezione Sostituto -->
+  <!-- Modal Selezione Sostituto con blocco giocatori duplicati -->
   <div id="playerModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-[#121722] border border-gray-700 w-full max-w-lg rounded-2xl p-5 max-h-[85vh] flex flex-col shadow-2xl">
       <div class="flex justify-between items-center pb-3 border-b border-gray-800">
@@ -327,7 +319,7 @@
 
     let isLineupLocked = false;
 
-    // Rose UFFICIALI E COMPLETE
+    // Rose Ufficiali e Complete
     const ROSTERS = {
       "DUA LIPAnathinaikos": [
         "Skorupski", "Happonen", "Pessina Mas.", "Birindelli", "Walukiewicz", "Valle", "Bracaglia", 
@@ -402,8 +394,9 @@
       ]
     };
 
-    // Database Ruoli Mantra
+    // Database Ruoli Mantra Verificato e Corretto (incluso Schmid: W, T)
     const MANTRA_ROLES = {
+      // Portieri (Por)
       "Skorupski": ["Por"], "Happonen": ["Por"], "Pessina Mas.": ["Por"], "Svilar": ["Por"], "De Marzi": ["Por"],
       "Gollini": ["Por"], "Maignan": ["Por"], "Torriani": ["Por"], "Terracciano": ["Por"], "De Gea": ["Por"],
       "Perri": ["Por"], "Grabara": ["Por"], "Tornqvist": ["Por"], "Provedel": ["Por"], "Mandas": ["Por"],
@@ -414,6 +407,7 @@
       "Contini": ["Por"], "Bijlow": ["Por"], "Palmisani": ["Por"], "Desplanches": ["Por"], "Stolz": ["Por"],
       "Christensen O.": ["Por"], "Butez": ["Por"], "Milinkovic-Savic V.": ["Por"], "Sanchez Ro.": ["Por"], "Vigorito": ["Por"],
 
+      // Difensori & Terzini/Esterni
       "Birindelli": ["Dd", "E"], "Walukiewicz": ["Dc"], "Valle": ["Ds", "E"], "Bracaglia": ["Dc"], "Bernasconi": ["Ds", "E"],
       "Mancini": ["Dc"], "Schingtienne": ["Dc"], "Balerdi": ["Dc"], "Tiago Gabriel": ["Dc"], "Gabbia": ["Dc"],
       "Celik": ["Dd", "E"], "Bertola": ["Dc"], "Kossounou": ["Dc", "Dd"], "Pavard": ["Dc", "Dd"], "Haps": ["Ds", "E"],
@@ -442,21 +436,34 @@
       "Kouadio": ["Dd", "E"], "Gallo": ["Ds", "E"], "Mangas": ["Ds", "E"], "Gila": ["Dc"], "Stones": ["Dc", "M"],
       "Bisseck": ["Dc", "Dd"], "Molina N.": ["Dd", "E"],
 
+      // Centrocampisti, Mediani, Trequartisti, Ali
       "Wesley": ["E", "W"], "Lobotka": ["M", "C"], "Ngom": ["C"], "Jashari": ["M", "C"], "McTominay": ["C", "T"],
       "Barella": ["C", "T"], "Da Cunha": ["C", "T", "W"], "Ndour": ["C", "M"], "Alajbegovic": ["W", "A"], "Zalewski": ["E", "W"],
       "Diouf": ["C"], "Chukwueze": ["W", "A"], "Calhanoglu": ["C", "M"], "Matic": ["M"], "Fazzini": ["C", "T"], "Mandragora": ["M", "C"],
       "Milla": ["C"], "Gineitis": ["C"], "De Roon": ["M", "C"], "Ekkelenkamp": ["C", "T"], "Sucic P.": ["C", "T"], "Douglas Luiz": ["C", "M"],
       "Mora": ["C"], "Cissè A.": ["C"], "Kvernadze": ["W", "A"], "Dominguez B.": ["W", "A"],
-      "Sarr P.": ["C"], "Busio": ["C", "M"], "Kessiè": ["M", "C"], "Casadei": ["C"], "Zielinski": ["C", "T"], "Braganca": ["C"], "Mastantuono": ["T", "W"], "Elmas": ["C", "T", "W"], "Conceicao": ["W", "A"], "Neres": ["A", "W"],
-      "Lulli": ["C"], "Ederson D.S.": ["C", "M"], "Cataldi": ["M", "C"], "Karlstrom": ["M", "C"], "Lipani": ["M", "C"], "McKennie": ["C", "M"], "Vergara": ["T", "W"], "Maldini": ["T", "A"], "Santos A.": ["M", "C"], "De Ketelaere": ["T", "A"],
-      "Calò": ["M", "C"], "Rovella": ["M", "C"], "Akinsanmiro": ["C"], "Sohm": ["C", "M"], "Colpani": ["T", "W"], "Orsolini": ["W", "A"], "Cancellieri": ["A", "W"], "Cambiaghi": ["A", "W"],
-      "Ellertsson": ["E", "C"], "Gaetano": ["T", "C"], "Ferguson": ["C", "T"], "Fitz-Jim": ["C"], "Frattesi": ["C", "T"], "Koopmeiners": ["C", "T"], "Fabbian": ["C", "T"], "Duncan": ["M", "C"], "Pulisic": ["W", "A", "T"], "Schmid": ["C"], "Volpato": ["T", "W"], "Boga": ["W", "A"], "Dybala": ["A"], "Soulè": ["T", "A"], "Yeboah J.": ["W", "A"],
-      "Saelemaekers": ["E", "W"], "Keita M.": ["M", "C"], "Pessina": ["C", "T"], "Adopo": ["M", "C"], "Winks": ["M", "C"], "El Azzouzi A.": ["M", "C"], "Ghedjemis": ["W"], "Raspadori": ["A", "T"],
-      "Perrone": ["M", "C"], "Modric": ["C", "T"], "Rabiot": ["C"], "Bernabè": ["C", "T"], "Zaniolo": ["T", "A"], "Gudmundsson A.": ["T", "A"], "Goncalves P.": ["T", "C"], "Bernardeschi": ["W", "T"], "Unai Gomez": ["C", "T"], "Hutchinson": ["W", "A"],
-      "Fagioli": ["C", "M"], "Coulibaly L.": ["M", "C"], "Basic": ["C"], "Atta": ["C"], "Taylor K.": ["C"], "Bakola": ["C"], "Vlasic": ["T", "W"], "Berardi": ["A", "W"],
-      "Cacciamani": ["W"], "Frendrup": ["M", "C"], "Romano": ["C"], "Jones C.": ["C"], "Samardzic": ["T", "C"], "Adzic": ["C", "T"], "Pasalic": ["C", "T"], "Paz N.": ["T", "W"], "De Bruyne": ["T", "C"], "Zaccagni": ["W", "A"],
-      "Ciurria": ["E", "W"], "Konè M.": ["C", "M"], "Cristante": ["M", "C"], "Stankovic A.": ["M", "C"], "Thorstvedt": ["C", "T"], "Zambo Anguissa": ["C", "M"], "Baturina": ["T", "C"], "Baldanzi": ["T", "A"], "Liberali": ["T"], "Meichtry": ["C"], "Politano": ["W", "A"], "Njie": ["A", "W"], "Pierotti": ["A"], "Yildiz": ["A", "T"], "Laurientè": ["A", "W"],
+      "Sarr P.": ["C"], "Busio": ["C", "M"], "Kessiè": ["M", "C"], "Casadei": ["C"], "Zielinski": ["C", "T"], "Braganca": ["C"],
+      "Mastantuono": ["T", "W"], "Elmas": ["C", "T", "W"], "Conceicao": ["W", "A"], "Neres": ["A", "W"],
+      "Lulli": ["C"], "Ederson D.S.": ["C", "M"], "Cataldi": ["M", "C"], "Karlstrom": ["M", "C"], "Lipani": ["M", "C"],
+      "McKennie": ["C", "M"], "Vergara": ["T", "W"], "Maldini": ["T", "A"], "Santos A.": ["M", "C"], "De Ketelaere": ["T", "A"],
+      "Calò": ["M", "C"], "Rovella": ["M", "C"], "Akinsanmiro": ["C"], "Sohm": ["C", "M"], "Colpani": ["T", "W"],
+      "Orsolini": ["W", "A"], "Cancellieri": ["A", "W"], "Cambiaghi": ["A", "W"],
+      "Ellertsson": ["E", "C"], "Gaetano": ["T", "C"], "Ferguson": ["C", "T"], "Fitz-Jim": ["C"], "Frattesi": ["C", "T"],
+      "Koopmeiners": ["C", "T"], "Fabbian": ["C", "T"], "Duncan": ["M", "C"], "Pulisic": ["W", "A", "T"],
+      "Schmid": ["W", "T"], "Volpato": ["T", "W"], "Boga": ["W", "A"], "Dybala": ["A"], "Soulè": ["T", "A"], "Yeboah J.": ["W", "A"],
+      "Saelemaekers": ["E", "W"], "Keita M.": ["M", "C"], "Pessina": ["C", "T"], "Adopo": ["M", "C"], "Winks": ["M", "C"],
+      "El Azzouzi A.": ["M", "C"], "Ghedjemis": ["W"], "Raspadori": ["A", "T"],
+      "Perrone": ["M", "C"], "Modric": ["C", "T"], "Rabiot": ["C"], "Bernabè": ["C", "T"], "Zaniolo": ["T", "A"],
+      "Gudmundsson A.": ["T", "A"], "Goncalves P.": ["T", "C"], "Bernardeschi": ["W", "T"], "Unai Gomez": ["C", "T"], "Hutchinson": ["W", "A"],
+      "Fagioli": ["C", "M"], "Coulibaly L.": ["M", "C"], "Basic": ["C"], "Atta": ["C"], "Taylor K.": ["C"], "Bakola": ["C"],
+      "Vlasic": ["T", "W"], "Berardi": ["A", "W"],
+      "Cacciamani": ["W"], "Frendrup": ["M", "C"], "Romano": ["C"], "Jones C.": ["C"], "Samardzic": ["T", "C"],
+      "Adzic": ["C", "T"], "Pasalic": ["C", "T"], "Paz N.": ["T", "W"], "De Bruyne": ["T", "C"], "Zaccagni": ["W", "A"],
+      "Ciurria": ["E", "W"], "Konè M.": ["C", "M"], "Cristante": ["M", "C"], "Stankovic A.": ["M", "C"], "Thorstvedt": ["C", "T"],
+      "Zambo Anguissa": ["C", "M"], "Baturina": ["T", "C"], "Baldanzi": ["T", "A"], "Liberali": ["T"], "Meichtry": ["C"],
+      "Politano": ["W", "A"], "Njie": ["A", "W"], "Pierotti": ["A"], "Yildiz": ["A", "T"], "Laurientè": ["A", "W"],
 
+      // Attaccanti & Punte Centrali
       "Woltemade": ["Pc"], "Hojlund": ["Pc"], "Romero D.": ["A"], "Adams A.": ["Pc"], "Nzola": ["Pc"],
       "Rowe": ["W", "A"], "Diao": ["A", "Pc"], "Mbangula": ["A", "W"], "Vitinha O.": ["Pc"], "Simeone": ["Pc"], "Castro S.": ["Pc"], "Esposito F.P.": ["Pc"],
       "Malen": ["A", "Pc"], "Douvikas": ["Pc"], "Pellegrino M.": ["Pc"], "Raimondo": ["Pc"],
@@ -522,8 +529,6 @@
     let currentMatchIndex = 0;
     let currentView = 'home';
     let teamLineups = {};
-
-    // Dati statistici di dettaglio (Opta Breakdown) per giocatore
     let playerStatsMap = {};
 
     function toggleLineupLock() {
@@ -571,11 +576,16 @@
         [m.home, m.away].forEach(team => {
           if (!teamLineups[team]) {
             const roster = ROSTERS[team] || [];
+            const slots = buildSlotsForModule('4-3-3', roster);
+            const titolariNames = slots.map(s => s.player);
+            // I restanti disponibili vanno in panchina fino a 12 senza duplicati
+            const bench = roster.filter(p => !titolariNames.includes(p)).slice(0, 12);
+
             teamLineups[team] = {
               module: '4-3-3',
-              captain: roster[18] || roster[5],
-              titolariSlots: buildSlotsForModule('4-3-3', roster),
-              panchina: roster.slice(11, 23),
+              captain: titolariNames[5] || titolariNames[0],
+              titolariSlots: slots,
+              panchina: bench,
               scores: {},
               decisives: {},
               totalPts: 0,
@@ -589,10 +599,12 @@
     function buildSlotsForModule(moduleName, roster) {
       const schema = MANTRA_MODULES[moduleName];
       const slots = [];
+      let used = [];
+
       const por = roster.find(p => getPlayerRoles(p).includes('Por')) || roster[0];
+      used.push(por);
       slots.push({ slotType: 'POR', reqRole: 'Por', label: 'Por', player: por });
 
-      let used = [por];
       schema.DEF.forEach(s => {
         const p = roster.find(x => !used.includes(x) && isCompatible(getPlayerRoles(x), s.role)) || roster.find(x => !used.includes(x));
         used.push(p);
@@ -632,7 +644,7 @@
 
     function onModuleChange(newModule) {
       if (isLineupLocked) {
-        alert("Formazioni bloccate! Non è possibile modificare il modulo tattico a turno iniziato.");
+        alert("Formazioni bloccate! Non è possibile modificare il modulo tattico.");
         return;
       }
       const match = GW6_MATCHES[currentMatchIndex];
@@ -780,7 +792,6 @@
       `;
     }
 
-    // GESTIONE SCHEDA SORARE BREAKDOWN
     let currentModalPlayer = null;
     let currentModalSlotIdx = null;
     let currentModalTeam = null;
@@ -795,7 +806,6 @@
       const roles = getPlayerRoles(playerName);
       const score = team.scores[playerName] || 0;
 
-      // Recupera o genera statistiche realistiche dal feed
       const stats = playerStatsMap[playerName] || generateMockStats(playerName, score);
 
       document.getElementById('scPlayerName').innerText = playerName;
@@ -809,7 +819,6 @@
       if (isCaptain) capBadge.classList.remove('hidden');
       else capBadge.classList.add('hidden');
 
-      // Calcolo Decisive & All-Around
       const finalVal = isCaptain ? (score * 1.5) : score;
       document.getElementById('scFinalScore').innerText = score > 0 ? formatScore(finalVal) : '--';
 
@@ -819,7 +828,6 @@
       const aasPts = score > 0 ? Math.max(0, score - decisivePts) : 0;
       document.getElementById('scAasPts').innerText = `+${formatScore(aasPts)}`;
 
-      // Eventi decisivi
       const devBox = document.getElementById('scDecisiveEvents');
       if (stats.decisiveEvents.length > 0) {
         devBox.innerHTML = stats.decisiveEvents.map(e => `<div class="text-emerald-400 font-bold text-[11px]">${e}</div>`).join('');
@@ -827,7 +835,6 @@
         devBox.innerHTML = `<div class="text-gray-500 italic text-[11px]">Nessun bonus decisivo</div>`;
       }
 
-      // Popola griglia statistiche
       document.getElementById('statMins').innerText = score > 0 ? `${stats.mins}'` : '--';
       document.getElementById('statGoalsAssists').innerText = `${stats.goals} / ${stats.assists}`;
       document.getElementById('statShots').innerText = `${stats.shots} (${stats.shotsOnTarget})`;
@@ -835,7 +842,6 @@
       document.getElementById('statDuels').innerText = stats.duelsWon;
       document.getElementById('statDef').innerText = roles.includes('Por') ? stats.saves : stats.recoveries;
 
-      // Gestione Blocco Formazioni
       const editBtns = document.getElementById('scEditButtons');
       const lockedWarn = document.getElementById('scLockedWarning');
 
@@ -865,7 +871,6 @@
 
     function modalOpenReplaceList() {
       if (isLineupLocked) return;
-      const p = currentModalPlayer;
       const s = currentModalSlotIdx;
       const t = currentModalTeam;
       closeSorareCardModal();
@@ -884,11 +889,11 @@
         duelsWon: isPor ? 1 : Math.floor(score * 1.2),
         recoveries: Math.floor(score * 1.1),
         saves: isPor ? Math.floor(score / 1.8) : 0,
-        decisiveEvents: score >= 7.5 ? ['⚽ Gol Partita (+2,50)'] : (score >= 7.0 ? ['👟 Assist Decisivo (+2,50)'] : [])
+        decisiveEvents: score >= 7.5 ? ['⚽ Gol Partita (+2,50)'] : (score >= 7.0 ? ['👟 Assist (+2,50)'] : [])
       };
     }
 
-    // Modal Selezione Giocatore (Naturale vs Fuori Ruolo)
+    // Modal Selezione con FILTRO ANTI-DUPLICATI
     let activeSlotIndex = null;
     let activeTeam = null;
 
@@ -905,6 +910,9 @@
       document.getElementById('modalTitle').innerText = `Sostituisci nello Slot ${slot.label}`;
       document.getElementById('modalSubtitle').innerText = `Titolare: ${slot.player} • Ruolo richiesto: ${slot.reqRole}`;
 
+      // Calcola l'elenco dei giocatori già schierati in campo
+      const currentlyFielded = t.titolariSlots.map(s => s.player);
+
       const roster = ROSTERS[teamName] || [];
       const naturalContainer = document.getElementById('modalNaturalList');
       const outContainer = document.getElementById('modalOutOfPositionList');
@@ -918,14 +926,12 @@
         const isCurrent = slot.player === name;
         const isCap = t.captain === name;
 
-        const rowHtml = `
-          <div class="flex items-center justify-between p-2 rounded-lg bg-gray-800/90 hover:bg-gray-700 transition">
-            <div>
-              <span class="text-xs font-black ${isCurrent ? 'text-amber-400' : 'text-gray-100'}">${name}</span>
-              <div class="flex gap-1 mt-0.5">
-                ${roles.map(r => `<span class="px-1 rounded text-[9px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
-              </div>
-            </div>
+        // Se è già schierato in un ALTRO slot, non può essere selezionato
+        const isAlreadyFieldedElsewhere = currentlyFielded.includes(name) && !isCurrent;
+
+        const actionButtons = isAlreadyFieldedElsewhere 
+          ? `<span class="px-2.5 py-1 rounded text-[10px] font-bold bg-gray-800 text-gray-500 border border-gray-700">Già Schierato</span>`
+          : `
             <div class="flex items-center gap-2">
               <button onclick="setCaptain('${name}')" class="px-2 py-1 rounded text-[10px] font-bold ${isCap ? 'bg-[#ff007a] text-white' : 'bg-gray-700 text-gray-300 hover:text-white'}">
                 ${isCap ? 'Capitano' : 'Fai C'}
@@ -934,6 +940,17 @@
                 Schiera
               </button>
             </div>
+          `;
+
+        const rowHtml = `
+          <div class="flex items-center justify-between p-2 rounded-lg bg-gray-800/90 hover:bg-gray-700 transition ${isAlreadyFieldedElsewhere ? 'opacity-50' : ''}">
+            <div>
+              <span class="text-xs font-black ${isCurrent ? 'text-amber-400' : 'text-gray-100'}">${name}</span>
+              <div class="flex gap-1 mt-0.5">
+                ${roles.map(r => `<span class="px-1 rounded text-[9px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
+              </div>
+            </div>
+            ${actionButtons}
           </div>
         `;
 
@@ -954,7 +971,18 @@
 
     function assignPlayerToSlot(playerName) {
       if (isLineupLocked || activeSlotIndex === null || !activeTeam) return;
-      teamLineups[activeTeam].titolariSlots[activeSlotIndex].player = playerName;
+      const t = teamLineups[activeTeam];
+      const oldPlayer = t.titolariSlots[activeSlotIndex].player;
+
+      // Assegna il nuovo titolare
+      t.titolariSlots[activeSlotIndex].player = playerName;
+
+      // Aggiorna la panchina: se il nuovo titolare era in panchina, scambialo con il vecchio titolare
+      const benchIdx = t.panchina.indexOf(playerName);
+      if (benchIdx !== -1) {
+        t.panchina[benchIdx] = oldPlayer;
+      }
+
       closeModal();
       calcolaTotaliSquadre();
       updateBanner();
@@ -970,10 +998,10 @@
       renderPitch();
     }
 
-    // Modal Incolla Formazioni
+    // Incolla Formazioni con verifica duplicati
     function openPasteModal() {
       if (isLineupLocked) {
-        alert("Formazioni bloccate! Non puoi incollare nuove formazioni.");
+        alert("Formazioni bloccate!");
         return;
       }
       document.getElementById('pasteModal').classList.remove('hidden');
@@ -994,7 +1022,7 @@
 
         roster.forEach(player => {
           const reg = new RegExp('\\b' + player.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '\\b', 'i');
-          if (reg.test(text)) {
+          if (reg.test(text) && !foundInText.includes(player)) {
             foundInText.push(player);
           }
         });
@@ -1017,10 +1045,10 @@
       renderPitch();
 
       if (matchedCount > 0) alert(`Formazioni aggiornate per ${matchedCount} squadre!`);
-      else alert("Nessuna corrispondenza esatta trovata con le rose ufficiali.");
+      else alert("Nessuna corrispondenza valida trovata.");
     }
 
-    // Chiamata Live Sorare API
+    // Live Sorare API
     async function fetchLiveSorareScores() {
       const spinner = document.getElementById('apiSpinner');
       spinner.classList.remove('hidden');
@@ -1079,7 +1107,6 @@
                 const dec = Math.round((p.latestScores[0].score / 10) * 100) / 100;
                 applyScore(p.displayName, dec);
                 
-                // Mappa statistiche
                 const st = p.latestScores[0].playerGameStats || {};
                 playerStatsMap[p.displayName] = {
                   mins: st.minsPlayed || 90,
@@ -1166,7 +1193,7 @@
     // Importazione Excel
     document.getElementById('excelInput').addEventListener('change', function(e) {
       if (isLineupLocked) {
-        alert("Formazioni bloccate! Non puoi importare un file.");
+        alert("Formazioni bloccate!");
         return;
       }
       const file = e.target.files[0];
