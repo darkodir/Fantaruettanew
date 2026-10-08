@@ -27,7 +27,6 @@
       border: 2px solid #ff007a !important;
       box-shadow: 0 0 16px rgba(255, 0, 122, 0.75) !important;
     }
-    /* Badge Ruoli Mantra */
     .role-por { background-color: #eab308; color: #000; }
     .role-def { background-color: #10b981; color: #000; }
     .role-mid { background-color: #06b6d4; color: #000; }
@@ -53,12 +52,15 @@
               Mantra Edition
             </span>
           </div>
-          <p class="text-xs text-gray-400">Lega Premier Ruetta • Moduli & Ruoli Mantra • Scala Voti 0-10</p>
+          <p class="text-xs text-gray-400">Lega Premier Ruetta • Moduli Mantra • Scala Voti 0-10</p>
         </div>
       </div>
 
       <!-- Azioni rapide -->
       <div class="flex items-center gap-2">
+        <button onclick="openPasteModal()" class="bg-gray-800 hover:bg-gray-700 text-amber-300 text-xs font-semibold px-3 py-2 rounded-lg border border-amber-500/30 flex items-center gap-1.5 transition">
+          📋 Incolla Formazioni
+        </button>
         <label class="cursor-pointer bg-gray-800 hover:bg-gray-700 text-amber-300 text-xs font-semibold px-3 py-2 rounded-lg border border-amber-500/30 flex items-center gap-1.5 transition">
           <span>📥 Importa Excel</span>
           <input type="file" id="excelInput" accept=".xlsx, .xls, .csv" class="hidden">
@@ -140,7 +142,7 @@
         <!-- Linea Attacco (FWD) -->
         <div id="pitchRowFWD" class="flex justify-around items-center z-10 gap-2 min-h-[90px]"></div>
 
-        <!-- Linea Trequarti (TRE) - se presente nel modulo -->
+        <!-- Linea Trequarti (TRE) -->
         <div id="pitchRowTRE" class="flex justify-around items-center z-10 gap-2 min-h-[90px]"></div>
 
         <!-- Linea Centrocampo (MID) -->
@@ -157,7 +159,7 @@
     <!-- Panchina Mantra a 12 Slot -->
     <div class="bg-[#121722] border border-gray-800 rounded-xl p-4">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Panchina Mantra (12 Riserve - Subentro per ruolo compatibile)</h3>
+        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Panchina Mantra (12 Riserve)</h3>
         <span class="text-[11px] text-amber-400/80 font-semibold">12 / 12 Slot</span>
       </div>
       <div id="benchContainer" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2"></div>
@@ -165,7 +167,25 @@
 
   </main>
 
-  <!-- Modal di Selezione Calciatore con Filtro Ruoli Mantra e Avviso Fuori Ruolo -->
+  <!-- Modal Incolla Formazioni -->
+  <div id="pasteModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#121722] border border-gray-700 w-full max-w-lg rounded-2xl p-5 flex flex-col shadow-2xl space-y-4">
+      <div class="flex justify-between items-center pb-2 border-b border-gray-800">
+        <h4 class="text-sm font-black text-amber-300">Incolla Formazioni da Fantacalcio.it</h4>
+        <button onclick="closePasteModal()" class="text-gray-400 hover:text-white text-xl font-bold">&times;</button>
+      </div>
+      <p class="text-xs text-gray-400 leading-relaxed">
+        Copia e incolla qui sotto il testo o l'elenco dei giocatori schierati (o i tabellini) esportati da Leghe Fantacalcio:
+      </p>
+      <textarea id="pasteInput" rows="8" placeholder="Es:&#10;DUA LIPAnathinaikos: Skorupski, Mancini, Barella, Hojlund...&#10;oppure lista dei nomi..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-xs text-amber-200 focus:outline-none focus:border-amber-400 font-mono"></textarea>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closePasteModal()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-800 text-gray-300">Annulla</button>
+        <button onclick="processPastedLineups()" class="px-4 py-1.5 rounded-lg text-xs font-black bg-amber-500 hover:bg-amber-400 text-black">Applica Formazioni</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Selezione Calciatore -->
   <div id="playerModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-[#121722] border border-gray-700 w-full max-w-lg rounded-2xl p-5 max-h-[85vh] flex flex-col shadow-2xl">
       <div class="flex justify-between items-center pb-3 border-b border-gray-800">
@@ -176,7 +196,6 @@
         <button onclick="closeModal()" class="text-gray-400 hover:text-white text-xl font-bold px-2">&times;</button>
       </div>
       
-      <!-- Sezioni Ruolo Naturale vs Fuori Ruolo -->
       <div class="overflow-y-auto space-y-4 py-3 flex-1">
         <div>
           <div class="text-[11px] font-bold uppercase tracking-wider text-emerald-400 mb-2 flex items-center gap-1.5">
@@ -196,14 +215,89 @@
   </div>
 
   <footer class="border-t border-gray-800 text-center py-3 text-xs text-gray-500">
-    Fanta-Sorare 11 • Premier Ruetta Mantra • Motore Decimale Opta & Regolamento Ufficiale
+    Fanta-Sorare 11 • Premier Ruetta Mantra • Scala Voti Decimale Opta
   </footer>
 
   <script>
     const SORARE_API_KEY = "0d8977ade807a8de0039bf6d398128400c953dfa18d16cf730bb480290fc94d6ebe8a91ad1aca56291a562c91d7962d4201f2c15a21aadf6e14c99f6bfcsr128";
     const SORARE_GRAPHQL_ENDPOINT = "https://api.sorare.com/graphql";
 
-    // Database Ruoli Mantra Ufficiali per i calciatori della Premier Ruetta
+    // Rose UFFICIALI E COMPLETE estratte dal file Excel originale
+    const ROSTERS = {
+      "DUA LIPAnathinaikos": [
+        "Skorupski", "Happonen", "Pessina Mas.", "Birindelli", "Walukiewicz", "Valle", "Bracaglia", 
+        "Bernasconi", "Mancini", "Schingtienne", "Balerdi", "Tiago Gabriel", "Gabbia", "Wesley", 
+        "Lobotka", "Ngom", "Jashari", "McTominay", "Barella", "Da Cunha", "Ndour", "Alajbegovic", 
+        "Zalewski", "Woltemade", "Hojlund", "Romero D.", "Adams A.", "Nzola"
+      ],
+      "Bidonese": [
+        "Svilar", "De Marzi", "Gollini", "Celik", "Bertola", "Kossounou", "Pavard", "Haps", 
+        "Bremer", "Scalvini", "Dragusin", "Leite", "Diouf", "Chukwueze", "Calhanoglu", "Matic", 
+        "Fazzini", "Mandragora", "Rowe", "Diao", "Mbangula", "Vitinha O.", "Simeone", "Castro S.", "Esposito F.P."
+      ],
+      "Juve vivo per te": [
+        "Maignan", "Torriani", "Terracciano", "Di Lorenzo", "Rensch", "Cinquegrano", "De Winter", 
+        "Heggem", "Carlos Augusto", "Carboni A.", "Puczka", "Ostigard", "Solet", "Hermoso", "Milla", 
+        "Gineitis", "De Roon", "Ekkelenkamp", "Sucic P.", "Douglas Luiz", "Mora", "Cissè A.", 
+        "Kvernadze", "Dominguez B.", "Malen", "Douvikas", "Pellegrino M.", "Raimondo"
+      ],
+      "Do Flamengo": [
+        "De Gea", "Perri", "Grabara", "Tornqvist", "Chalobah T.", "Dodò", "Zappacosta", "Favasuli", 
+        "Drameh", "Zè Pedro", "Spinazzola", "Olivera", "Lucumì", "Monterisi", "Badiashile", "Sarr P.", 
+        "Busio", "Kessiè", "Casadei", "Zielinski", "Braganca", "Mastantuono", "Elmas", "Conceicao", 
+        "Neres", "Robinho Junior", "Martinez L.", "Krstovic", "Camarda"
+      ],
+      "ERROR D. OFF": [
+        "Provedel", "Mandas", "Motta", "Belghali", "Vojvoda", "Bartesaghi", "Kaiki", "Kolasinac", 
+        "Estupinan", "Bastoni", "Bella-Kotchap", "Hien", "Palma", "Cittadini", "Spence", "Lulli", 
+        "Ederson D.S.", "Cataldi", "Karlstrom", "Lipani", "McKennie", "Vergara", "Maldini", "Santos A.", 
+        "De Ketelaere", "Davis K.", "Osmajic"
+      ],
+      "FC Sucammilla": [
+        "Martinez Jo.", "Caprile", "Sherri", "Di Gennaro", "Radunovic", "Kristensen T.", "Marusic", 
+        "Floriani Mussolini", "Veiga D.", "Obrador", "Rodriguez Ju.", "Rrahmani", "Idzes", "Marin R.", 
+        "Troilo", "Calò", "Rovella", "Akinsanmiro", "Sohm", "Colpani", "Orsolini", "Cancellieri", 
+        "Cambiaghi", "Kean", "Scamacca", "Stulic", "Birligea"
+      ],
+      "Archi Barber": [
+        "Vicario", "Stankovic F.", "Pinsoglio", "Pavlovic", "Ramon", "Moreno M.", "Comert", "Sutalo J.", 
+        "Calvani", "Ellertsson", "Gaetano", "Ferguson", "Fitz-Jim", "Frattesi", "Koopmeiners", "Fabbian", 
+        "Duncan", "Pulisic", "Schmid", "Volpato", "Boga", "Dybala", "Soulè", "Esposito Se.", "Yeboah J.", 
+        "Dovbyk", "Rrahmani Al."
+      ],
+      "Masterchef Utd": [
+        "Carnesecchi", "Pompei", "Sportiello", "Delprato", "Oyono A.", "Mazzocchi", "Tavares N.", 
+        "N'Dicka", "Mina", "Comuzzo", "Kabasele", "Ziolkowski", "Ndiaye", "Dimarco", "Saelemaekers", 
+        "Keita M.", "Pessina", "Adopo", "Winks", "El Azzouzi A.", "Ghedjemis", "Raspadori", "Lontani", 
+        "Ramos G.", "Colombo"
+      ],
+      "Scocco Team": [
+        "Muric", "Corvi", "Mascardi", "Turati", "Cambiaso", "Bellanova", "Hainaut", "Vasquez", 
+        "Miranda J.", "Ranieri L.", "Diego Carlos", "Ismajli", "Provstgaard", "Pongracic", "Perrone", 
+        "Modric", "Rabiot", "Bernabè", "Zaniolo", "Gudmundsson A.", "Goncalves P.", "Bernardeschi", 
+        "Odgaard", "Unai Gomez", "Hutchinson", "Kolo Muani", "Beto", "Varela G."
+      ],
+      "Mugiwara Boys": [
+        "Meret", "Falcone", "Okoye", "Mrozek", "Contini", "Kalulu", "Jimenez A.", "Britschgi", 
+        "Smolcic I.", "Valeri", "Valdepenas", "Kelly L.", "Beukema", "Gaspar K.", "Ghilardi", "Halhal", 
+        "Moreira", "Fortini", "Fagioli", "Coulibaly L.", "Basic", "Atta", "Taylor K.", "Bakola", 
+        "Vlasic", "Berardi", "Adams C.", "Thuram", "Bowie", "Bonny"
+      ],
+      "Stellolandia": [
+        "Bijlow", "Palmisani", "Desplanches", "Stolz", "Christensen O.", "Couto", "Joao Mario", 
+        "Patric *", "Theate", "Kamara H.", "Akanji", "Coco", "Doekhi", "Marcandalli", "Cacciamani", 
+        "Frendrup", "Romano", "Jones C.", "Samardzic", "Adzic", "Pasalic", "Paz N.", "De Bruyne", 
+        "Zaccagni", "Kevin Carlos", "Tourè E.", "Cutrone"
+      ],
+      "Paris Saint Gennaro": [
+        "Butez", "Milinkovic-Savic V.", "Sanchez Ro.", "Vigorito", "Kouadio", "Gallo", "Mangas", 
+        "Gila", "Stones", "Bisseck", "Molina N.", "Ciurria", "Konè M.", "Cristante", "Stankovic A.", 
+        "Thorstvedt", "Zambo Anguissa", "Baturina", "Baldanzi", "Liberali", "Meichtry", "Politano", 
+        "Njie", "Pierotti", "Yildiz", "Laurientè", "Piccoli", "Pinamonti", "Mendy P."
+      ]
+    };
+
+    // Database Ruoli Mantra per TUTTI i calciatori delle rose effettive
     const MANTRA_ROLES = {
       // Portieri
       "Skorupski": ["Por"], "Happonen": ["Por"], "Pessina Mas.": ["Por"], "Svilar": ["Por"], "De Marzi": ["Por"],
@@ -239,66 +333,43 @@
       "Ranieri L.": ["Dc", "Ds"], "Diego Carlos": ["Dc"], "Ismajli": ["Dc"], "Provstgaard": ["Dc"], "Pongracic": ["Dc"],
       "Kalulu": ["Dd", "Dc"], "Jimenez A.": ["Dd", "Ds", "E"], "Britschgi": ["Dd", "E"], "Smolcic I.": ["Dc"],
       "Valeri": ["Ds", "E"], "Valdepenas": ["Dc"], "Kelly L.": ["Dc", "Ds"], "Beukema": ["Dc"],
-      "Gaspar K.": ["Dc"], "Ghilardi": ["Dc"], "Couto": ["Dd", "E"], "Joao Mario": ["Dd", "E"],
-      "Patric": ["Dc", "Dd"], "Theate": ["Dc", "Ds"], "Kamara H.": ["Ds", "E"], "Akanji": ["Dc"],
-      "Coco": ["Dc"], "Doekhi": ["Dc"], "Marcandalli": ["Dc"], "Kouadio": ["Dd", "E"], "Gallo": ["Ds", "E"],
-      "Mangas": ["Ds", "E"], "Gila": ["Dc"], "Stones": ["Dc", "M"], "Bisseck": ["Dc", "Dd"], "Molina N.": ["Dd", "E"],
+      "Gaspar K.": ["Dc"], "Ghilardi": ["Dc"], "Halhal": ["Dc"], "Moreira": ["Dd", "E"], "Fortini": ["Ds", "E"],
+      "Couto": ["Dd", "E"], "Joao Mario": ["Dd", "E"], "Patric *": ["Dc", "Dd"], "Theate": ["Dc", "Ds"],
+      "Kamara H.": ["Ds", "E"], "Akanji": ["Dc"], "Coco": ["Dc"], "Doekhi": ["Dc"], "Marcandalli": ["Dc"],
+      "Kouadio": ["Dd", "E"], "Gallo": ["Ds", "E"], "Mangas": ["Ds", "E"], "Gila": ["Dc"], "Stones": ["Dc", "M"],
+      "Bisseck": ["Dc", "Dd"], "Molina N.": ["Dd", "E"],
 
       // Centrocampisti & Trequartisti
-      "Wesley": ["E", "W"], "Lobotka": ["M", "C"], "Anguissa": ["C", "M"], "McTominay": ["C", "T"], "Marchwinski": ["T"],
+      "Wesley": ["E", "W"], "Lobotka": ["M", "C"], "Ngom": ["C"], "Jashari": ["M", "C"], "McTominay": ["C", "T"],
       "Barella": ["C", "T"], "Da Cunha": ["C", "T", "W"], "Ndour": ["C", "M"], "Alajbegovic": ["W", "A"], "Zalewski": ["E", "W"],
-      "Diouf": ["C"], "Chukwueze": ["W", "A"], "Calhanoglu": ["C", "M"], "Thuram U.": ["C", "M"], "Folorunsho": ["C", "T"],
-      "Tchaouna": ["W", "A"], "Rowe": ["W", "A"], "Milla": ["C"], "Vlasic": ["T", "W"], "Samardzic": ["T", "C"],
-      "Koopmeiners": ["C", "T"], "Baldanzi": ["T", "A"], "Frendrup": ["M", "C"], "Bondo": ["M", "C"],
-      "Freuler": ["M", "C"], "Thorstvedt": ["C", "T"], "Paz N.": ["T", "W"], "Brescianini": ["C", "T"],
-      "Suslov": ["T", "W"], "Fazzini": ["C", "T"], "Fagioli": ["C", "M"], "Tessmann": ["M", "C"],
-      "Ngonge": ["W", "A"], "Ilic": ["C"], "Atta": ["C"], "Asllani": ["M", "C"], "Zaccagni": ["W", "A"],
-      "Marin R.": ["M", "C"], "Strefezza": ["W", "T"], "Pellegrini Lo.": ["T", "C"], "Maldini": ["T", "A"],
-      "Gyasi": ["E", "W"], "Messias": ["W", "A"], "Dele-Bashiru": ["C", "T"], "Gudmundsson": ["T", "A"],
-      "Ellertsson": ["E", "C"], "Gaetano": ["T", "C"], "Ferguson": ["C", "T"], "Fitz-Jim": ["C"],
-      "Frattesi": ["C", "T"], "Harroui": ["C", "T"], "Reijnders": ["C", "T"], "Sohm": ["C", "M"],
-      "Douglas Luiz": ["C", "M"], "Saelemaekers": ["E", "W"], "Man": ["W", "A"], "Pulisic": ["W", "A", "T"],
-      "Kvaratskhelia": ["A", "W"], "Oristanio": ["T", "A"], "Anjorin": ["C", "T"], "Perrone": ["M", "C"],
-      "Gagliardini": ["M", "C"], "Zurkowski": ["C"], "Pasalic": ["C", "T"], "Busio": ["C", "M"],
-      "Castrovilli": ["C", "T"], "Boga": ["W", "A"], "Rafa Silva": ["T", "A"], "Guendouzi": ["C", "M"],
-      "Orsolini": ["W", "A"], "Zambo Anguissa": ["C", "M"], "El Shaarawy": ["W", "A"], "Weah": ["E", "W"],
-      "Duda": ["C", "T"], "Politano": ["W", "A"], "Cacciamani": ["W"], "Conceicao": ["W", "A"],
-      "Zaniolo": ["T", "A"], "Colpani": ["T", "W"], "Bernabè": ["C", "T"], "Ekkelenkamp": ["C", "T"],
-      "Ciurria": ["E", "W"], "Konè M.": ["C", "M"], "Cristante": ["M", "C"], "Stankovic A.": ["M", "C"],
-      "Ederson": ["C", "M"], "Lazovic": ["E", "W"], "Prati": ["M", "C"], "Charlys": ["M"], "De Roon": ["M", "C"],
+      "Diouf": ["C"], "Chukwueze": ["W", "A"], "Calhanoglu": ["C", "M"], "Matic": ["M"], "Fazzini": ["C", "T"], "Mandragora": ["M", "C"],
+      "Milla": ["C"], "Gineitis": ["C"], "De Roon": ["M", "C"], "Ekkelenkamp": ["C", "T"], "Sucic P.": ["C", "T"], "Douglas Luiz": ["C", "M"],
+      "Mora": ["C"], "Cissè A.": ["C"], "Kvernadze": ["W", "A"], "Dominguez B.": ["W", "A"],
+      "Sarr P.": ["C"], "Busio": ["C", "M"], "Kessiè": ["M", "C"], "Casadei": ["C"], "Zielinski": ["C", "T"], "Braganca": ["C"], "Mastantuono": ["T", "W"], "Elmas": ["C", "T", "W"], "Conceicao": ["W", "A"], "Neres": ["A", "W"],
+      "Lulli": ["C"], "Ederson D.S.": ["C", "M"], "Cataldi": ["M", "C"], "Karlstrom": ["M", "C"], "Lipani": ["M", "C"], "McKennie": ["C", "M"], "Vergara": ["T", "W"], "Maldini": ["T", "A"], "Santos A.": ["M", "C"], "De Ketelaere": ["T", "A"],
+      "Calò": ["M", "C"], "Rovella": ["M", "C"], "Akinsanmiro": ["C"], "Sohm": ["C", "M"], "Colpani": ["T", "W"], "Orsolini": ["W", "A"], "Cancellieri": ["A", "W"], "Cambiaghi": ["A", "W"],
+      "Ellertsson": ["E", "C"], "Gaetano": ["T", "C"], "Ferguson": ["C", "T"], "Fitz-Jim": ["C"], "Frattesi": ["C", "T"], "Koopmeiners": ["C", "T"], "Fabbian": ["C", "T"], "Duncan": ["M", "C"], "Pulisic": ["W", "A", "T"], "Schmid": ["C"], "Volpato": ["T", "W"], "Boga": ["W", "A"], "Dybala": ["A"], "Soulè": ["T", "A"], "Yeboah J.": ["W", "A"],
+      "Saelemaekers": ["E", "W"], "Keita M.": ["M", "C"], "Pessina": ["C", "T"], "Adopo": ["M", "C"], "Winks": ["M", "C"], "El Azzouzi A.": ["M", "C"], "Ghedjemis": ["W"], "Raspadori": ["A", "T"],
+      "Perrone": ["M", "C"], "Modric": ["C", "T"], "Rabiot": ["C"], "Bernabè": ["C", "T"], "Zaniolo": ["T", "A"], "Gudmundsson A.": ["T", "A"], "Goncalves P.": ["T", "C"], "Bernardeschi": ["W", "T"], "Unai Gomez": ["C", "T"], "Hutchinson": ["W", "A"],
+      "Fagioli": ["C", "M"], "Coulibaly L.": ["M", "C"], "Basic": ["C"], "Atta": ["C"], "Taylor K.": ["C"], "Bakola": ["C"], "Vlasic": ["T", "W"], "Berardi": ["A", "W"],
+      "Cacciamani": ["W"], "Frendrup": ["M", "C"], "Romano": ["C"], "Jones C.": ["C"], "Samardzic": ["T", "C"], "Adzic": ["C", "T"], "Pasalic": ["C", "T"], "Paz N.": ["T", "W"], "De Bruyne": ["T", "C"], "Zaccagni": ["W", "A"],
+      "Ciurria": ["E", "W"], "Konè M.": ["C", "M"], "Cristante": ["M", "C"], "Stankovic A.": ["M", "C"], "Thorstvedt": ["C", "T"], "Zambo Anguissa": ["C", "M"], "Baturina": ["T", "C"], "Baldanzi": ["T", "A"], "Liberali": ["T"], "Meichtry": ["C"], "Politano": ["W", "A"], "Njie": ["A", "W"], "Pierotti": ["A"], "Yildiz": ["A", "T"], "Laurientè": ["A", "W"],
 
       // Attaccanti & Punte
       "Woltemade": ["Pc"], "Hojlund": ["Pc"], "Romero D.": ["A"], "Adams A.": ["Pc"], "Nzola": ["Pc"],
-      "Diao": ["A", "Pc"], "Mbangula": ["A", "W"], "Vitinha O.": ["Pc"], "Simeone": ["Pc"], "Castro S.": ["Pc"], "Esposito F.P.": ["Pc"],
-      "Morata": ["Pc"], "Thauvin": ["A"], "Pedro": ["A"], "Mosquera": ["Pc"], "Cancellieri": ["A", "W"], "Brenner": ["A", "Pc"], "Aboukhlal": ["A", "W"],
-      "Vlahovic": ["Pc"], "Pinamonti": ["Pc"], "Banda": ["A", "W"], "Luvumbo": ["A", "W"], "Pohjanpalo": ["Pc"], "Karlsson": ["A", "W"], "Sanchez A.": ["A"],
-      "Thuram": ["Pc", "A"], "Taremi": ["Pc"], "Caprari": ["A", "T"], "Solbakken": ["A", "W"], "Davis K.": ["Pc"],
-      "Dovbyk": ["Pc"], "Piccoli": ["Pc"], "Cutrone": ["Pc"], "Benedyczak": ["A", "Pc"], "Shomurodov": ["Pc"],
-      "Leao": ["A", "W"], "Retegui": ["Pc"], "Sanabria": ["Pc"], "Cambiaghi": ["A", "W"], "Milik": ["Pc"], "Tengstedt": ["Pc"], "Pierotti": ["A"], "Noslin": ["A", "Pc"],
-      "Bonny": ["Pc"], "Dallinga": ["Pc"], "Esposito Se.": ["Pc"], "Almqvist": ["A", "W"], "Moro L.": ["Pc"],
-      "Dybala": ["A"], "Lookman": ["A", "W"], "Lucca": ["Pc"], "Belotti": ["Pc"], "Mota": ["A", "Pc"],
-      "Castellanos": ["Pc"], "Abraham": ["Pc"], "Neres": ["A", "W"], "Correa": ["A"], "Dia": ["Pc", "A"],
-      "Kean": ["Pc"], "Scamacca": ["Pc"], "Krstovic": ["Pc"], "Arnautovic": ["Pc"], "Odgaard": ["A", "Pc"], "Shpendi": ["Pc"],
-      "Yildiz": ["A", "T"], "Kolo Muani": ["Pc"]
+      "Rowe": ["W", "A"], "Diao": ["A", "Pc"], "Mbangula": ["A", "W"], "Vitinha O.": ["Pc"], "Simeone": ["Pc"], "Castro S.": ["Pc"], "Esposito F.P.": ["Pc"],
+      "Malen": ["A", "Pc"], "Douvikas": ["Pc"], "Pellegrino M.": ["Pc"], "Raimondo": ["Pc"],
+      "Robinho Junior": ["A"], "Martinez L.": ["Pc"], "Krstovic": ["Pc"], "Camarda": ["Pc"],
+      "Davis K.": ["Pc"], "Osmajic": ["Pc"],
+      "Kean": ["Pc"], "Scamacca": ["Pc"], "Stulic": ["Pc"], "Birligea": ["Pc"],
+      "Esposito Se.": ["Pc"], "Dovbyk": ["Pc"], "Rrahmani Al.": ["Pc"],
+      "Lontani": ["A"], "Ramos G.": ["Pc"], "Colombo": ["Pc"],
+      "Odgaard": ["A", "Pc"], "Kolo Muani": ["Pc"], "Beto": ["Pc"], "Varela G.": ["A"],
+      "Adams C.": ["Pc"], "Thuram": ["Pc", "A"], "Bowie": ["Pc"], "Bonny": ["Pc"],
+      "Kevin Carlos": ["Pc"], "Tourè E.": ["Pc"], "Cutrone": ["Pc"],
+      "Piccoli": ["Pc"], "Pinamonti": ["Pc"], "Mendy P.": ["Pc"]
     };
 
-    // Rose complete della Premier Ruetta
-    const ROSTERS = {
-      "DUA LIPAnathinaikos": ["Skorupski", "Happonen", "Pessina Mas.", "Birindelli", "Walukiewicz", "Valle", "Bracaglia", "Bernasconi", "Mancini", "Schingtienne", "Balerdi", "Tiago Gabriel", "Gabbia", "Wesley", "Lobotka", "Anguissa", "McTominay", "Marchwinski", "Barella", "Da Cunha", "Ndour", "Alajbegovic", "Zalewski", "Woltemade", "Hojlund", "Romero D.", "Adams A.", "Nzola"],
-      "Bidonese": ["Svilar", "De Marzi", "Gollini", "Celik", "Bertola", "Kossounou", "Pavard", "Haps", "Bremer", "Scalvini", "Dragusin", "Leite", "Diouf", "Chukwueze", "Calhanoglu", "Thuram U.", "Folorunsho", "Tchaouna", "Rowe", "Diao", "Mbangula", "Vitinha O.", "Simeone", "Castro S.", "Esposito F.P."],
-      "Juve vivo per te": ["Maignan", "Torriani", "Terracciano", "Di Lorenzo", "Rensch", "Cinquegrano", "De Winter", "Heggem", "Carlos Augusto", "Carboni A.", "Puczka", "Ostigard", "Solet", "Hermoso", "Milla", "Vlasic", "Samardzic", "Koopmeiners", "Baldanzi", "Frendrup", "Bondo", "Morata", "Thauvin", "Pedro", "Mosquera", "Cancellieri", "Brenner", "Aboukhlal"],
-      "Do Flamengo": ["De Gea", "Perri", "Grabara", "Tornqvist", "Chalobah T.", "Dodò", "Zappacosta", "Favasuli", "Drameh", "Zè Pedro", "Spinazzola", "Olivera", "Lucumì", "Monterisi", "Badiashile", "Freuler", "Thorstvedt", "Paz N.", "Brescianini", "Suslov", "Fazzini", "Vlahovic", "Pinamonti", "Banda", "Luvumbo", "Pohjanpalo", "Karlsson", "Sanchez A."],
-      "ERROR D. OFF": ["Provedel", "Mandas", "Motta", "Belghali", "Vojvoda", "Bartesaghi", "Kaiki", "Kolasinac", "Estupinan", "Bastoni", "Bella-Kotchap", "Hien", "Palma", "Cittadini", "Spence", "Fagioli", "Tessmann", "Ngonge", "Ilic", "Atta", "Asllani", "Thuram", "Zaccagni", "Taremi", "Caprari", "Solbakken", "Davis K."],
-      "FC Sucammilla": ["Martinez Jo.", "Caprile", "Sherri", "Di Gennaro", "Radunovic", "Kristensen T.", "Marusic", "Floriani Mussolini", "Veiga D.", "Obrador", "Rodriguez Ju.", "Rrahmani", "Idzes", "Marin R.", "Troilo", "Strefezza", "Pellegrini Lo.", "Maldini", "Gyasi", "Messias", "Dele-Bashiru", "Dovbyk", "Gudmundsson", "Piccoli", "Cutrone", "Benedyczak", "Shomurodov"],
-      "Archi Barber": ["Vicario", "Stankovic F.", "Pinsoglio", "Pavlovic", "Ramon", "Moreno M.", "Comert", "Sutalo J.", "Calvani", "Ellertsson", "Gaetano", "Ferguson", "Fitz-Jim", "Frattesi", "Harroui", "Reijnders", "Sohm", "Douglas Luiz", "Leao", "Retegui", "Sanabria", "Cambiaghi", "Milik", "Tengstedt", "Pierotti", "Noslin"],
-      "Masterchef Utd": ["Carnesecchi", "Pompei", "Sportiello", "Delprato", "Oyono A.", "Mazzocchi", "Tavares N.", "N'Dicka", "Mina", "Comuzzo", "Kabasele", "Ziolkowski", "Ndiaye", "Dimarco", "Saelemaekers", "Man", "Pulisic", "Kvaratskhelia", "Oristanio", "Anjorin", "Bonny", "Dallinga", "Esposito Se.", "Almqvist", "Moro L."],
-      "Scocco Team": ["Muric", "Corvi", "Mascardi", "Turati", "Cambiaso", "Bellanova", "Hainaut", "Vasquez", "Miranda J.", "Ranieri L.", "Diego Carlos", "Ismajli", "Provstgaard", "Pongracic", "Perrone", "Gagliardini", "Zurkowski", "Pasalic", "Busio", "Castrovilli", "Dybala", "Lookman", "Lucca", "Belotti", "Mota", "Rafa Silva", "Boga"],
-      "Mugiwara Boys": ["Meret", "Falcone", "Okoye", "Mrozek", "Contini", "Kalulu", "Jimenez A.", "Britschgi", "Smolcic I.", "Valeri", "Valdepenas", "Kelly L.", "Beukema", "Gaspar K.", "Ghilardi", "Guendouzi", "Orsolini", "Zambo Anguissa", "El Shaarawy", "Weah", "Duda", "Castellanos", "Abraham", "Neres", "Politano", "Correa", "Dia"],
-      "Stellolandia": ["Bijlow", "Palmisani", "Desplanches", "Stolz", "Christensen O.", "Couto", "Joao Mario", "Patric", "Theate", "Kamara H.", "Akanji", "Coco", "Doekhi", "Marcandalli", "Cacciamani", "Conceicao", "Zaniolo", "Colpani", "Bernabè", "Ekkelenkamp", "Kean", "Scamacca", "Krstovic", "Arnautovic", "Odgaard", "Shpendi"],
-      "Paris Saint Gennaro": ["Butez", "Milinkovic-Savic V.", "Sanchez Ro.", "Vigorito", "Kouadio", "Gallo", "Mangas", "Gila", "Stones", "Bisseck", "Molina N.", "Ciurria", "Konè M.", "Cristante", "Stankovic A.", "Ederson", "Lazovic", "Prati", "Charlys", "De Roon", "Yildiz", "Kolo Muani", "Cancellieri", "Caprari", "Pedro", "Brenner"]
-    };
-
-    // Struttura degli schemi Mantra
     const MANTRA_MODULES = {
       "4-3-3": {
         DEF: [ { role: "Dd", label: "Dd" }, { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" }, { role: "Ds", label: "Ds" } ],
@@ -368,7 +439,6 @@
       return "role-att";
     }
 
-    // Inizializzazione Lineup
     function initLineups() {
       GW6_MATCHES.forEach(m => {
         [m.home, m.away].forEach(team => {
@@ -378,7 +448,7 @@
               module: '4-3-3',
               captain: roster[18] || roster[5],
               titolariSlots: buildSlotsForModule('4-3-3', roster),
-              panchina: roster.slice(11, 23), // 12 riserve
+              panchina: roster.slice(11, 23),
               scores: {},
               decisives: {},
               totalPts: 0,
@@ -392,12 +462,9 @@
     function buildSlotsForModule(moduleName, roster) {
       const schema = MANTRA_MODULES[moduleName];
       const slots = [];
-
-      // Portiere
       const por = roster.find(p => getPlayerRoles(p).includes('Por')) || roster[0];
       slots.push({ slotType: 'POR', reqRole: 'Por', label: 'Por', player: por });
 
-      // Difensori
       let used = [por];
       schema.DEF.forEach(s => {
         const p = roster.find(x => !used.includes(x) && isCompatible(getPlayerRoles(x), s.role)) || roster.find(x => !used.includes(x));
@@ -405,21 +472,18 @@
         slots.push({ slotType: 'DEF', reqRole: s.role, label: s.label, player: p });
       });
 
-      // Centrocampo
       schema.MID.forEach(s => {
         const p = roster.find(x => !used.includes(x) && isCompatible(getPlayerRoles(x), s.role)) || roster.find(x => !used.includes(x));
         used.push(p);
         slots.push({ slotType: 'MID', reqRole: s.role, label: s.label, player: p });
       });
 
-      // Trequarti
       schema.TRE.forEach(s => {
         const p = roster.find(x => !used.includes(x) && isCompatible(getPlayerRoles(x), s.role)) || roster.find(x => !used.includes(x));
         used.push(p);
         slots.push({ slotType: 'TRE', reqRole: s.role, label: s.label, player: p });
       });
 
-      // Attacco
       schema.FWD.forEach(s => {
         const p = roster.find(x => !used.includes(x) && isCompatible(getPlayerRoles(x), s.role)) || roster.find(x => !used.includes(x));
         used.push(p);
@@ -429,7 +493,6 @@
       return slots;
     }
 
-    // Regole di Compatibilità Mantra
     function isCompatible(playerRoles, reqRole) {
       if (playerRoles.includes(reqRole)) return true;
       if (reqRole === 'M' && playerRoles.includes('C')) return true;
@@ -438,23 +501,6 @@
       if (reqRole === 'A' && playerRoles.includes('W')) return true;
       if (reqRole === 'T' && (playerRoles.includes('C') || playerRoles.includes('W'))) return true;
       return false;
-    }
-
-    function isAdaptable(playerRoles, reqRole) {
-      // Fuori ruolo con malus
-      if (reqRole === 'Por') return false;
-      const defs = ["Dd", "Ds", "Dc", "B"];
-      const mids = ["E", "M", "C"];
-      const atts = ["W", "T", "A", "Pc"];
-
-      const hasDef = playerRoles.some(r => defs.includes(r));
-      const hasMid = playerRoles.some(r => mids.includes(r));
-      const hasAtt = playerRoles.some(r => atts.includes(r));
-
-      if (defs.includes(reqRole) && (hasDef || playerRoles.includes('E'))) return true;
-      if (mids.includes(reqRole) && (hasMid || hasDef || playerRoles.includes('T'))) return true;
-      if (atts.includes(reqRole) && (hasAtt || playerRoles.includes('C'))) return true;
-      return true; // Se estremo, sempre schierabile con malus
     }
 
     function onModuleChange(newModule) {
@@ -538,10 +584,8 @@
         }
       });
 
-      // Se non ci sono trequartisti, nascondi la riga
       rows.TRE.style.display = rows.TRE.children.length === 0 ? 'none' : 'flex';
 
-      // Panchina a 12 Slot
       const benchBox = document.getElementById('benchContainer');
       benchBox.innerHTML = data.panchina.map((p, idx) => {
         const roles = getPlayerRoles(p);
@@ -570,7 +614,6 @@
       const isNatural = isCompatible(pRoles, slot.reqRole);
       const baseScore = teamData.scores[player] || 0;
       
-      // Calcolo con malus -1,00 se fuori ruolo
       let effectiveScore = baseScore;
       if (baseScore > 0 && !isNatural) {
         effectiveScore = Math.max(0, effectiveScore - 1.0);
@@ -606,7 +649,6 @@
       `;
     }
 
-    // Modal Selezione Giocatore (Naturale vs Fuori Ruolo)
     let activeSlotIndex = null;
     let activeTeam = null;
 
@@ -651,11 +693,8 @@
           </div>
         `;
 
-        if (natural) {
-          naturalContainer.innerHTML += rowHtml;
-        } else {
-          outContainer.innerHTML += rowHtml;
-        }
+        if (natural) naturalContainer.innerHTML += rowHtml;
+        else outContainer.innerHTML += rowHtml;
       });
 
       if (!naturalContainer.children.length) {
@@ -687,7 +726,57 @@
       renderPitch();
     }
 
-    // Chiamata Live Sorare API via Proxy trasparente (Niente numeri casuali)
+    // Modal Incolla Formazioni
+    function openPasteModal() {
+      document.getElementById('pasteModal').classList.remove('hidden');
+    }
+    function closePasteModal() {
+      document.getElementById('pasteModal').classList.add('hidden');
+    }
+
+    function processPastedLineups() {
+      const text = document.getElementById('pasteInput').value;
+      if (!text.trim()) return;
+
+      let matchedCount = 0;
+      Object.keys(ROSTERS).forEach(team => {
+        const roster = ROSTERS[team];
+        let foundInText = [];
+
+        roster.forEach(player => {
+          const reg = new RegExp('\\b' + player.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '\\b', 'i');
+          if (reg.test(text)) {
+            foundInText.push(player);
+          }
+        });
+
+        if (foundInText.length >= 11) {
+          matchedCount++;
+          const t = teamLineups[team];
+          // Assegna i primi 11 agli slot
+          for (let i = 0; i < Math.min(11, t.titolariSlots.length); i++) {
+            t.titolariSlots[i].player = foundInText[i];
+          }
+          // I restanti in panchina
+          if (foundInText.length > 11) {
+            t.panchina = foundInText.slice(11, 23);
+          }
+        }
+      });
+
+      closePasteModal();
+      calcolaTotaliSquadre();
+      updateBanner();
+      renderPitch();
+
+      if (matchedCount > 0) {
+        alert(`Formazioni aggiornate con successo per ${matchedCount} squadre!`);
+      } else {
+        alert("Nessuna corrispondenza esatta trovata. Assicurati che i nomi dei calciatori corrispondano a quelli delle rose.");
+      }
+    }
+
+    // Chiamata Live Sorare API
     async function fetchLiveSorareScores() {
       const spinner = document.getElementById('apiSpinner');
       spinner.classList.remove('hidden');
@@ -775,7 +864,6 @@
           if (base > 0) {
             anyScore = true;
             let eff = base;
-            // Malus -1,00 se fuori ruolo
             if (!isCompatible(getPlayerRoles(s.player), s.reqRole)) {
               eff = Math.max(0, eff - 1.0);
             }
@@ -788,7 +876,6 @@
 
         if (anyScore) {
           t.totalPts = Math.round(total * 100) / 100;
-          // Soglie Gol Classiche su 11 giocatori
           if (total < 66.0) t.goals = 0;
           else if (total < 72.0) t.goals = 1;
           else if (total < 78.0) t.goals = 2;
@@ -820,7 +907,6 @@
       reader.readAsArrayBuffer(file);
     });
 
-    // Avvio
     initLineups();
     renderMatchesTabs();
     updateBanner();
