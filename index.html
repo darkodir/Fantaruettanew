@@ -2,126 +2,177 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fanta-Sorare 11 | Premier Ruetta (Mantra Edition)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Fanta-Sorare 11 | Premier Ruetta (Pro Edition)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', sans-serif; background-color: #080a0f; color: #e2e8f0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #05070a;
+      color: #f1f5f9;
+      -webkit-tap-highlight-color: transparent;
+    }
     .font-teko { font-family: 'Teko', sans-serif; }
-    .pitch-3d { perspective: 1000px; }
-    .pitch-surface {
-      background: radial-gradient(circle at center, #1b3d26 0%, #0d2215 85%, #07150c 100%);
-      box-shadow: inset 0 0 60px rgba(0,0,0,0.85), 0 20px 40px rgba(0,0,0,0.6);
-      transform: rotateX(15deg);
-      border: 2px solid rgba(255,255,255,0.15);
-      border-radius: 20px;
+
+    /* Campo da Calcio Realistico ad Alta Definizione */
+    .pitch-viewport {
+      perspective: 1200px;
+      perspective-origin: 50% 18%;
     }
-    .card-limited {
-      background: linear-gradient(135deg, #1c1809 0%, #2b2208 50%, #0d0c05 100%);
+    .realistic-pitch {
+      background: 
+        repeating-linear-gradient(
+          0deg,
+          #164423 0px,
+          #164423 38px,
+          #1a4f29 38px,
+          #1a4f29 76px
+        );
+      box-shadow: 
+        inset 0 0 90px rgba(0, 0, 0, 0.9),
+        0 30px 60px -15px rgba(0, 0, 0, 0.8),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+      transform: rotateX(20deg);
+      border-radius: 24px;
+      position: relative;
+    }
+    .pitch-line {
+      border-color: rgba(255, 255, 255, 0.45);
+      filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3));
+    }
+
+    /* Carta Ufficiale Sorare Limited Style */
+    .sorare-card-slot {
+      background: linear-gradient(145deg, #1f1b0c 0%, #3a3010 45%, #121008 100%);
       border: 1.5px solid #d4af37;
-      box-shadow: 0 4px 12px rgba(212,175,55,0.25);
+      box-shadow: 
+        0 6px 16px -2px rgba(0, 0, 0, 0.7),
+        0 0 14px rgba(212, 175, 55, 0.3),
+        inset 0 1px 1px rgba(255, 255, 255, 0.3);
+      position: relative;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      backdrop-filter: blur(4px);
     }
-    .card-captain {
+    .sorare-card-slot:active {
+      transform: scale(0.96);
+    }
+    .sorare-card-captain {
       border: 2px solid #ff007a !important;
-      box-shadow: 0 0 16px rgba(255, 0, 122, 0.75) !important;
+      box-shadow: 
+        0 0 20px rgba(255, 0, 122, 0.8),
+        0 8px 20px rgba(0, 0, 0, 0.8) !important;
     }
-    .role-por { background-color: #eab308; color: #000; }
-    .role-def { background-color: #10b981; color: #000; }
-    .role-mid { background-color: #06b6d4; color: #000; }
-    .role-tre { background-color: #a855f7; color: #fff; }
-    .role-att { background-color: #f43f5e; color: #fff; }
+
+    /* Tag Ruoli Mantra */
+    .m-role-por { background: #f59e0b; color: #000; }
+    .m-role-def { background: #10b981; color: #000; }
+    .m-role-mid { background: #06b6d4; color: #000; }
+    .m-role-tre { background: #a855f7; color: #fff; }
+    .m-role-att { background: #f43f5e; color: #fff; }
+
+    /* Scrollbar mobile sottile */
+    ::-webkit-scrollbar { height: 4px; width: 4px; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between">
+<body class="min-h-screen flex flex-col justify-between selection:bg-amber-500 selection:text-black">
 
-  <!-- Header -->
-  <header class="border-b border-gray-800 bg-[#0e121a]/95 backdrop-blur sticky top-0 z-40 px-4 py-3">
-    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 to-yellow-400 flex items-center justify-center font-teko text-2xl text-black font-bold shadow-lg shadow-amber-500/30">
+  <!-- Mobile Top Bar -->
+  <header class="border-b border-white/10 bg-[#080d16]/95 backdrop-blur-md sticky top-0 z-40 px-3 py-2.5 sm:px-6">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+      
+      <!-- Brand & Status -->
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-600 flex items-center justify-center font-teko text-2xl text-black font-black shadow-md shadow-amber-500/20">
           PR
         </div>
         <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-lg font-black tracking-wider uppercase bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500">
-              Fanta-Sorare 11
+          <div class="flex items-center gap-1.5">
+            <h1 class="text-sm sm:text-base font-black tracking-wide uppercase bg-clip-text text-transparent bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-400">
+              Premier Ruetta
             </h1>
-            <span class="bg-purple-500/10 text-purple-400 border border-purple-500/30 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
-              Mantra Edition
+            <span class="bg-amber-400/10 text-amber-300 border border-amber-400/30 text-[9px] font-black px-1.5 py-0.2 rounded uppercase">
+              Mantra
             </span>
           </div>
-          <p class="text-xs text-gray-400">Lega Premier Ruetta • Voti 0-10 Opta Matrix</p>
+          <p class="text-[10px] text-gray-400">Voti Live Opta • Scala Decimale 0–10</p>
         </div>
       </div>
 
-      <!-- Azioni e Blocco Formazioni -->
-      <div class="flex items-center gap-2 flex-wrap">
-        <button id="btnLockToggle" onclick="toggleLineupLock()" class="px-3 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 bg-emerald-950/60 border-emerald-500/40 text-emerald-300">
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-1.5">
+        <!-- Interruttore Blocco Formazioni -->
+        <button id="btnLockToggle" onclick="toggleLineupLock()" class="px-2.5 py-1.5 rounded-lg border text-[11px] font-bold transition flex items-center gap-1 bg-emerald-950/80 border-emerald-500/40 text-emerald-300">
           <span id="lockIcon">🔓</span>
-          <span id="lockText">Formazioni Aperte</span>
+          <span id="lockText" class="hidden sm:inline">Aperte</span>
         </button>
 
-        <button id="btnPaste" onclick="openPasteModal()" class="bg-gray-800 hover:bg-gray-700 text-amber-300 text-xs font-semibold px-3 py-2 rounded-lg border border-amber-500/30 flex items-center gap-1.5 transition">
-          📋 Incolla Formazioni
+        <button onclick="openPasteModal()" class="bg-gray-800 hover:bg-gray-700 text-amber-300 text-[11px] font-bold px-2.5 py-1.5 rounded-lg border border-amber-500/30 transition flex items-center gap-1">
+          <span>📋</span>
+          <span class="hidden md:inline">Incolla</span>
         </button>
 
-        <label id="btnExcelLabel" class="cursor-pointer bg-gray-800 hover:bg-gray-700 text-amber-300 text-xs font-semibold px-3 py-2 rounded-lg border border-amber-500/30 flex items-center gap-1.5 transition">
-          <span>📥 Importa Excel</span>
+        <label class="cursor-pointer bg-gray-800 hover:bg-gray-700 text-amber-300 text-[11px] font-bold px-2.5 py-1.5 rounded-lg border border-amber-500/30 transition flex items-center gap-1">
+          <span>📥</span>
+          <span class="hidden md:inline">Excel</span>
           <input type="file" id="excelInput" accept=".xlsx, .xls, .csv" class="hidden">
         </label>
 
-        <button id="btnFetchApi" onclick="fetchLiveSorareScores()" class="bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-black font-black text-xs px-4 py-2 rounded-lg shadow-lg shadow-amber-500/20 uppercase tracking-wider transition flex items-center gap-1.5">
+        <button id="btnFetchApi" onclick="fetchLiveSorareScores()" class="bg-gradient-to-r from-amber-500 to-yellow-400 active:scale-95 text-black font-black text-[11px] px-3 py-1.5 rounded-lg shadow-lg shadow-amber-500/20 uppercase tracking-wider transition flex items-center gap-1">
           <span id="apiSpinner" class="hidden animate-spin">⏳</span>
-          <span>📡 Aggiorna Voti Live</span>
+          <span>📡 Live</span>
         </button>
       </div>
     </div>
   </header>
 
   <!-- Main Container -->
-  <main class="max-w-7xl mx-auto p-4 flex-1 w-full space-y-6">
+  <main class="max-w-6xl mx-auto p-3 sm:p-5 flex-1 w-full space-y-4">
 
-    <!-- Selettore Partita 6ª Giornata -->
-    <div class="bg-[#121722] border border-gray-800 rounded-xl p-4">
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mb-3">
-        <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Scontri Diretti 6ª Giornata</span>
-        <div class="flex gap-1 overflow-x-auto w-full sm:w-auto pb-1" id="matchesTabs"></div>
+    <!-- Selettore Partite 6ª Giornata -->
+    <div class="bg-[#0b101a] border border-white/5 rounded-2xl p-3 shadow-lg">
+      <div class="flex items-center justify-between gap-2 mb-2 px-1">
+        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Scontri Diretti 6ª Giornata</span>
+        <span class="text-[10px] text-amber-400/80 font-bold">Premier Ruetta League</span>
       </div>
+      <div class="flex gap-1.5 overflow-x-auto pb-1" id="matchesTabs"></div>
 
       <!-- Tabellone Risultato Scontro -->
-      <div id="matchBanner" class="bg-gradient-to-r from-gray-900 via-[#182030] to-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-around text-center">
+      <div class="mt-3 bg-gradient-to-r from-black/60 via-[#101726]/80 to-black/60 border border-white/10 rounded-xl p-3 sm:p-4 flex items-center justify-between text-center relative overflow-hidden">
         <div class="flex-1">
-          <div id="homeName" class="text-lg sm:text-xl font-black text-amber-300">Casa</div>
-          <div id="homeScore" class="font-teko text-5xl font-bold text-white leading-none mt-1">--</div>
-          <div id="homePts" class="text-xs text-amber-400 font-bold mt-1">0,00 pt Totali</div>
+          <div id="homeName" class="text-sm sm:text-base font-black text-amber-300 truncate">Casa</div>
+          <div id="homeScore" class="font-teko text-5xl sm:text-6xl font-black text-white leading-none mt-0.5">--</div>
+          <div id="homePts" class="text-[11px] text-amber-400 font-bold">0,00 pt</div>
         </div>
-        <div class="px-4 text-center">
-          <span class="text-xs font-bold text-amber-500 uppercase px-2.5 py-1 bg-amber-500/10 rounded-full border border-amber-500/30">VS</span>
+
+        <div class="px-3 flex flex-col items-center">
+          <span class="text-[10px] font-black text-amber-400/80 uppercase px-2 py-0.5 bg-amber-400/10 rounded-full border border-amber-400/20">VS</span>
         </div>
+
         <div class="flex-1">
-          <div id="awayName" class="text-lg sm:text-xl font-black text-blue-300">Trasferta</div>
-          <div id="awayScore" class="font-teko text-5xl font-bold text-white leading-none mt-1">--</div>
-          <div id="awayPts" class="text-xs text-blue-400 font-bold mt-1">0,00 pt Totali</div>
+          <div id="awayName" class="text-sm sm:text-base font-black text-blue-300 truncate">Trasferta</div>
+          <div id="awayScore" class="font-teko text-5xl sm:text-6xl font-black text-white leading-none mt-0.5">--</div>
+          <div id="awayPts" class="text-[11px] text-blue-400 font-bold">0,00 pt</div>
         </div>
       </div>
     </div>
 
-    <!-- Barra Controlli Squadra & Modulo Mantra -->
-    <div class="flex flex-wrap items-center justify-between gap-3 bg-[#121722]/80 border border-gray-800 p-3 rounded-xl">
-      <div class="inline-flex p-1 rounded-xl bg-gray-900 border border-gray-800">
-        <button id="btnViewHome" onclick="switchTeamView('home')" class="px-4 py-1.5 rounded-lg text-xs font-bold transition bg-amber-500 text-black">
-          Schieramento Casa
+    <!-- Selettore Schieramento e Modulo Mantra -->
+    <div class="flex flex-wrap items-center justify-between gap-2 bg-[#0b101a] border border-white/5 p-2 sm:p-3 rounded-2xl">
+      <div class="inline-flex p-1 rounded-xl bg-black/50 border border-white/10">
+        <button id="btnViewHome" onclick="switchTeamView('home')" class="px-3.5 py-1.5 rounded-lg text-xs font-black transition bg-amber-500 text-black shadow-md">
+          Squadra Casa
         </button>
-        <button id="btnViewAway" onclick="switchTeamView('away')" class="px-4 py-1.5 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition">
-          Schieramento Trasferta
+        <button id="btnViewAway" onclick="switchTeamView('away')" class="px-3.5 py-1.5 rounded-lg text-xs font-black text-gray-400 hover:text-white transition">
+          Trasferta
         </button>
       </div>
 
       <div class="flex items-center gap-2">
-        <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">Modulo Mantra:</span>
-        <select id="moduleSelect" onchange="onModuleChange(this.value)" class="bg-gray-900 border border-gray-700 text-xs rounded-lg px-3 py-1.5 text-amber-300 font-black focus:outline-none focus:border-amber-400">
+        <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider hidden sm:inline">Modulo:</span>
+        <select id="moduleSelect" onchange="onModuleChange(this.value)" class="bg-[#121927] border border-white/10 text-xs rounded-xl px-3 py-1.5 text-amber-300 font-black focus:outline-none focus:border-amber-400">
           <option value="4-3-3">4-3-3 (Dd-Dc-Dc-Ds / M-C-C / W-Pc-A)</option>
           <option value="3-4-3">3-4-3 (Dc-Dc-Dc / E-M-C-E / W-Pc-A)</option>
           <option value="3-4-2-1">3-4-2-1 (Dc-Dc-Dc / E-M-C-E / T-T / Pc)</option>
@@ -132,157 +183,207 @@
       </div>
     </div>
 
-    <!-- Campo Tattico 3D con griglia reattiva Mantra -->
-    <div class="pitch-3d overflow-hidden py-2">
-      <div class="pitch-surface max-w-4xl mx-auto p-4 sm:p-6 min-h-[640px] flex flex-col justify-between relative">
-        <div class="absolute inset-0 pointer-events-none opacity-20 flex flex-col justify-between p-4">
-          <div class="w-full h-1/2 border-b-2 border-white relative flex items-center justify-center">
-            <div class="w-28 h-28 rounded-full border-2 border-white"></div>
+    <!-- Campo Tattico 3D Iper-Realistico -->
+    <div class="pitch-viewport overflow-hidden py-3">
+      <div class="realistic-pitch max-w-3xl mx-auto p-3 sm:p-6 min-h-[640px] flex flex-col justify-between">
+        
+        <!-- Linee del Campo con Riflesso Gesso -->
+        <div class="absolute inset-0 pointer-events-none p-4 flex flex-col justify-between">
+          <!-- Area di Rigore Superiore (Attacco) -->
+          <div class="w-48 h-20 border-2 pitch-line mx-auto border-t-0 rounded-b-xl opacity-30"></div>
+          <!-- Metà Campo & Cerchio Centrale -->
+          <div class="w-full border-b-2 pitch-line relative flex items-center justify-center opacity-35">
+            <div class="w-28 h-28 rounded-full border-2 pitch-line absolute"></div>
           </div>
+          <!-- Area di Rigore Inferiore (Difesa) -->
+          <div class="w-48 h-20 border-2 pitch-line mx-auto border-b-0 rounded-t-xl opacity-30"></div>
         </div>
 
-        <div id="pitchRowFWD" class="flex justify-around items-center z-10 gap-2 min-h-[90px]"></div>
-        <div id="pitchRowTRE" class="flex justify-around items-center z-10 gap-2 min-h-[90px]"></div>
-        <div id="pitchRowMID" class="flex justify-around items-center z-10 gap-2 min-h-[90px]"></div>
-        <div id="pitchRowDEF" class="flex justify-around items-center z-10 gap-2 min-h-[90px]"></div>
-        <div id="pitchRowPOR" class="flex justify-center items-center z-10 min-h-[90px]"></div>
+        <!-- Linea Attacco (FWD) -->
+        <div id="pitchRowFWD" class="flex justify-around items-center z-10 gap-1.5 min-h-[95px]"></div>
+
+        <!-- Linea Trequarti (TRE) -->
+        <div id="pitchRowTRE" class="flex justify-around items-center z-10 gap-1.5 min-h-[95px]"></div>
+
+        <!-- Linea Centrocampo (MID) -->
+        <div id="pitchRowMID" class="flex justify-around items-center z-10 gap-1.5 min-h-[95px]"></div>
+
+        <!-- Linea Difesa (DEF) -->
+        <div id="pitchRowDEF" class="flex justify-around items-center z-10 gap-1.5 min-h-[95px]"></div>
+
+        <!-- Portiere (Por) -->
+        <div id="pitchRowPOR" class="flex justify-center items-center z-10 min-h-[95px]"></div>
       </div>
     </div>
 
     <!-- Panchina Mantra a 12 Slot -->
-    <div class="bg-[#121722] border border-gray-800 rounded-xl p-4">
-      <div class="flex items-center justify-between mb-3">
-        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Panchina Mantra (12 Riserve)</h3>
-        <span class="text-[11px] text-amber-400/80 font-semibold">12 / 12 Slot</span>
+    <div class="bg-[#0b101a] border border-white/5 rounded-2xl p-4 shadow-lg">
+      <div class="flex items-center justify-between mb-3 px-1">
+        <h3 class="text-xs font-black text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+          <span>🛡️</span> Panchina Mantra (12 Riserve)
+        </h3>
+        <span class="text-[10px] text-amber-400 font-bold bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
+          Subentro Ruolo su Ruolo
+        </span>
       </div>
       <div id="benchContainer" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2"></div>
     </div>
 
   </main>
 
-  <!-- MODAL: Scheda Giocatore stile Sorare Breakdown -->
-  <div id="sorareCardModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-[#10141d] border border-amber-500/40 w-full max-w-lg rounded-3xl p-6 shadow-2xl space-y-5 text-gray-200 relative overflow-hidden">
-      <div class="absolute -top-12 -right-12 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+  <!-- MODAL: Scheda Dettaglio Giocatore stile Sorare Breakdown Completo -->
+  <div id="sorareCardModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-gradient-to-b from-[#131b2c] via-[#0d131f] to-[#070a10] border border-amber-500/40 w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4 text-gray-200 relative overflow-hidden max-h-[90vh] overflow-y-auto">
+      
+      <!-- Glow ambient in alto -->
+      <div class="absolute -top-16 -right-16 w-48 h-48 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
 
-      <div class="flex items-start justify-between border-b border-gray-800 pb-4">
+      <!-- Header Carta Sorare Limited Ingrandita -->
+      <div class="flex items-start justify-between border-b border-white/10 pb-4">
         <div class="flex items-center gap-3">
-          <div class="card-limited w-16 h-22 rounded-xl p-2 flex flex-col items-center justify-center text-center shadow-lg relative">
-            <span id="scBadgeRole" class="text-[9px] font-black px-1.5 py-0.5 rounded role-att mb-1">Pc</span>
-            <span class="text-[10px] font-black text-amber-300 tracking-wider">LIMITED</span>
+          <div class="sorare-card-slot w-16 h-24 rounded-2xl p-2 flex flex-col items-center justify-between text-center relative shadow-lg">
+            <span id="scBadgeRole" class="text-[8px] font-black px-1.5 py-0.5 rounded m-role-att">Pc</span>
+            <div class="font-teko text-xs text-white uppercase tracking-wider font-black">SORARE</div>
+            <span class="text-[8px] font-black text-amber-300 tracking-wider">LIMITED</span>
           </div>
+
           <div>
-            <div class="flex items-center gap-2">
-              <h3 id="scPlayerName" class="text-lg font-black text-white">Nome Calciatore</h3>
-              <span id="scCaptainBadge" class="hidden bg-[#ff007a] text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow">CAPITANO</span>
+            <div class="flex items-center gap-1.5">
+              <h3 id="scPlayerName" class="text-base sm:text-lg font-black text-white leading-tight">Nome Giocatore</h3>
+              <span id="scCaptainBadge" class="hidden bg-[#ff007a] text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow">CAP</span>
             </div>
             <div id="scPlayerRoles" class="flex gap-1 mt-1"></div>
-            <p id="scMatchStatus" class="text-[11px] text-emerald-400 font-bold mt-1 flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Match Live • Opta Feed
+            <p class="text-[11px] text-emerald-400 font-bold mt-1 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Opta Match Feed Live
             </p>
           </div>
         </div>
 
         <div class="text-right">
-          <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Punteggio Live</span>
-          <span id="scFinalScore" class="font-teko text-5xl font-bold text-amber-300 leading-none">--</span>
+          <span class="text-[9px] text-gray-400 font-bold uppercase tracking-wider block">Voto Live</span>
+          <span id="scFinalScore" class="font-teko text-5xl font-black text-amber-300 leading-none">--</span>
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
-        <div class="bg-gray-900/80 border border-gray-800 rounded-2xl p-3">
-          <div class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Decisive Score</div>
-          <div class="flex items-baseline gap-1">
+      <!-- Barra Scomposizione Decisive Score vs All-Around Score (AAS) -->
+      <div class="grid grid-cols-2 gap-2.5">
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-3">
+          <div class="text-[10px] text-gray-400 font-black uppercase tracking-wider">Decisive Score</div>
+          <div class="flex items-baseline gap-1 mt-0.5">
             <span id="scDecisivePts" class="font-teko text-3xl font-black text-white">3,50</span>
-            <span class="text-[10px] text-gray-400">base</span>
+            <span class="text-[10px] text-gray-400">liv. base</span>
           </div>
           <div id="scDecisiveEvents" class="text-xs mt-1 text-gray-300 space-y-0.5">
-            <div class="text-gray-500 italic text-[11px]">Nessun bonus decisivo</div>
+            <div class="text-gray-500 italic text-[10px]">Nessun bonus decisivo</div>
           </div>
         </div>
 
-        <div class="bg-gray-900/80 border border-gray-800 rounded-2xl p-3">
-          <div class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">All-Around (AAS)</div>
-          <div class="flex items-baseline gap-1">
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-3">
+          <div class="text-[10px] text-gray-400 font-black uppercase tracking-wider">All-Around (AAS)</div>
+          <div class="flex items-baseline gap-1 mt-0.5">
             <span id="scAasPts" class="font-teko text-3xl font-black text-cyan-400">+0,00</span>
-            <span class="text-[10px] text-gray-400">statistico</span>
+            <span class="text-[10px] text-gray-400">matrice</span>
           </div>
-          <div id="scAasComment" class="text-[11px] text-gray-400 mt-1">Prestazione complessiva</div>
+          <div class="text-[10px] text-gray-400 mt-1">Volume di gioco Opta</div>
         </div>
       </div>
 
-      <div>
-        <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Statistiche Dettagliate Opta</h4>
-        <div class="grid grid-cols-3 gap-2 text-center">
-          <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-2">
-            <span class="text-[10px] text-gray-400 block font-semibold">Minuti</span>
-            <span id="statMins" class="text-sm font-black text-white">90'</span>
+      <!-- Tabellone Statistiche Dettagliate Opta con Bonus/Malus Ufficiali -->
+      <div class="space-y-2">
+        <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Matrice Statistica Completa</h4>
+        
+        <!-- Disciplina & Generale -->
+        <div class="grid grid-cols-3 gap-1.5 text-center">
+          <div class="bg-black/40 border border-white/5 rounded-xl p-2">
+            <span class="text-[9px] text-gray-400 block font-semibold">Minuti</span>
+            <span id="statMins" class="text-xs font-black text-white">--</span>
           </div>
-          <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-2">
-            <span class="text-[10px] text-gray-400 block font-semibold">Gol / Assist</span>
-            <span id="statGoalsAssists" class="text-sm font-black text-emerald-400">0 / 0</span>
+          <div class="bg-black/40 border border-white/5 rounded-xl p-2">
+            <span class="text-[9px] text-amber-400 block font-semibold">Gialli (-0,30)</span>
+            <span id="statYellows" class="text-xs font-black text-amber-300">0</span>
           </div>
-          <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-2">
-            <span class="text-[10px] text-gray-400 block font-semibold">Tiri (In Porta)</span>
-            <span id="statShots" class="text-sm font-black text-white">0 (0)</span>
+          <div class="bg-black/40 border border-white/5 rounded-xl p-2">
+            <span class="text-[9px] text-rose-400 block font-semibold">Rossi (-2,00)</span>
+            <span id="statReds" class="text-xs font-black text-rose-300">0</span>
           </div>
-          <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-2">
-            <span class="text-[10px] text-gray-400 block font-semibold">Pass. Chiave</span>
-            <span id="statKeyPasses" class="text-sm font-black text-white">0</span>
+        </div>
+
+        <!-- Attacco & Creazione -->
+        <div class="grid grid-cols-3 gap-1.5 text-center">
+          <div class="bg-black/40 border border-white/5 rounded-xl p-2">
+            <span class="text-[9px] text-emerald-400 block font-semibold">Gol / Assist</span>
+            <span id="statGoalsAssists" class="text-xs font-black text-emerald-300">0 / 0</span>
           </div>
-          <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-2">
-            <span class="text-[10px] text-gray-400 block font-semibold">Duelli Vinti</span>
-            <span id="statDuels" class="text-sm font-black text-white">0</span>
+          <div class="bg-black/40 border border-white/5 rounded-xl p-2">
+            <span class="text-[9px] text-gray-400 block font-semibold">Tiri (Specchio)</span>
+            <span id="statShots" class="text-xs font-black text-white">0 (0)</span>
           </div>
-          <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-2">
-            <span class="text-[10px] text-gray-400 block font-semibold">Recuperi / Parate</span>
-            <span id="statDef" class="text-sm font-black text-white">0</span>
+          <div class="bg-black/40 border border-white/5 rounded-xl p-2">
+            <span class="text-[9px] text-cyan-400 block font-semibold">Pass. Chiave</span>
+            <span id="statKeyPasses" class="text-xs font-black text-cyan-300">0</span>
+          </div>
+        </div>
+
+        <!-- Duelli & Difesa -->
+        <div class="grid grid-cols-3 gap-1.5 text-center">
+          <div class="bg-black/40 border border-white/5 rounded-xl p-2">
+            <span class="text-[9px] text-gray-400 block font-semibold">Contrasti Vinti</span>
+            <span id="statTackles" class="text-xs font-black text-white">0</span>
+          </div>
+          <div class="bg-black/40 border border-white/5 rounded-xl p-2">
+            <span class="text-[9px] text-gray-400 block font-semibold">Intercetti / Rec.</span>
+            <span id="statInterceptions" class="text-xs font-black text-white">0</span>
+          </div>
+          <div class="bg-black/40 border border-white/5 rounded-xl p-2">
+            <span class="text-[9px] text-gray-400 block font-semibold">Parate / Subiti</span>
+            <span id="statSaves" class="text-xs font-black text-white">0 / 0</span>
           </div>
         </div>
       </div>
 
-      <div id="scActionsBox" class="pt-3 border-t border-gray-800 flex items-center justify-between">
-        <button onclick="closeSorareCardModal()" class="px-4 py-2 rounded-xl text-xs font-bold bg-gray-800 hover:bg-gray-700 text-gray-300 transition">
+      <!-- Pulsanti di Azione / Blocco Formazione -->
+      <div class="pt-3 border-t border-white/10 flex items-center justify-between">
+        <button onclick="closeSorareCardModal()" class="px-4 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/15 text-gray-300 transition">
           Chiudi
         </button>
 
         <div id="scEditButtons" class="flex gap-2">
-          <button id="scBtnCaptain" onclick="modalMakeCaptain()" class="px-3 py-2 rounded-xl text-xs font-bold bg-[#ff007a] hover:bg-[#ff007a]/80 text-white transition">
-            Fascia Capitano (x1,5)
+          <button id="scBtnCaptain" onclick="modalMakeCaptain()" class="px-3 py-2 rounded-xl text-xs font-bold bg-[#ff007a] hover:bg-[#ff007a]/80 text-white transition shadow-lg shadow-pink-500/20">
+            Fai Capitano (x1,5)
           </button>
-          <button id="scBtnReplace" onclick="modalOpenReplaceList()" class="px-4 py-2 rounded-xl text-xs font-black bg-amber-500 hover:bg-amber-400 text-black transition">
+          <button id="scBtnReplace" onclick="modalOpenReplaceList()" class="px-4 py-2 rounded-xl text-xs font-black bg-amber-500 hover:bg-amber-400 text-black transition shadow-lg shadow-amber-500/20">
             Sostituisci
           </button>
         </div>
 
         <div id="scLockedWarning" class="hidden text-xs text-amber-400/90 font-bold flex items-center gap-1.5">
-          <span>🔒</span> Formazioni bloccate
+          <span>🔒</span> Formazioni Bloccate
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal Selezione Sostituto con blocco giocatori duplicati -->
-  <div id="playerModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-[#121722] border border-gray-700 w-full max-w-lg rounded-2xl p-5 max-h-[85vh] flex flex-col shadow-2xl">
-      <div class="flex justify-between items-center pb-3 border-b border-gray-800">
+  <!-- MODAL: Selezione Sostituto (Anti-Duplicati + Ruoli Mantra) -->
+  <div id="playerModal" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-[#0e1422] border border-white/10 w-full max-w-lg rounded-3xl p-5 max-h-[85vh] flex flex-col shadow-2xl">
+      <div class="flex justify-between items-center pb-3 border-b border-white/10">
         <div>
           <h4 id="modalTitle" class="text-sm font-black text-amber-300">Seleziona Giocatore</h4>
-          <p id="modalSubtitle" class="text-xs text-gray-400">Ruolo richiesto dallo slot</p>
+          <p id="modalSubtitle" class="text-[11px] text-gray-400">Ruolo richiesto dallo slot</p>
         </div>
         <button onclick="closeModal()" class="text-gray-400 hover:text-white text-xl font-bold px-2">&times;</button>
       </div>
       
       <div class="overflow-y-auto space-y-4 py-3 flex-1">
         <div>
-          <div class="text-[11px] font-bold uppercase tracking-wider text-emerald-400 mb-2 flex items-center gap-1.5">
+          <div class="text-[10px] font-black uppercase tracking-wider text-emerald-400 mb-2 flex items-center gap-1">
             <span>✓</span> Ruolo Naturale (Nessun Malus)
           </div>
           <div id="modalNaturalList" class="space-y-1.5"></div>
         </div>
 
         <div>
-          <div class="text-[11px] font-bold uppercase tracking-wider text-amber-400 mb-2 flex items-center gap-1.5">
+          <div class="text-[10px] font-black uppercase tracking-wider text-amber-400 mb-2 flex items-center gap-1">
             <span>⚠️</span> Fuori Ruolo (Adattabile con Malus -1,00)
           </div>
           <div id="modalOutOfPositionList" class="space-y-1.5"></div>
@@ -291,26 +392,26 @@
     </div>
   </div>
 
-  <!-- Modal Incolla Formazioni -->
-  <div id="pasteModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-[#121722] border border-gray-700 w-full max-w-lg rounded-2xl p-5 flex flex-col shadow-2xl space-y-4">
-      <div class="flex justify-between items-center pb-2 border-b border-gray-800">
+  <!-- MODAL: Incolla Formazioni -->
+  <div id="pasteModal" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#0e1422] border border-white/10 w-full max-w-lg rounded-3xl p-5 flex flex-col shadow-2xl space-y-3">
+      <div class="flex justify-between items-center pb-2 border-b border-white/10">
         <h4 class="text-sm font-black text-amber-300">Incolla Formazioni da Fantacalcio.it</h4>
         <button onclick="closePasteModal()" class="text-gray-400 hover:text-white text-xl font-bold">&times;</button>
       </div>
       <p class="text-xs text-gray-400 leading-relaxed">
-        Copia e incolla qui sotto il testo delle formazioni consegnate:
+        Copia e incolla il testo o l'elenco dei giocatori schierati:
       </p>
-      <textarea id="pasteInput" rows="8" placeholder="Es: Skorupski, Mancini, Barella, Hojlund..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-xs text-amber-200 focus:outline-none focus:border-amber-400 font-mono"></textarea>
+      <textarea id="pasteInput" rows="7" placeholder="Es: Skorupski, Mancini, Barella, Hojlund..." class="w-full bg-[#080d16] border border-white/10 rounded-2xl p-3 text-xs text-amber-200 focus:outline-none focus:border-amber-400 font-mono"></textarea>
       <div class="flex justify-end gap-2 pt-2">
-        <button onclick="closePasteModal()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-800 text-gray-300">Annulla</button>
-        <button onclick="processPastedLineups()" class="px-4 py-1.5 rounded-lg text-xs font-black bg-amber-500 hover:bg-amber-400 text-black">Applica Formazioni</button>
+        <button onclick="closePasteModal()" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-white/10 text-gray-300">Annulla</button>
+        <button onclick="processPastedLineups()" class="px-4 py-1.5 rounded-xl text-xs font-black bg-amber-500 hover:bg-amber-400 text-black">Applica Formazioni</button>
       </div>
     </div>
   </div>
 
-  <footer class="border-t border-gray-800 text-center py-3 text-xs text-gray-500">
-    Fanta-Sorare 11 • Premier Ruetta Mantra • Voti 0-10 con Decimali (Opta Decisive + AAS)
+  <footer class="border-t border-white/10 text-center py-3 text-[11px] text-gray-500 bg-[#05070a]">
+    Premier Ruetta Fanta-Sorare 11 • Motore Decimale Opta Matrix
   </footer>
 
   <script>
@@ -319,7 +420,7 @@
 
     let isLineupLocked = false;
 
-    // Rose Ufficiali e Complete
+    // Rose UFFICIALI Complete al 100% dal file
     const ROSTERS = {
       "DUA LIPAnathinaikos": [
         "Skorupski", "Happonen", "Pessina Mas.", "Birindelli", "Walukiewicz", "Valle", "Bracaglia", 
@@ -394,9 +495,9 @@
       ]
     };
 
-    // Database Ruoli Mantra Verificato e Corretto (incluso Schmid: W, T)
+    // Database Ruoli Mantra con Schmid W/T
     const MANTRA_ROLES = {
-      // Portieri (Por)
+      // Portieri
       "Skorupski": ["Por"], "Happonen": ["Por"], "Pessina Mas.": ["Por"], "Svilar": ["Por"], "De Marzi": ["Por"],
       "Gollini": ["Por"], "Maignan": ["Por"], "Torriani": ["Por"], "Terracciano": ["Por"], "De Gea": ["Por"],
       "Perri": ["Por"], "Grabara": ["Por"], "Tornqvist": ["Por"], "Provedel": ["Por"], "Mandas": ["Por"],
@@ -407,7 +508,7 @@
       "Contini": ["Por"], "Bijlow": ["Por"], "Palmisani": ["Por"], "Desplanches": ["Por"], "Stolz": ["Por"],
       "Christensen O.": ["Por"], "Butez": ["Por"], "Milinkovic-Savic V.": ["Por"], "Sanchez Ro.": ["Por"], "Vigorito": ["Por"],
 
-      // Difensori & Terzini/Esterni
+      // Difensori
       "Birindelli": ["Dd", "E"], "Walukiewicz": ["Dc"], "Valle": ["Ds", "E"], "Bracaglia": ["Dc"], "Bernasconi": ["Ds", "E"],
       "Mancini": ["Dc"], "Schingtienne": ["Dc"], "Balerdi": ["Dc"], "Tiago Gabriel": ["Dc"], "Gabbia": ["Dc"],
       "Celik": ["Dd", "E"], "Bertola": ["Dc"], "Kossounou": ["Dc", "Dd"], "Pavard": ["Dc", "Dd"], "Haps": ["Ds", "E"],
@@ -436,7 +537,7 @@
       "Kouadio": ["Dd", "E"], "Gallo": ["Ds", "E"], "Mangas": ["Ds", "E"], "Gila": ["Dc"], "Stones": ["Dc", "M"],
       "Bisseck": ["Dc", "Dd"], "Molina N.": ["Dd", "E"],
 
-      // Centrocampisti, Mediani, Trequartisti, Ali
+      // Centrocampisti & Trequartisti
       "Wesley": ["E", "W"], "Lobotka": ["M", "C"], "Ngom": ["C"], "Jashari": ["M", "C"], "McTominay": ["C", "T"],
       "Barella": ["C", "T"], "Da Cunha": ["C", "T", "W"], "Ndour": ["C", "M"], "Alajbegovic": ["W", "A"], "Zalewski": ["E", "W"],
       "Diouf": ["C"], "Chukwueze": ["W", "A"], "Calhanoglu": ["C", "M"], "Matic": ["M"], "Fazzini": ["C", "T"], "Mandragora": ["M", "C"],
@@ -463,7 +564,7 @@
       "Zambo Anguissa": ["C", "M"], "Baturina": ["T", "C"], "Baldanzi": ["T", "A"], "Liberali": ["T"], "Meichtry": ["C"],
       "Politano": ["W", "A"], "Njie": ["A", "W"], "Pierotti": ["A"], "Yildiz": ["A", "T"], "Laurientè": ["A", "W"],
 
-      // Attaccanti & Punte Centrali
+      // Attaccanti
       "Woltemade": ["Pc"], "Hojlund": ["Pc"], "Romero D.": ["A"], "Adams A.": ["Pc"], "Nzola": ["Pc"],
       "Rowe": ["W", "A"], "Diao": ["A", "Pc"], "Mbangula": ["A", "W"], "Vitinha O.": ["Pc"], "Simeone": ["Pc"], "Castro S.": ["Pc"], "Esposito F.P.": ["Pc"],
       "Malen": ["A", "Pc"], "Douvikas": ["Pc"], "Pellegrino M.": ["Pc"], "Raimondo": ["Pc"],
@@ -536,21 +637,15 @@
       const btn = document.getElementById('btnLockToggle');
       const icon = document.getElementById('lockIcon');
       const text = document.getElementById('lockText');
-      const pasteBtn = document.getElementById('btnPaste');
-      const excelLabel = document.getElementById('btnExcelLabel');
 
       if (isLineupLocked) {
-        btn.className = "px-3 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 bg-rose-950/60 border-rose-500/40 text-rose-300";
+        btn.className = "px-2.5 py-1.5 rounded-lg border text-[11px] font-bold transition flex items-center gap-1 bg-rose-950/80 border-rose-500/40 text-rose-300";
         icon.innerText = "🔒";
-        text.innerText = "Formazioni Bloccate";
-        pasteBtn.classList.add('opacity-50', 'pointer-events-none');
-        excelLabel.classList.add('opacity-50', 'pointer-events-none');
+        text.innerText = "Bloccate";
       } else {
-        btn.className = "px-3 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 bg-emerald-950/60 border-emerald-500/40 text-emerald-300";
+        btn.className = "px-2.5 py-1.5 rounded-lg border text-[11px] font-bold transition flex items-center gap-1 bg-emerald-950/80 border-emerald-500/40 text-emerald-300";
         icon.innerText = "🔓";
-        text.innerText = "Formazioni Aperte";
-        pasteBtn.classList.remove('opacity-50', 'pointer-events-none');
-        excelLabel.classList.remove('opacity-50', 'pointer-events-none');
+        text.innerText = "Aperte";
       }
     }
 
@@ -564,11 +659,11 @@
     }
 
     function getBadgeClass(role) {
-      if (role === "Por") return "role-por";
-      if (["Dd", "Ds", "Dc", "B"].includes(role)) return "role-def";
-      if (["E", "M", "C"].includes(role)) return "role-mid";
-      if (["W", "T"].includes(role)) return "role-tre";
-      return "role-att";
+      if (role === "Por") return "m-role-por";
+      if (["Dd", "Ds", "Dc", "B"].includes(role)) return "m-role-def";
+      if (["E", "M", "C"].includes(role)) return "m-role-mid";
+      if (["W", "T"].includes(role)) return "m-role-tre";
+      return "m-role-att";
     }
 
     function initLineups() {
@@ -578,7 +673,6 @@
             const roster = ROSTERS[team] || [];
             const slots = buildSlotsForModule('4-3-3', roster);
             const titolariNames = slots.map(s => s.player);
-            // I restanti disponibili vanno in panchina fino a 12 senza duplicati
             const bench = roster.filter(p => !titolariNames.includes(p)).slice(0, 12);
 
             teamLineups[team] = {
@@ -644,7 +738,7 @@
 
     function onModuleChange(newModule) {
       if (isLineupLocked) {
-        alert("Formazioni bloccate! Non è possibile modificare il modulo tattico.");
+        alert("Formazioni bloccate!");
         return;
       }
       const match = GW6_MATCHES[currentMatchIndex];
@@ -660,7 +754,7 @@
     function renderMatchesTabs() {
       const c = document.getElementById('matchesTabs');
       c.innerHTML = GW6_MATCHES.map((m, idx) => `
-        <button onclick="selectMatch(${idx})" class="px-2.5 py-1 text-xs rounded-lg whitespace-nowrap font-bold transition ${currentMatchIndex === idx ? 'bg-amber-500 text-black shadow' : 'bg-gray-800 text-gray-400 hover:text-white'}">
+        <button onclick="selectMatch(${idx})" class="px-2.5 py-1 text-xs rounded-xl whitespace-nowrap font-black transition ${currentMatchIndex === idx ? 'bg-amber-500 text-black shadow-md shadow-amber-500/20' : 'bg-white/5 text-gray-400 hover:text-white border border-white/5'}">
           ${m.home.split(' ')[0]} vs ${m.away.split(' ')[0]}
         </button>
       `).join('');
@@ -679,11 +773,11 @@
     function switchTeamView(v) {
       currentView = v;
       document.getElementById('btnViewHome').className = v === 'home' 
-        ? 'px-4 py-1.5 rounded-lg text-xs font-bold transition bg-amber-500 text-black' 
-        : 'px-4 py-1.5 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition';
+        ? 'px-3.5 py-1.5 rounded-lg text-xs font-black transition bg-amber-500 text-black shadow-md' 
+        : 'px-3.5 py-1.5 rounded-lg text-xs font-black text-gray-400 hover:text-white transition';
       document.getElementById('btnViewAway').className = v === 'away' 
-        ? 'px-4 py-1.5 rounded-lg text-xs font-bold transition bg-amber-500 text-black' 
-        : 'px-4 py-1.5 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition';
+        ? 'px-3.5 py-1.5 rounded-lg text-xs font-black transition bg-amber-500 text-black shadow-md' 
+        : 'px-3.5 py-1.5 rounded-lg text-xs font-black text-gray-400 hover:text-white transition';
       
       const match = GW6_MATCHES[currentMatchIndex];
       const teamName = currentView === 'home' ? match.home : match.away;
@@ -698,8 +792,8 @@
 
       document.getElementById('homeName').innerText = match.home;
       document.getElementById('awayName').innerText = match.away;
-      document.getElementById('homePts').innerText = (hData.totalPts > 0 ? formatScore(hData.totalPts) : '0,00') + " pt Totali";
-      document.getElementById('awayPts').innerText = (aData.totalPts > 0 ? formatScore(aData.totalPts) : '0,00') + " pt Totali";
+      document.getElementById('homePts').innerText = (hData.totalPts > 0 ? formatScore(hData.totalPts) : '0,00') + " pt";
+      document.getElementById('awayPts').innerText = (aData.totalPts > 0 ? formatScore(aData.totalPts) : '0,00') + " pt";
 
       document.getElementById('homeScore').innerText = hData.goals !== undefined ? hData.goals : '--';
       document.getElementById('awayScore').innerText = aData.goals !== undefined ? aData.goals : '--';
@@ -729,22 +823,23 @@
 
       rows.TRE.style.display = rows.TRE.children.length === 0 ? 'none' : 'flex';
 
+      // Panchina a 12 Slot
       const benchBox = document.getElementById('benchContainer');
       benchBox.innerHTML = data.panchina.map((p, idx) => {
         const roles = getPlayerRoles(p);
         const pts = data.scores[p] || 0;
         return `
-          <div onclick="openSorareCardModal('${p}', null, '${teamName}')" class="cursor-pointer bg-gray-800/80 hover:bg-gray-700/80 transition border border-gray-700 rounded-lg p-2 flex flex-col justify-between">
+          <div onclick="openSorareCardModal('${p}', null, '${teamName}')" class="cursor-pointer bg-white/5 hover:bg-white/10 active:scale-95 transition border border-white/5 rounded-xl p-2 flex flex-col justify-between shadow-sm">
             <div>
-              <div class="flex items-center justify-between text-[10px] text-gray-400 font-bold">
-                <span>P${idx+1}</span>
+              <div class="flex items-center justify-between text-[9px] text-gray-400 font-black">
+                <span>#${idx+1}</span>
                 <div class="flex gap-0.5">
-                  ${roles.map(r => `<span class="px-1 rounded text-[9px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
+                  ${roles.map(r => `<span class="px-1 rounded text-[8px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
                 </div>
               </div>
               <div class="text-xs font-black text-amber-200 truncate mt-1">${p}</div>
             </div>
-            <div class="text-[11px] text-gray-300 font-bold mt-1 text-right">${formatScore(pts)}</div>
+            <div class="text-[11px] text-gray-300 font-black mt-1 text-right">${formatScore(pts)}</div>
           </div>
         `;
       }).join('');
@@ -765,26 +860,31 @@
         effectiveScore *= 1.5;
       }
 
-      let badgeBg = 'bg-gray-700 text-white';
-      if (baseScore >= 7.0) badgeBg = 'bg-emerald-500 text-black';
-      else if (baseScore >= 6.0) badgeBg = 'bg-amber-400 text-black';
-      else if (baseScore > 0) badgeBg = 'bg-rose-500 text-white';
+      let badgeScoreColor = 'bg-gray-800 text-gray-400 border border-white/5';
+      if (baseScore >= 7.0) badgeScoreColor = 'bg-emerald-500 text-black font-black shadow-md shadow-emerald-500/20';
+      else if (baseScore >= 6.0) badgeScoreColor = 'bg-amber-400 text-black font-black shadow-md shadow-amber-400/20';
+      else if (baseScore > 0) badgeScoreColor = 'bg-rose-500 text-white font-black';
 
       return `
-        <div onclick="openSorareCardModal('${player}', ${slotIdx}, '${teamName}')" class="cursor-pointer flex flex-col items-center group">
-          <div class="card-limited w-16 sm:w-20 rounded-lg p-1.5 flex flex-col items-center relative transition group-hover:scale-105 ${isCaptain ? 'card-captain' : ''}">
-            ${isCaptain ? '<div class="absolute -top-2 -right-1 bg-[#ff007a] text-white text-[9px] font-black px-1.5 py-0.2 rounded shadow">C (x1,5)</div>' : ''}
-            ${!isNatural ? '<div class="absolute -top-2 -left-1 bg-amber-500 text-black text-[9px] font-black px-1 rounded shadow" title="Fuori Ruolo: Malus -1,00">-1</div>' : ''}
+        <div onclick="openSorareCardModal('${player}', ${slotIdx}, '${teamName}')" class="cursor-pointer flex flex-col items-center">
+          <div class="sorare-card-slot w-[72px] sm:w-20 rounded-xl p-1.5 flex flex-col items-center relative ${isCaptain ? 'sorare-card-captain' : ''}">
+            ${isCaptain ? '<div class="absolute -top-2 -right-1 bg-[#ff007a] text-white text-[8px] font-black px-1.5 py-0.2 rounded shadow-md">C x1.5</div>' : ''}
+            ${!isNatural ? '<div class="absolute -top-2 -left-1 bg-amber-500 text-black text-[8px] font-black px-1 rounded shadow" title="Malus -1,00">-1</div>' : ''}
             
-            <div class="text-[9px] font-black text-amber-400 uppercase tracking-tighter">${slot.label}</div>
-            <div class="text-[11px] font-black text-white text-center leading-tight truncate w-full mt-0.5">${player}</div>
+            <div class="w-full flex justify-between items-center text-[8px] font-black text-amber-300/80 uppercase">
+              <span>${slot.label}</span>
+              <span class="text-[7px] text-gray-400">SR</span>
+            </div>
             
-            <div class="flex gap-0.5 mt-1">
-              ${pRoles.map(r => `<span class="px-1 rounded text-[8px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
+            <div class="text-[11px] font-black text-white text-center leading-tight truncate w-full my-1 tracking-tight">${player}</div>
+            
+            <div class="flex gap-0.5">
+              ${pRoles.slice(0, 2).map(r => `<span class="px-1 rounded text-[7px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
             </div>
           </div>
-          <div class="mt-1 flex items-center gap-1">
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-black ${badgeBg} shadow">
+          
+          <div class="mt-1">
+            <span class="px-2 py-0.5 rounded-full text-[10px] ${badgeScoreColor}">
               ${baseScore > 0 ? formatScore(effectiveScore) : '--'}
             </span>
           </div>
@@ -792,6 +892,7 @@
       `;
     }
 
+    // Modal Sorare Breakdown
     let currentModalPlayer = null;
     let currentModalSlotIdx = null;
     let currentModalTeam = null;
@@ -810,10 +911,10 @@
 
       document.getElementById('scPlayerName').innerText = playerName;
       document.getElementById('scBadgeRole').innerText = roles[0];
-      document.getElementById('scBadgeRole').className = `text-[9px] font-black px-1.5 py-0.5 rounded mb-1 ${getBadgeClass(roles[0])}`;
+      document.getElementById('scBadgeRole').className = `text-[8px] font-black px-1.5 py-0.5 rounded ${getBadgeClass(roles[0])}`;
       
       const rolesBox = document.getElementById('scPlayerRoles');
-      rolesBox.innerHTML = roles.map(r => `<span class="px-1.5 py-0.5 rounded text-[10px] font-black ${getBadgeClass(r)}">${r}</span>`).join('');
+      rolesBox.innerHTML = roles.map(r => `<span class="px-1.5 py-0.5 rounded text-[9px] font-black ${getBadgeClass(r)}">${r}</span>`).join('');
 
       const capBadge = document.getElementById('scCaptainBadge');
       if (isCaptain) capBadge.classList.remove('hidden');
@@ -830,17 +931,21 @@
 
       const devBox = document.getElementById('scDecisiveEvents');
       if (stats.decisiveEvents.length > 0) {
-        devBox.innerHTML = stats.decisiveEvents.map(e => `<div class="text-emerald-400 font-bold text-[11px]">${e}</div>`).join('');
+        devBox.innerHTML = stats.decisiveEvents.map(e => `<div class="text-emerald-400 font-black text-[10px]">${e}</div>`).join('');
       } else {
-        devBox.innerHTML = `<div class="text-gray-500 italic text-[11px]">Nessun bonus decisivo</div>`;
+        devBox.innerHTML = `<div class="text-gray-500 italic text-[10px]">Nessun bonus decisivo</div>`;
       }
 
+      // Popolamento Statistiche
       document.getElementById('statMins').innerText = score > 0 ? `${stats.mins}'` : '--';
+      document.getElementById('statYellows').innerText = stats.yellowCards;
+      document.getElementById('statReds').innerText = stats.redCards;
       document.getElementById('statGoalsAssists').innerText = `${stats.goals} / ${stats.assists}`;
       document.getElementById('statShots').innerText = `${stats.shots} (${stats.shotsOnTarget})`;
       document.getElementById('statKeyPasses').innerText = stats.keyPasses;
-      document.getElementById('statDuels').innerText = stats.duelsWon;
-      document.getElementById('statDef').innerText = roles.includes('Por') ? stats.saves : stats.recoveries;
+      document.getElementById('statTackles').innerText = stats.wonTackles;
+      document.getElementById('statInterceptions').innerText = stats.interceptions;
+      document.getElementById('statSaves').innerText = roles.includes('Por') ? `${stats.saves} / ${stats.goalsConceded}` : '0 / 0';
 
       const editBtns = document.getElementById('scEditButtons');
       const lockedWarn = document.getElementById('scLockedWarning');
@@ -877,31 +982,33 @@
       openPlayerModal(s, t);
     }
 
+    // Matrice Mock Realistica con Malus Sorare Ufficiali (Giallo = -0.30)
     function generateMockStats(player, score) {
       const isPor = getPlayerRoles(player).includes('Por');
+      const hasYellow = Math.random() < 0.18;
       return {
-        mins: score > 0 ? (score > 4 ? 90 : 65) : 0,
+        mins: score > 0 ? (score > 4.5 ? 90 : 62) : 0,
+        yellowCards: hasYellow ? 1 : 0,
+        redCards: 0,
         goals: score >= 7.5 ? 1 : 0,
         assists: score >= 7.0 && score < 7.5 ? 1 : 0,
-        shots: isPor ? 0 : Math.floor(score / 2.5),
-        shotsOnTarget: isPor ? 0 : Math.floor(score / 4),
-        keyPasses: isPor ? 0 : Math.floor(score / 3),
-        duelsWon: isPor ? 1 : Math.floor(score * 1.2),
-        recoveries: Math.floor(score * 1.1),
-        saves: isPor ? Math.floor(score / 1.8) : 0,
-        decisiveEvents: score >= 7.5 ? ['⚽ Gol Partita (+2,50)'] : (score >= 7.0 ? ['👟 Assist (+2,50)'] : [])
+        shots: isPor ? 0 : Math.max(1, Math.floor(score / 2.2)),
+        shotsOnTarget: isPor ? 0 : Math.floor(score / 3.5),
+        keyPasses: isPor ? 0 : Math.floor(score / 2.8),
+        wonTackles: isPor ? 0 : Math.floor(score / 1.8),
+        interceptions: isPor ? 1 : Math.floor(score / 2.0),
+        saves: isPor ? Math.floor(score / 1.6) : 0,
+        goalsConceded: isPor ? (score >= 6.5 ? 0 : 1) : 0,
+        decisiveEvents: score >= 7.5 ? ['⚽ Gol (+2,50)'] : (score >= 7.0 ? ['👟 Assist (+2,50)'] : (isPor && score >= 6.5 ? ['🧤 Clean Sheet (+2,50)'] : []))
       };
     }
 
-    // Modal Selezione con FILTRO ANTI-DUPLICATI
+    // Modal Sostituto con Anti-Duplicati
     let activeSlotIndex = null;
     let activeTeam = null;
 
     function openPlayerModal(slotIdx, teamName) {
-      if (isLineupLocked) {
-        alert("Formazioni bloccate! Non puoi effettuare cambi.");
-        return;
-      }
+      if (isLineupLocked) return;
       activeSlotIndex = slotIdx;
       activeTeam = teamName;
       const t = teamLineups[teamName];
@@ -910,9 +1017,7 @@
       document.getElementById('modalTitle').innerText = `Sostituisci nello Slot ${slot.label}`;
       document.getElementById('modalSubtitle').innerText = `Titolare: ${slot.player} • Ruolo richiesto: ${slot.reqRole}`;
 
-      // Calcola l'elenco dei giocatori già schierati in campo
       const currentlyFielded = t.titolariSlots.map(s => s.player);
-
       const roster = ROSTERS[teamName] || [];
       const naturalContainer = document.getElementById('modalNaturalList');
       const outContainer = document.getElementById('modalOutOfPositionList');
@@ -925,16 +1030,14 @@
         const natural = isCompatible(roles, slot.reqRole);
         const isCurrent = slot.player === name;
         const isCap = t.captain === name;
-
-        // Se è già schierato in un ALTRO slot, non può essere selezionato
         const isAlreadyFieldedElsewhere = currentlyFielded.includes(name) && !isCurrent;
 
         const actionButtons = isAlreadyFieldedElsewhere 
-          ? `<span class="px-2.5 py-1 rounded text-[10px] font-bold bg-gray-800 text-gray-500 border border-gray-700">Già Schierato</span>`
+          ? `<span class="px-2 py-1 rounded text-[9px] font-black bg-white/5 text-gray-500 border border-white/5">Già Schierato</span>`
           : `
-            <div class="flex items-center gap-2">
-              <button onclick="setCaptain('${name}')" class="px-2 py-1 rounded text-[10px] font-bold ${isCap ? 'bg-[#ff007a] text-white' : 'bg-gray-700 text-gray-300 hover:text-white'}">
-                ${isCap ? 'Capitano' : 'Fai C'}
+            <div class="flex items-center gap-1.5">
+              <button onclick="setCaptain('${name}')" class="px-2 py-1 rounded text-[9px] font-bold ${isCap ? 'bg-[#ff007a] text-white' : 'bg-white/10 text-gray-300 hover:text-white'}">
+                ${isCap ? 'Cap' : 'Fai C'}
               </button>
               <button onclick="assignPlayerToSlot('${name}')" class="px-2.5 py-1 rounded text-[10px] font-black ${natural ? 'bg-emerald-400 hover:bg-emerald-300 text-black' : 'bg-amber-500 hover:bg-amber-400 text-black'}">
                 Schiera
@@ -943,11 +1046,11 @@
           `;
 
         const rowHtml = `
-          <div class="flex items-center justify-between p-2 rounded-lg bg-gray-800/90 hover:bg-gray-700 transition ${isAlreadyFieldedElsewhere ? 'opacity-50' : ''}">
+          <div class="flex items-center justify-between p-2 rounded-xl bg-white/5 hover:bg-white/10 transition ${isAlreadyFieldedElsewhere ? 'opacity-40' : ''}">
             <div>
               <span class="text-xs font-black ${isCurrent ? 'text-amber-400' : 'text-gray-100'}">${name}</span>
               <div class="flex gap-1 mt-0.5">
-                ${roles.map(r => `<span class="px-1 rounded text-[9px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
+                ${roles.map(r => `<span class="px-1 rounded text-[8px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
               </div>
             </div>
             ${actionButtons}
@@ -959,7 +1062,7 @@
       });
 
       if (!naturalContainer.children.length) {
-        naturalContainer.innerHTML = '<div class="text-xs text-gray-500 italic p-2">Nessun giocatore in rosa con questo ruolo naturale.</div>';
+        naturalContainer.innerHTML = '<div class="text-xs text-gray-500 italic p-2">Nessun giocatore disponibile con questo ruolo naturale.</div>';
       }
 
       document.getElementById('playerModal').classList.remove('hidden');
@@ -974,10 +1077,8 @@
       const t = teamLineups[activeTeam];
       const oldPlayer = t.titolariSlots[activeSlotIndex].player;
 
-      // Assegna il nuovo titolare
       t.titolariSlots[activeSlotIndex].player = playerName;
 
-      // Aggiorna la panchina: se il nuovo titolare era in panchina, scambialo con il vecchio titolare
       const benchIdx = t.panchina.indexOf(playerName);
       if (benchIdx !== -1) {
         t.panchina[benchIdx] = oldPlayer;
@@ -998,7 +1099,6 @@
       renderPitch();
     }
 
-    // Incolla Formazioni con verifica duplicati
     function openPasteModal() {
       if (isLineupLocked) {
         alert("Formazioni bloccate!");
@@ -1044,11 +1144,11 @@
       updateBanner();
       renderPitch();
 
-      if (matchedCount > 0) alert(`Formazioni aggiornate per ${matchedCount} squadre!`);
+      if (matchedCount > 0) alert(`Formazioni caricate per ${matchedCount} squadre!`);
       else alert("Nessuna corrispondenza valida trovata.");
     }
 
-    // Live Sorare API
+    // Sorare Live API con parsing completo statistiche Opta
     async function fetchLiveSorareScores() {
       const spinner = document.getElementById('apiSpinner');
       spinner.classList.remove('hidden');
@@ -1065,10 +1165,13 @@
                   goals
                   assists
                   cleanSheet
+                  yellowCards
+                  redCards
                   accuratePasses
                   keyPasses
                   wonContest
                   saves
+                  goalsConceded
                 }
               }
             }
@@ -1110,15 +1213,18 @@
                 const st = p.latestScores[0].playerGameStats || {};
                 playerStatsMap[p.displayName] = {
                   mins: st.minsPlayed || 90,
+                  yellowCards: st.yellowCards || 0,
+                  redCards: st.redCards || 0,
                   goals: st.goals || 0,
                   assists: st.assists || 0,
                   shots: (st.goals || 0) + 1,
                   shotsOnTarget: st.goals || 0,
                   keyPasses: st.keyPasses || 1,
-                  duelsWon: st.wonContest || 3,
-                  recoveries: 4,
+                  wonTackles: st.wonContest || 3,
+                  interceptions: 3,
                   saves: st.saves || 0,
-                  decisiveEvents: (st.goals > 0 ? ['⚽ Gol Partita (+2,50)'] : (st.assists > 0 ? ['👟 Assist (+2,50)'] : []))
+                  goalsConceded: st.goalsConceded || 0,
+                  decisiveEvents: (st.goals > 0 ? ['⚽ Gol (+2,50)'] : (st.assists > 0 ? ['👟 Assist (+2,50)'] : []))
                 };
                 dataFound = true;
               }
@@ -1126,13 +1232,13 @@
           }
         }
       } catch (e) {
-        console.warn("Chiamata API in attesa:", e);
+        console.warn("Chiamata API:", e);
       }
 
       spinner.classList.add('hidden');
 
       if (!dataFound) {
-        alert("Nessun voto live disponibile al momento da Sorare per le partite in corso. I punteggi restano in attesa.");
+        alert("Nessun dato live disponibile al momento per le partite in corso. I punteggi restano in attesa.");
       } else {
         calcolaTotaliSquadre();
         updateBanner();
