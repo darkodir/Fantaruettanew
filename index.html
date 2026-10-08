@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <!-- Bypassa il blocco anti-hotlinking 403 dei server di immagini -->
   <meta name="referrer" content="no-referrer">
   <title>Fanta-Sorare 11 | Premier Ruetta (Pro Edition)</title>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -18,7 +17,7 @@
     }
     .font-teko { font-family: 'Teko', sans-serif; }
 
-    /* Vista prospettica del Campo 3D Realistico */
+    /* Vista prospettica del Campo 3D */
     .pitch-viewport {
       perspective: 1200px;
       perspective-origin: 50% 16%;
@@ -45,13 +44,13 @@
       filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.35));
     }
 
-    /* Carta Ufficiale Stile Sorare Limited Card */
+    /* Carta Sorare Limited Card */
     .sorare-card-frame {
-      background: linear-gradient(150deg, #241d08 0%, #3e320f 45%, #141106 100%);
+      background: linear-gradient(155deg, #1f1908 0%, #362909 45%, #0f0d04 100%);
       border: 1.5px solid #d4af37;
       box-shadow: 
         0 8px 18px -2px rgba(0, 0, 0, 0.8),
-        0 0 15px rgba(212, 175, 55, 0.35),
+        0 0 14px rgba(212, 175, 55, 0.35),
         inset 0 1px 1px rgba(255, 255, 255, 0.35);
       position: relative;
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -226,7 +225,7 @@
       <!-- Glow ambient -->
       <div class="absolute -top-16 -right-16 w-52 h-52 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
 
-      <!-- Header Carta Sorare Limited con Foto Ufficiale con Maglia -->
+      <!-- Header Carta Sorare Limited con Foto Ufficiale o Maglia Ufficiale Club -->
       <div class="flex items-start justify-between border-b border-white/10 pb-4">
         <div class="flex items-center gap-3">
           <div class="sorare-card-frame w-20 h-28 rounded-2xl p-1.5 flex flex-col items-center justify-between text-center relative shadow-xl">
@@ -235,14 +234,14 @@
               <span>LIMITED</span>
             </div>
             
-            <!-- Immagine Ritagliata Sorare con Maglia -->
-            <div id="scPlayerImgBox" class="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center my-0.5 border border-amber-400/30 bg-black/50">
-              <img id="scPlayerImg" src="" alt="Player" referrerpolicy="no-referrer" class="w-full h-full object-cover object-top" onerror="handleImgError(this, 'scPlayerImgBox')">
+            <!-- Contenitore Foto/Maglia -->
+            <div id="scPlayerImgBox" class="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center my-0.5 border border-amber-400/30 bg-black/60">
+              <!-- Inserito dinamicamente -->
             </div>
 
             <div class="w-full">
               <div class="text-[9px] font-black text-white truncate tracking-tight" id="scCardMiniName">Nome</div>
-              <div class="text-[7px] text-amber-400/80 font-bold uppercase">2026/27</div>
+              <div class="text-[7px] text-amber-400/80 font-bold uppercase" id="scClubName">Serie A</div>
             </div>
           </div>
 
@@ -671,117 +670,131 @@
     let teamLineups = {};
     let playerStatsMap = {};
 
-    // Mappatura fotografica diretta senza blocchi hotlink
-    const PLAYER_PHOTO_IDS = {
-      // DUA LIPAnathinaikos
-      "Skorupski": "https://api.sofascore.app/api/v1/player/43977/image",
-      "Mancini": "https://api.sofascore.app/api/v1/player/794939/image",
-      "Barella": "https://api.sofascore.app/api/v1/player/345476/image",
-      "McTominay": "https://api.sofascore.app/api/v1/player/828236/image",
-      "Hojlund": "https://api.sofascore.app/api/v1/player/1032338/image",
-      "Gabbia": "https://api.sofascore.app/api/v1/player/885874/image",
-      "Zalewski": "https://api.sofascore.app/api/v1/player/989524/image",
-      "Lobotka": "https://api.sofascore.app/api/v1/player/176972/image",
+    // Mappatura Club Serie A Ufficiali per ciascun calciatore (Colori di maglia reali)
+    const PLAYER_CLUBS = {
+      // Monza (Biancorosso)
+      "Ciurria": { club: "Monza", c1: "#e11d48", c2: "#ffffff" },
+      "Birindelli": { club: "Monza", c1: "#e11d48", c2: "#ffffff" },
+      "Pessina Mas.": { club: "Monza", c1: "#e11d48", c2: "#ffffff" },
+      "Pessina": { club: "Monza", c1: "#e11d48", c2: "#ffffff" },
+      "Turati": { club: "Monza", c1: "#e11d48", c2: "#ffffff" },
+      "Maldini": { club: "Monza", c1: "#e11d48", c2: "#ffffff" },
 
-      // Bidonese
-      "Svilar": "https://api.sofascore.app/api/v1/player/859737/image",
-      "Bremer": "https://api.sofascore.app/api/v1/player/889397/image",
-      "Calhanoglu": "https://api.sofascore.app/api/v1/player/138859/image",
-      "Pavard": "https://api.sofascore.app/api/v1/player/345389/image",
-      "Castro S.": "https://api.sofascore.app/api/v1/player/1126749/image",
-      "Simeone": "https://api.sofascore.app/api/v1/player/190847/image",
+      // Inter (Nerazzurro)
+      "Barella": { club: "Inter", c1: "#1d4ed8", c2: "#000000" },
+      "Bastoni": { club: "Inter", c1: "#1d4ed8", c2: "#000000" },
+      "Dimarco": { club: "Inter", c1: "#1d4ed8", c2: "#000000" },
+      "Calhanoglu": { club: "Inter", c1: "#1d4ed8", c2: "#000000" },
+      "Martinez L.": { club: "Inter", c1: "#1d4ed8", c2: "#000000" },
+      "Thuram": { club: "Inter", c1: "#1d4ed8", c2: "#000000" },
+      "Pavard": { club: "Inter", c1: "#1d4ed8", c2: "#000000" },
+      "Sommer": { club: "Inter", c1: "#1d4ed8", c2: "#000000" },
+      "Carlos Augusto": { club: "Inter", c1: "#1d4ed8", c2: "#000000" },
+      "Frattesi": { club: "Inter", c1: "#1d4ed8", c2: "#000000" },
 
-      // Juve vivo per te
-      "Maignan": "https://api.sofascore.app/api/v1/player/252441/image",
-      "Di Lorenzo": "https://api.sofascore.app/api/v1/player/126938/image",
-      "De Roon": "https://api.sofascore.app/api/v1/player/96645/image",
-      "Douglas Luiz": "https://api.sofascore.app/api/v1/player/859063/image",
-      "Malen": "https://api.sofascore.app/api/v1/player/787900/image",
-      "Hermoso": "https://api.sofascore.app/api/v1/player/785884/image",
+      // Milan (Rossonero)
+      "Maignan": { club: "Milan", c1: "#dc2626", c2: "#000000" },
+      "Pulisic": { club: "Milan", c1: "#dc2626", c2: "#000000" },
+      "Gabbia": { club: "Milan", c1: "#dc2626", c2: "#000000" },
+      "Chukwueze": { club: "Milan", c1: "#dc2626", c2: "#000000" },
+      "Pavlovic": { club: "Milan", c1: "#dc2626", c2: "#000000" },
+      "Reijnders": { club: "Milan", c1: "#dc2626", c2: "#000000" },
 
-      // Do Flamengo
-      "De Gea": "https://api.sofascore.app/api/v1/player/35898/image",
-      "Martinez L.": "https://api.sofascore.app/api/v1/player/789319/image",
-      "Neres": "https://api.sofascore.app/api/v1/player/836694/image",
-      "Zielinski": "https://api.sofascore.app/api/v1/player/146033/image",
-      "Krstovic": "https://api.sofascore.app/api/v1/player/850550/image",
-      "Dodò": "https://api.sofascore.app/api/v1/player/850541/image",
+      // Juventus (Bianconero)
+      "Bremer": { club: "Juventus", c1: "#ffffff", c2: "#000000" },
+      "Cambiaso": { club: "Juventus", c1: "#ffffff", c2: "#000000" },
+      "Koopmeiners": { club: "Juventus", c1: "#ffffff", c2: "#000000" },
+      "Yildiz": { club: "Juventus", c1: "#ffffff", c2: "#000000" },
+      "Douglas Luiz": { club: "Juventus", c1: "#ffffff", c2: "#000000" },
+      "Di Gregorio": { club: "Juventus", c1: "#ffffff", c2: "#000000" },
+      "Kalulu": { club: "Juventus", c1: "#ffffff", c2: "#000000" },
+      "Conceicao": { club: "Juventus", c1: "#ffffff", c2: "#000000" },
+      "Vlahovic": { club: "Juventus", c1: "#ffffff", c2: "#000000" },
 
-      // ERROR D. OFF
-      "Provedel": "https://api.sofascore.app/api/v1/player/176973/image",
-      "Bastoni": "https://api.sofascore.app/api/v1/player/847055/image",
-      "Ederson D.S.": "https://api.sofascore.app/api/v1/player/949021/image",
-      "De Ketelaere": "https://api.sofascore.app/api/v1/player/989506/image",
-      "McKennie": "https://api.sofascore.app/api/v1/player/837265/image",
+      // Napoli (Azzurro)
+      "McTominay": { club: "Napoli", c1: "#0284c7", c2: "#ffffff" },
+      "Di Lorenzo": { club: "Napoli", c1: "#0284c7", c2: "#ffffff" },
+      "Lobotka": { club: "Napoli", c1: "#0284c7", c2: "#ffffff" },
+      "Meret": { club: "Napoli", c1: "#0284c7", c2: "#ffffff" },
+      "Politano": { club: "Napoli", c1: "#0284c7", c2: "#ffffff" },
+      "Neres": { club: "Napoli", c1: "#0284c7", c2: "#ffffff" },
+      "Rrahmani": { club: "Napoli", c1: "#0284c7", c2: "#ffffff" },
+      "Zambo Anguissa": { club: "Napoli", c1: "#0284c7", c2: "#ffffff" },
 
-      // FC Sucammilla
-      "Martinez Jo.": "https://api.sofascore.app/api/v1/player/878696/image",
-      "Kean": "https://api.sofascore.app/api/v1/player/846049/image",
-      "Scamacca": "https://api.sofascore.app/api/v1/player/795054/image",
-      "Orsolini": "https://api.sofascore.app/api/v1/player/828212/image",
-      "Colpani": "https://api.sofascore.app/api/v1/player/903672/image",
+      // Roma (Giallorosso)
+      "Svilar": { club: "Roma", c1: "#991b1b", c2: "#f59e0b" },
+      "Mancini": { club: "Roma", c1: "#991b1b", c2: "#f59e0b" },
+      "Dybala": { club: "Roma", c1: "#991b1b", c2: "#f59e0b" },
+      "Soulè": { club: "Roma", c1: "#991b1b", c2: "#f59e0b" },
+      "Dovbyk": { club: "Roma", c1: "#991b1b", c2: "#f59e0b" },
+      "Konè M.": { club: "Roma", c1: "#991b1b", c2: "#f59e0b" },
+      "Cristante": { club: "Roma", c1: "#991b1b", c2: "#f59e0b" },
+      "Pellegrini Lo.": { club: "Roma", c1: "#991b1b", c2: "#f59e0b" },
+      "Baldanzi": { club: "Roma", c1: "#991b1b", c2: "#f59e0b" },
 
-      // Archi Barber
-      "Vicario": "https://api.sofascore.app/api/v1/player/365851/image",
-      "Pulisic": "https://api.sofascore.app/api/v1/player/785885/image",
-      "Dybala": "https://api.sofascore.app/api/v1/player/228182/image",
-      "Soulè": "https://api.sofascore.app/api/v1/player/1009181/image",
-      "Koopmeiners": "https://api.sofascore.app/api/v1/player/829285/image",
-      "Dovbyk": "https://api.sofascore.app/api/v1/player/794950/image",
-      "Schmid": "https://api.sofascore.app/api/v1/player/845422/image",
-      "Frattesi": "https://api.sofascore.app/api/v1/player/885873/image",
+      // Lazio (Biancoceleste)
+      "Provedel": { club: "Lazio", c1: "#38bdf8", c2: "#ffffff" },
+      "Zaccagni": { club: "Lazio", c1: "#38bdf8", c2: "#ffffff" },
+      "Gila": { club: "Lazio", c1: "#38bdf8", c2: "#ffffff" },
+      "Castellanos": { club: "Lazio", c1: "#38bdf8", c2: "#ffffff" },
+      "Guendouzi": { club: "Lazio", c1: "#38bdf8", c2: "#ffffff" },
 
-      // Masterchef Utd
-      "Carnesecchi": "https://api.sofascore.app/api/v1/player/885876/image",
-      "Dimarco": "https://api.sofascore.app/api/v1/player/345479/image",
-      "N'Dicka": "https://api.sofascore.app/api/v1/player/850540/image",
-      "Saelemaekers": "https://api.sofascore.app/api/v1/player/895315/image",
-      "Raspadori": "https://api.sofascore.app/api/v1/player/949023/image",
+      // Atalanta (Nerazzurro Dea)
+      "Carnesecchi": { club: "Atalanta", c1: "#0284c7", c2: "#000000" },
+      "De Roon": { club: "Atalanta", c1: "#0284c7", c2: "#000000" },
+      "Ederson D.S.": { club: "Atalanta", c1: "#0284c7", c2: "#000000" },
+      "Lookman": { club: "Atalanta", c1: "#0284c7", c2: "#000000" },
+      "Scamacca": { club: "Atalanta", c1: "#0284c7", c2: "#000000" },
+      "Bellanova": { club: "Atalanta", c1: "#0284c7", c2: "#000000" },
 
-      // Scocco Team
-      "Cambiaso": "https://api.sofascore.app/api/v1/player/903671/image",
-      "Bellanova": "https://api.sofascore.app/api/v1/player/885875/image",
-      "Modric": "https://api.sofascore.app/api/v1/player/15024/image",
-      "Gudmundsson A.": "https://api.sofascore.app/api/v1/player/337198/image",
-      "Kolo Muani": "https://api.sofascore.app/api/v1/player/854226/image",
+      // Fiorentina (Viola)
+      "De Gea": { club: "Fiorentina", c1: "#6b21a8", c2: "#ffffff" },
+      "Kean": { club: "Fiorentina", c1: "#6b21a8", c2: "#ffffff" },
+      "Colpani": { club: "Fiorentina", c1: "#6b21a8", c2: "#ffffff" },
+      "Dodò": { club: "Fiorentina", c1: "#6b21a8", c2: "#ffffff" },
+      "Gudmundsson A.": { club: "Fiorentina", c1: "#6b21a8", c2: "#ffffff" },
 
-      // Mugiwara Boys
-      "Meret": "https://api.sofascore.app/api/v1/player/345477/image",
-      "Kalulu": "https://api.sofascore.app/api/v1/player/989504/image",
-      "Thuram": "https://api.sofascore.app/api/v1/player/794951/image",
-      "Berardi": "https://api.sofascore.app/api/v1/player/252442/image",
-      "Bonny": "https://api.sofascore.app/api/v1/player/1085023/image",
-
-      // Stellolandia
-      "De Bruyne": "https://api.sofascore.app/api/v1/player/39097/image",
-      "Zaccagni": "https://api.sofascore.app/api/v1/player/345480/image",
-      "Samardzic": "https://api.sofascore.app/api/v1/player/989505/image",
-      "Cutrone": "https://api.sofascore.app/api/v1/player/795055/image",
-
-      // Paris Saint Gennaro
-      "Milinkovic-Savic V.": "https://api.sofascore.app/api/v1/player/789320/image",
-      "Yildiz": "https://api.sofascore.app/api/v1/player/1179043/image",
-      "Politano": "https://api.sofascore.app/api/v1/player/176974/image",
-      "Pinamonti": "https://api.sofascore.app/api/v1/player/846050/image"
+      // Bologna (Rossoblù)
+      "Skorupski": { club: "Bologna", c1: "#991b1b", c2: "#1e3a8a" },
+      "Orsolini": { club: "Bologna", c1: "#991b1b", c2: "#1e3a8a" },
+      "Castro S.": { club: "Bologna", c1: "#991b1b", c2: "#1e3a8a" },
+      "Beukema": { club: "Bologna", c1: "#991b1b", c2: "#1e3a8a" },
+      "Ndoye": { club: "Bologna", c1: "#991b1b", c2: "#1e3a8a" }
     };
 
-    // Generatore Maglietta Ufficiale Stilizzata per Club Serie A
-    function getClubJerseySvg(name) {
-      const initial = (name || "P").substring(0, 2).toUpperCase();
-      return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%23d4af37"/><stop offset="100%" stop-color="%237a5f15"/></linearGradient></defs><circle cx="40" cy="40" r="39" fill="%23121722" stroke="%23d4af37" stroke-width="2"/><path d="M22 25 L32 16 L48 16 L58 25 L52 35 L48 31 L48 64 L32 64 L32 31 L28 35 Z" fill="url(%23g)" stroke="%23fff" stroke-width="1.2"/><text x="40" y="52" fill="%23000" font-family="sans-serif" font-weight="900" font-size="14" text-anchor="middle">${initial}</text></svg>`;
-    }
+    // Render della maglietta con i COLORI E STRISCE UFFICIALI DEL CLUB
+    function renderPlayerGraphicHtml(name) {
+      const info = PLAYER_CLUBS[name] || { club: "Serie A", c1: "#d4af37", c2: "#1e293b" };
+      const c1 = info.c1;
+      const c2 = info.c2;
+      const initial = name.substring(0, 3).toUpperCase();
 
-    function getPlayerAvatarUrl(name) {
-      if (PLAYER_PHOTO_IDS[name]) {
-        return PLAYER_PHOTO_IDS[name];
-      }
-      return getClubJerseySvg(name);
-    }
-
-    function handleImgError(img, containerId = null) {
-      img.onerror = null;
-      const playerName = img.alt || "P";
-      img.src = getClubJerseySvg(playerName);
+      return `
+        <div class="w-full h-full flex flex-col items-center justify-center p-0.5 relative">
+          <svg viewBox="0 0 64 64" class="w-full h-full drop-shadow-md">
+            <defs>
+              <linearGradient id="grad-${name.replace(/[^a-zA-Z]/g, '')}" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="${c1}" />
+                <stop offset="35%" stop-color="${c1}" />
+                <stop offset="36%" stop-color="${c2}" />
+                <stop offset="64%" stop-color="${c2}" />
+                <stop offset="65%" stop-color="${c1}" />
+                <stop offset="100%" stop-color="${c1}" />
+              </linearGradient>
+            </defs>
+            <!-- Sagoma Maglia Calcio Ufficiale -->
+            <path d="M18 16 L26 10 L38 10 L46 16 L54 24 L48 30 L44 26 L44 56 L20 56 L20 26 L16 30 L10 24 Z" 
+                  fill="url(#grad-${name.replace(/[^a-zA-Z]/g, '')})" 
+                  stroke="#ffffff" stroke-width="1.2" stroke-linejoin="round"/>
+            <!-- Colletto e bordi -->
+            <polygon points="26,10 38,10 32,17" fill="#1e293b" stroke="#ffffff" stroke-width="0.8" />
+            <!-- Iniziale / Numero -->
+            <text x="32" y="44" fill="#ffffff" font-family="'Teko', sans-serif" font-weight="900" font-size="14" text-anchor="middle" filter="drop-shadow(0 1px 1px #000)">
+              ${initial}
+            </text>
+          </svg>
+        </div>
+      `;
     }
 
     function toggleLineupLock() {
@@ -975,7 +988,7 @@
 
       rows.TRE.style.display = rows.TRE.children.length === 0 ? 'none' : 'flex';
 
-      // Panchina Mantra a 12 Slot con gestione click
+      // Panchina Mantra a 12 Slot
       const benchBox = document.getElementById('benchContainer');
       benchBox.innerHTML = data.panchina.map((p, idx) => {
         const roles = getPlayerRoles(p);
@@ -983,8 +996,8 @@
         return `
           <div onclick="openSorareCardModal('${p}', null, '${teamName}', ${idx})" class="cursor-pointer bg-white/5 hover:bg-white/10 active:scale-95 transition border border-white/5 rounded-2xl p-2 flex flex-col justify-between shadow-sm">
             <div class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-full overflow-hidden bg-black/40 border border-amber-400/20 flex-shrink-0">
-                <img src="${getPlayerAvatarUrl(p)}" alt="${p}" referrerpolicy="no-referrer" class="w-full h-full object-cover object-top" onerror="handleImgError(this)">
+              <div class="w-8 h-8 rounded-full overflow-hidden bg-black/40 border border-amber-400/20 flex-shrink-0 flex items-center justify-center">
+                ${renderPlayerGraphicHtml(p)}
               </div>
               <div class="min-w-0 flex-1">
                 <div class="flex items-center justify-between text-[8px] text-gray-400 font-black">
@@ -1035,9 +1048,9 @@
               <span class="text-[7px] text-gray-400">SR</span>
             </div>
             
-            <!-- Immagine Ritagliata con Maglia -->
+            <!-- Maglietta Ufficiale Club Serie A -->
             <div class="w-12 h-12 rounded-full overflow-hidden my-1 border border-amber-400/30 bg-black/40 flex items-center justify-center shadow-inner">
-              <img src="${getPlayerAvatarUrl(player)}" alt="${player}" referrerpolicy="no-referrer" class="w-full h-full object-cover object-top" onerror="handleImgError(this)">
+              ${renderPlayerGraphicHtml(player)}
             </div>
 
             <div class="text-[10px] sm:text-[11px] font-black text-white text-center leading-tight truncate w-full tracking-tight">${player}</div>
@@ -1071,15 +1084,16 @@
       const isCaptain = team.captain === playerName;
       const roles = getPlayerRoles(playerName);
       const score = team.scores[playerName] || 0;
+      const clubInfo = PLAYER_CLUBS[playerName] || { club: "Serie A" };
 
       const stats = playerStatsMap[playerName] || generateMockStats(playerName, score);
 
       document.getElementById('scPlayerName').innerText = playerName;
       document.getElementById('scCardMiniName').innerText = playerName;
+      document.getElementById('scClubName').innerText = clubInfo.club;
       
-      const scImg = document.getElementById('scPlayerImg');
-      scImg.alt = playerName;
-      scImg.src = getPlayerAvatarUrl(playerName);
+      const scBox = document.getElementById('scPlayerImgBox');
+      scBox.innerHTML = renderPlayerGraphicHtml(playerName);
 
       document.getElementById('scBadgeRole').innerText = roles[0];
       document.getElementById('scBadgeRole').className = `text-[8px] font-black px-1.5 py-0.5 rounded ${getBadgeClass(roles[0])}`;
@@ -1107,7 +1121,6 @@
         devBox.innerHTML = `<div class="text-gray-500 italic text-[10px]">Nessun bonus decisivo</div>`;
       }
 
-      // Popola tutte le statistiche Opta estese
       document.getElementById('statMins').innerText = score > 0 ? `${stats.mins}'` : '--';
       document.getElementById('statPasses').innerText = `${stats.accuratePasses}/${stats.totalPasses} (${stats.passAccuracy}%)`;
       document.getElementById('statKeyPasses').innerText = stats.keyPasses;
@@ -1129,7 +1142,6 @@
       document.getElementById('statReds').innerText = stats.redCards;
       document.getElementById('statPenalties').innerText = `${stats.penaltiesWon} / ${stats.penaltiesConceded}`;
 
-      // Configurazione pulsanti azione
       const editBtns = document.getElementById('scEditButtons');
       const lockedWarn = document.getElementById('scLockedWarning');
       const replaceBtn = document.getElementById('scBtnReplace');
@@ -1215,7 +1227,6 @@
       };
     }
 
-    // Modal Sostituto
     let activeSlotIndex = null;
     let activeBenchIndex = null;
     let activeTeam = null;
@@ -1252,8 +1263,8 @@
           naturalContainer.innerHTML += `
             <div class="flex items-center justify-between p-2 rounded-2xl bg-white/5 hover:bg-white/10 transition">
               <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-full overflow-hidden bg-black/40 border border-amber-400/20 flex-shrink-0">
-                  <img src="${getPlayerAvatarUrl(name)}" alt="${name}" referrerpolicy="no-referrer" class="w-full h-full object-cover object-top" onerror="handleImgError(this)">
+                <div class="w-8 h-8 rounded-full overflow-hidden bg-black/40 border border-amber-400/20 flex-shrink-0 flex items-center justify-center">
+                  ${renderPlayerGraphicHtml(name)}
                 </div>
                 <div>
                   <span class="text-xs font-black ${isCurrent ? 'text-amber-400' : 'text-gray-100'}">${name}</span>
@@ -1300,8 +1311,8 @@
           const rowHtml = `
             <div class="flex items-center justify-between p-2 rounded-2xl bg-white/5 hover:bg-white/10 transition ${isAlreadyFieldedElsewhere ? 'opacity-40' : ''}">
               <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-full overflow-hidden bg-black/40 border border-amber-400/20 flex-shrink-0">
-                  <img src="${getPlayerAvatarUrl(name)}" alt="${name}" referrerpolicy="no-referrer" class="w-full h-full object-cover object-top" onerror="handleImgError(this)">
+                <div class="w-8 h-8 rounded-full overflow-hidden bg-black/40 border border-amber-400/20 flex-shrink-0 flex items-center justify-center">
+                  ${renderPlayerGraphicHtml(name)}
                 </div>
                 <div>
                   <span class="text-xs font-black ${isCurrent ? 'text-amber-400' : 'text-gray-100'}">${name}</span>
