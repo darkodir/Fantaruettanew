@@ -138,7 +138,7 @@
               Mantra L5/L10 Pro
             </span>
           </div>
-          <p class="text-[10px] text-gray-400">Trend Ultime 10 Partite • 11 Moduli • Opta Matrix 0–10</p>
+          <p class="text-[10px] text-gray-400">Regolamento Sorare Decisive Ufficiale • L5/L10 No DNP • 11 Moduli</p>
         </div>
       </div>
 
@@ -256,10 +256,10 @@
         </div>
       </div>
 
-      <!-- Hint Guida Tattica & Trend -->
+      <!-- Hint Guida Tattica & Regolamento Sorare Decisive -->
       <div class="text-[11px] text-amber-300/80 bg-amber-400/5 border border-amber-400/20 px-3 py-1.5 rounded-xl text-center flex items-center justify-center gap-2">
-        <span>📈</span>
-        <span><b>Novità L5 & L10:</b> Clicca su qualsiasi slot o riserva per vedere le medie recenti e aprire il grafico delle ultime 10 partite con avversari ed eventi chiave!</span>
+        <span>⚡</span>
+        <span><b>Sorare Decisive Ufficiale:</b> Base 3,50 • 1° Decisive (Gol ⚽, Assist 👟, CS 🧤) = <b>+2,50</b> (Liv. 1: 6,00) • Dal 2° Decisive in poi = <b>+1,00</b> cad. (Liv. 2: 7,00, Liv. 3: 8,00...) • <b>Medie L5/L10 calcolate escludendo rigorosamente i DNP</b>!</span>
       </div>
 
       <!-- Campo Tattico 3D Iper-Realistico -->
@@ -283,7 +283,7 @@
         </div>
       </div>
 
-      <!-- Panchina Mantra a 12 Slot (Elementi Draggabili con L5) -->
+      <!-- Panchina Mantra a 12 Slot (Elementi Draggabili con L5 calcolato senza DNP) -->
       <div class="bg-[#0b101b] border border-white/5 rounded-3xl p-4 shadow-xl">
         <div class="flex items-center justify-between mb-3 px-1">
           <h3 class="text-xs font-black text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
@@ -387,26 +387,28 @@
         <button onclick="closeTrendModal()" class="text-gray-400 hover:text-white text-2xl font-black px-2 leading-none">&times;</button>
       </div>
 
-      <!-- Badge Medie L5 e L10 -->
+      <!-- Badge Medie L5 e L10 Escludendo DNP -->
       <div class="grid grid-cols-2 gap-3">
         <div class="bg-white/5 border border-white/10 rounded-2xl p-3 flex items-center justify-between">
           <div>
-            <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Media L5 (Ultime 5)</div>
+            <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Media L5 (Esclusi DNP)</div>
             <div id="trendL5Score" class="font-teko text-3xl font-black text-emerald-400 leading-none mt-0.5">6,75</div>
+            <div id="trendL5GamesCount" class="text-[9px] text-gray-400 font-bold mt-0.5">su 5 partite giocate</div>
           </div>
           <span class="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded-lg border border-emerald-500/20 font-bold">L5</span>
         </div>
 
         <div class="bg-white/5 border border-white/10 rounded-2xl p-3 flex items-center justify-between">
           <div>
-            <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Media L10 (Ultime 10)</div>
+            <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Media L10 (Esclusi DNP)</div>
             <div id="trendL10Score" class="font-teko text-3xl font-black text-cyan-400 leading-none mt-0.5">6,60</div>
+            <div id="trendL10GamesCount" class="text-[9px] text-gray-400 font-bold mt-0.5">su 10 partite giocate</div>
           </div>
           <span class="text-xs bg-cyan-500/10 text-cyan-400 px-2 py-1 rounded-lg border border-cyan-500/20 font-bold">L10</span>
         </div>
       </div>
 
-      <!-- Grafico SVG Interattivo Ultime 10 Partite -->
+      <!-- Grafico SVG Interattivo Ultime 10 Partite con Assist inclusi -->
       <div class="bg-black/50 border border-white/10 rounded-2xl p-4">
         <div class="flex items-center justify-between mb-2">
           <span class="text-[11px] font-black text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -428,7 +430,7 @@
                 <th class="p-2">Match</th>
                 <th class="p-2 text-center">Min</th>
                 <th class="p-2 text-center">Voto</th>
-                <th class="p-2">Eventi Decisivi & Disciplina</th>
+                <th class="p-2">Eventi Decisivi (⚽ Gol, 👟 Assist, 🧤 CS)</th>
               </tr>
             </thead>
             <tbody id="trendMatchLogBody" class="divide-y divide-white/5 text-gray-300 font-semibold"></tbody>
@@ -444,7 +446,7 @@
     </div>
   </div>
 
-  <!-- MODAL 2: Scheda Giocatore / Sorare Breakdown -->
+  <!-- MODAL 2: Scheda Giocatore / Sorare Breakdown Ufficiale -->
   <div id="sorareCardModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-5">
     <div class="bg-gradient-to-b from-[#141b2a] via-[#0d131f] to-[#070a10] border border-amber-500/40 w-full max-w-lg rounded-3xl p-5 shadow-2xl space-y-4 text-gray-200 relative overflow-hidden max-h-[92vh] overflow-y-auto">
       
@@ -489,21 +491,24 @@
         </div>
       </div>
 
-      <!-- Decisive vs AAS -->
+      <!-- Decisive vs AAS (Regolamento Sorare: 1° Decisive +2,50, dal 2° in poi +1,00) -->
       <div class="grid grid-cols-2 gap-2.5">
         <div class="bg-white/5 border border-white/10 rounded-2xl p-3">
-          <div class="text-[10px] text-gray-400 font-black uppercase tracking-wider">Decisive Score</div>
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-black text-gray-400 uppercase tracking-wider">Decisive Score</span>
+            <span id="scDecisiveLevelTag" class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">Liv. 0</span>
+          </div>
           <div class="flex items-baseline gap-1 mt-0.5">
             <span id="scDecisivePts" class="font-teko text-3xl font-black text-white">3,50</span>
-            <span class="text-[10px] text-gray-400">liv. base</span>
+            <span class="text-[10px] text-gray-400" id="scDecisiveFormulaLabel">base</span>
           </div>
           <div id="scDecisiveEvents" class="text-xs mt-1 text-gray-300 space-y-0.5">
-            <div class="text-gray-500 italic text-[10px]">Nessun bonus decisivo</div>
+            <div class="text-gray-500 italic text-[10px]">Nessun evento decisivo</div>
           </div>
         </div>
 
         <div class="bg-white/5 border border-white/10 rounded-2xl p-3">
-          <div class="text-[10px] text-gray-400 font-black uppercase tracking-wider">All-Around (AAS)</div>
+          <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider">All-Around (AAS)</div>
           <div class="flex items-baseline gap-1 mt-0.5">
             <span id="scAasPts" class="font-teko text-3xl font-black text-cyan-400">+0,00</span>
             <span class="text-[10px] text-gray-400">volume gioco</span>
@@ -554,7 +559,7 @@
           </div>
           <div class="grid grid-cols-3 gap-2 text-center text-xs">
             <div>
-              <span class="text-[9px] text-gray-400 block font-semibold">Gol / Assist (+2,50)</span>
+              <span class="text-[9px] text-gray-400 block font-semibold">Gol / Assist (Decisive)</span>
               <span id="statGoalsAssists" class="font-black text-emerald-400">0 / 0</span>
             </div>
             <div>
@@ -686,9 +691,8 @@
   </div>
 
   <footer class="border-t border-white/10 text-center py-3 text-[11px] text-gray-500 bg-[#030508]">
-    Premier Ruetta Fanta-Sorare 11 • Motore Decimale Opta Matrix • 11 Moduli Ufficiali Mantra • Trend L5/L10
+    Premier Ruetta Fanta-Sorare 11 • Motore Decimale Opta Matrix • 11 Moduli Ufficiali Mantra • Trend L5/L10 No DNP
   </footer>
-
   <script>
     const SORARE_API_KEY = "0d8977ade807a8de0039bf6d398128400c953dfa18d16cf730bb480290fc94d6ebe8a91ad1aca56291a562c91d7962d4201f2c15a21aadf6e14c99f6bfcsr128";
     const SORARE_GRAPHQL_ENDPOINT = "https://api.sorare.com/graphql";
@@ -1022,9 +1026,44 @@
       { team: "ERROR D. OFF", pts: 2, played: 5, w: 0, d: 2, l: 3, gf: 3, ga: 9, totalPoints: 341.2 }
     ];
 
-    // Generatore Deterministico Match History (L5, L10 & Ultime 10 Partite)
+    /**
+     * CALCOLO MATEMATICO DECISIVE UFFICIALE SORARE (SCALA DECIMALE 0-10):
+     * - Base titolare: 3,50 (Livello 0)
+     * - 1° Decisive positivo: porta a Livello 1 (6,00), quindi aggiunge ESATTAMENTE +2,50 punti.
+     * - 2° Decisive e successivi nella stessa partita: aggiungono ciascuno +1,00 punto (Livello 2 = 7,00, Livello 3 = 8,00...).
+     * - Gli Assist (👟) sono inclusi al 100% come Decisive positivi insieme a Gol (⚽), CS (🧤).
+     * - Decisive negativi (rosso, autogol, rigore concesso): -2,00 punti.
+     */
+    function calculateSorareDecisiveScore(positiveCount, negativeCount = 0) {
+      let level = 0;
+      let decisivePts = 3.50; // Livello 0 base titolare
+
+      if (positiveCount > 0) {
+        // 1° evento porta a 6,00 (+2,50), i successivi +1,00 ciascuno
+        level += positiveCount;
+        decisivePts = 6.00 + (positiveCount - 1) * 1.00;
+      }
+
+      if (negativeCount > 0) {
+        level -= negativeCount;
+        decisivePts -= negativeCount * 2.00;
+      }
+
+      decisivePts = Math.max(0.0, Math.min(10.0, decisivePts));
+      return {
+        level: level,
+        points: decisivePts
+      };
+    }
+
+    /**
+     * CALCOLO MEDIE L5 E L10 SENZA DNP:
+     * - I DNP (0 minuti / S.V.) vengono RIGOROSAMENTE ESCLUSI dal denominatore e dalla media.
+     * - La media L5 prende solo le ultime 5 partite EFFETTIVAMENTE GIOCATE.
+     * - La media L10 prende solo le partite con minuti > 0.
+     */
     function getPlayerHistoryData(name) {
-      if (!name) return { l5: 0, l10: 0, matches: [] };
+      if (!name) return { l5: 0, l10: 0, l5Count: 0, l10Count: 0, matches: [] };
 
       let hash = 0;
       for (let i = 0; i < name.length; i++) {
@@ -1043,42 +1082,48 @@
       const isMid = roles.some(r => ["C", "T", "M", "E"].includes(r));
 
       let matches = [];
-      let sumL10 = 0;
-      let sumL5 = 0;
 
       for (let g = 1; g <= 10; g++) {
         const rRival = rivals[Math.floor(pseudoRand(g * 29) * rivals.length)];
         const isHome = pseudoRand(g * 7) > 0.5;
-        const mins = pseudoRand(g * 3) > 0.1 ? (pseudoRand(g * 5) > 0.25 ? 90 : Math.floor(55 + pseudoRand(g * 11) * 30)) : 0;
+        // Simula DNP con 0 minuti
+        const isDnp = pseudoRand(g * 13) < 0.15;
+        const mins = isDnp ? 0 : (pseudoRand(g * 5) > 0.3 ? 90 : Math.floor(55 + pseudoRand(g * 11) * 30));
 
         let score = 0;
         let events = [];
+        let posDecisiveCount = 0;
+        let negDecisiveCount = 0;
 
         if (mins > 0) {
-          let base = 5.6 + pseudoRand(g * 17) * 1.8;
+          // Simulazione Decisive Eventi (Gol ⚽, Assist 👟, Clean Sheet 🧤)
+          if (isAtt) {
+            const hasGoal = pseudoRand(g * 31) > 0.65;
+            const hasAssist = pseudoRand(g * 33) > 0.70;
+            const hasSecondGoal = hasGoal && (pseudoRand(g * 35) > 0.85);
 
-          if (isAtt && pseudoRand(g * 31) > 0.65) {
-            base += 1.8;
-            events.push("⚽ Gol");
-          } else if (isMid && pseudoRand(g * 23) > 0.72) {
-            base += 1.6;
-            events.push(pseudoRand(g * 19) > 0.5 ? "⚽ Gol" : "👟 Assist");
-          } else if (isPor && pseudoRand(g * 37) > 0.60) {
-            base += 1.5;
-            events.push("🧤 Clean sheet");
+            if (hasGoal) { events.push("⚽ Gol"); posDecisiveCount++; }
+            if (hasSecondGoal) { events.push("⚽ 2° Gol"); posDecisiveCount++; }
+            if (hasAssist) { events.push("👟 Assist"); posDecisiveCount++; }
+          } else if (isMid) {
+            const hasAssist = pseudoRand(g * 23) > 0.68;
+            const hasGoal = pseudoRand(g * 27) > 0.80;
+            if (hasAssist) { events.push("👟 Assist"); posDecisiveCount++; }
+            if (hasGoal) { events.push("⚽ Gol"); posDecisiveCount++; }
+          } else if (isPor) {
+            const hasCleanSheet = pseudoRand(g * 37) > 0.60;
+            if (hasCleanSheet) { events.push("🧤 Clean Sheet"); posDecisiveCount++; }
           }
 
-          if (pseudoRand(g * 41) > 0.82) {
-            base -= 0.30;
-            events.push("🟨 Giallo");
-          }
+          // Disciplina & Malus
+          if (pseudoRand(g * 41) > 0.82) events.push("🟨 Giallo (-0,30)");
+          if (pseudoRand(g * 97) > 0.985) { events.push("🟥 Rosso (-2,00)"); negDecisiveCount++; }
 
-          if (pseudoRand(g * 97) > 0.98) {
-            base -= 2.0;
-            events.push("🟥 Rosso");
-          }
-
-          score = Math.min(10.0, Math.max(3.0, Math.round(base * 100) / 100));
+          // Calcolo Voto con Algoritmo Decisive Ufficiale
+          const decisiveCalc = calculateSorareDecisiveScore(posDecisiveCount, negDecisiveCount);
+          // AAS tra 0.40 e 1.80
+          const aas = Math.round((0.40 + pseudoRand(g * 19) * 1.40) * 100) / 100;
+          score = Math.min(10.0, Math.max(3.0, Math.round((decisiveCalc.points + aas) * 100) / 100));
         }
 
         matches.push({
@@ -1087,19 +1132,28 @@
           isHome: isHome,
           mins: mins,
           score: score,
-          events: events.length > 0 ? events.join(", ") : "—"
+          events: events.length > 0 ? events.join(", ") : (mins === 0 ? "DNP" : "—")
         });
-
-        sumL10 += score;
-        if (g > 5) sumL5 += score;
       }
 
-      const l10 = Math.round((sumL10 / 10) * 100) / 100;
-      const l5 = Math.round((sumL5 / 5) * 100) / 100;
+      // FILTRO RIGOROSO: ESCLUDERE I DNP DALLE MEDIE L5 E L10
+      const playedMatches = matches.filter(m => m.mins > 0 && m.score > 0);
+      
+      // Ultime 5 partite GIOCATE (o tutte le giocate se meno di 5)
+      const last5Played = playedMatches.slice(-5);
+      const l5Sum = last5Played.reduce((acc, m) => acc + m.score, 0);
+      const l5 = last5Played.length > 0 ? Math.round((l5Sum / last5Played.length) * 100) / 100 : 0;
+
+      // Ultime 10 partite GIOCATE (o tutte le giocate se meno di 10)
+      const last10Played = playedMatches.slice(-10);
+      const l10Sum = last10Played.reduce((acc, m) => acc + m.score, 0);
+      const l10 = last10Played.length > 0 ? Math.round((l10Sum / last10Played.length) * 100) / 100 : 0;
 
       return {
         l5: l5,
         l10: l10,
+        l5Count: last5Played.length,
+        l10Count: last10Played.length,
         matches: matches
       };
     }
@@ -1177,14 +1231,14 @@
         let barColor = '#f43f5e';
         if (m.score >= 7.0) barColor = '#10b981';
         else if (m.score >= 6.0) barColor = '#eab308';
-        else if (m.score === 0) barColor = '#475569';
+        else if (m.score === 0 || m.mins === 0) barColor = '#475569';
 
-        pointsLine.push(`${x + barWidth / 2},${y}`);
+        if (m.score > 0) pointsLine.push(`${x + barWidth / 2},${y}`);
 
         barsSvg += `
           <g class="cursor-pointer group">
             <rect x="${x}" y="${y}" width="${barWidth}" height="${barH}" rx="6" fill="${barColor}" opacity="0.85" class="transition group-hover:opacity-100" />
-            <text x="${x + barWidth / 2}" y="${y - 5}" fill="#ffffff" font-size="10" font-weight="900" text-anchor="middle">${m.score > 0 ? m.score.toFixed(1) : 'S.V.'}</text>
+            <text x="${x + barWidth / 2}" y="${y - 5}" fill="#ffffff" font-size="10" font-weight="900" text-anchor="middle">${m.score > 0 ? m.score.toFixed(1) : 'DNP'}</text>
             <text x="${x + barWidth / 2}" y="${baselineY + 14}" fill="#94a3b8" font-size="9" font-weight="700" text-anchor="middle">G${m.gw}</text>
           </g>
         `;
@@ -1196,7 +1250,7 @@
           <text x="${width - 12}" y="${suffY + 3}" fill="#eab308" font-size="8" font-weight="bold">6.0</text>
 
           <line x1="15" y1="${baselineY}" x2="${width - 15}" y2="${baselineY}" stroke="#334155" stroke-width="1.5" />
-          <polyline points="${pointsLine.join(' ')}" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.6" />
+          ${pointsLine.length > 1 ? `<polyline points="${pointsLine.join(' ')}" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.6" />` : ''}
 
           ${barsSvg}
         </svg>
@@ -1599,7 +1653,7 @@
       renderPitch();
     }
 
-    // Render Tab Rosa Completa (Tribuna)
+    // Render Tab Rosa Completa (Tribuna) con L5/L10 No DNP
     function renderRosterView() {
       const match = GW6_MATCHES[currentMatchIndex];
       const teamName = currentView === 'home' ? match.home : match.away;
@@ -1701,7 +1755,9 @@
       rolesBox.innerHTML = roles.map(r => `<span class="px-1.5 py-0.5 rounded text-[9px] font-black ${getBadgeClass(r)}">${r}</span>`).join('');
 
       document.getElementById('trendL5Score').innerText = hist.l5 > 0 ? hist.l5.toFixed(2).replace('.', ',') : '--';
+      document.getElementById('trendL5GamesCount').innerText = `su ${hist.l5Count} gare giocate (esclusi DNP)`;
       document.getElementById('trendL10Score').innerText = hist.l10 > 0 ? hist.l10.toFixed(2).replace('.', ',') : '--';
+      document.getElementById('trendL10GamesCount').innerText = `su ${hist.l10Count} gare giocate (esclusi DNP)`;
 
       document.getElementById('trendChartSvgContainer').innerHTML = buildTrendSvgChart(hist.matches);
 
@@ -1709,7 +1765,7 @@
       logBody.innerHTML = hist.matches.map(m => `
         <tr class="hover:bg-white/5 transition">
           <td class="p-2 font-bold text-white">${m.opponent}</td>
-          <td class="p-2 text-center text-gray-400">${m.mins > 0 ? m.mins + "'" : 'S.V.'}</td>
+          <td class="p-2 text-center text-gray-400">${m.mins > 0 ? m.mins + "'" : '<span class="text-rose-400 font-bold">DNP</span>'}</td>
           <td class="p-2 text-center font-black ${m.score >= 7.0 ? 'text-emerald-400' : (m.score >= 6.0 ? 'text-amber-400' : (m.score > 0 ? 'text-rose-400' : 'text-gray-500'))}">
             ${m.score > 0 ? m.score.toFixed(2).replace('.', ',') : '—'}
           </td>
@@ -1781,17 +1837,24 @@
       const finalVal = isCaptain ? (score * 1.5) : score;
       document.getElementById('scFinalScore').innerText = score > 0 ? formatScore(finalVal) : '--';
 
-      const decisivePts = stats.decisiveEvents.length > 0 ? (3.5 + stats.decisiveEvents.length * 2.5) : (score > 0 ? 3.5 : 0);
-      document.getElementById('scDecisivePts').innerText = formatScore(decisivePts);
+      // CALCOLO REGOLAMENTO SORARE DECISIVE
+      // 1° decisivo = +2,50 (livello 1: 6,00), successivi = +1,00 ciascuno
+      const posCount = (stats.goals || 0) + (stats.assists || 0) + (roles.includes("Por") && stats.cleanSheet ? 1 : 0);
+      const negCount = stats.redCards || 0;
+      const decisiveCalc = score > 0 ? calculateSorareDecisiveScore(posCount, negCount) : { level: 0, points: 0 };
 
-      const aasPts = score > 0 ? Math.max(0, score - decisivePts) : 0;
+      document.getElementById('scDecisivePts').innerText = score > 0 ? formatScore(decisiveCalc.points) : '0,00';
+      document.getElementById('scDecisiveLevelTag').innerText = `Liv. ${decisiveCalc.level}`;
+      document.getElementById('scDecisiveFormulaLabel').innerText = posCount === 0 ? "base titolare" : (posCount === 1 ? "1° dec. (+2,50)" : `${posCount} dec. (+2,50 e +1,00 cad.)`);
+
+      const aasPts = score > 0 ? Math.max(0, score - decisiveCalc.points) : 0;
       document.getElementById('scAasPts').innerText = `+${formatScore(aasPts)}`;
 
       const devBox = document.getElementById('scDecisiveEvents');
-      if (stats.decisiveEvents.length > 0) {
+      if (stats.decisiveEvents && stats.decisiveEvents.length > 0) {
         devBox.innerHTML = stats.decisiveEvents.map(e => `<div class="text-emerald-400 font-black text-[10px]">${e}</div>`).join('');
       } else {
-        devBox.innerHTML = `<div class="text-gray-500 italic text-[10px]">Nessun bonus decisivo</div>`;
+        devBox.innerHTML = `<div class="text-gray-500 italic text-[10px]">Nessun evento decisivo</div>`;
       }
 
       document.getElementById('statMins').innerText = score > 0 ? `${stats.mins}'` : '--';
@@ -1890,6 +1953,16 @@
       const totPass = score > 0 ? Math.floor(score * 7.5 + 15) : 0;
       const accPass = Math.floor(totPass * (0.78 + Math.random() * 0.14));
       
+      const goals = score >= 7.8 ? 1 : 0;
+      const assists = (score >= 6.8 && score < 7.8) ? 1 : 0;
+      const cleanSheet = (isPor && score >= 6.5);
+
+      let decisiveEvents = [];
+      let posCount = 0;
+      if (goals > 0) { decisiveEvents.push("⚽ Gol (+2,50)"); posCount++; }
+      if (assists > 0) { decisiveEvents.push(posCount === 0 ? "👟 Assist (+2,50)" : "👟 Assist (+1,00)"); posCount++; }
+      if (cleanSheet) { decisiveEvents.push(posCount === 0 ? "🧤 Clean Sheet (+2,50)" : "🧤 Clean Sheet (+1,00)"); posCount++; }
+
       return {
         mins: score > 0 ? (score > 4.5 ? 90 : 64) : 0,
         totalPasses: totPass,
@@ -1900,8 +1973,9 @@
         accurateCrosses: isPor ? 0 : Math.floor(score / 3.4),
         lostBalls: Math.floor(score * 1.5 + 4),
 
-        goals: score >= 7.5 ? 1 : 0,
-        assists: score >= 7.0 && score < 7.5 ? 1 : 0,
+        goals: goals,
+        assists: assists,
+        cleanSheet: cleanSheet,
         shots: isPor ? 0 : Math.max(1, Math.floor(score / 2.2)),
         shotsOnTarget: isPor ? 0 : Math.floor(score / 3.4),
         successfulDribbles: isPor ? 0 : Math.floor(score / 2.8),
@@ -1919,7 +1993,7 @@
         redCards: 0,
         penaltiesWon: 0,
         penaltiesConceded: 0,
-        decisiveEvents: score >= 7.5 ? ['⚽ Gol (+2,50)'] : (score >= 7.0 ? ['👟 Assist (+2,50)'] : (isPor && score >= 6.5 ? ['🧤 Clean Sheet (+2,50)'] : []))
+        decisiveEvents: decisiveEvents
       };
     }
 
@@ -2293,19 +2367,30 @@
                 const totPass = st.totalPass || Math.floor(dec * 8 + 15);
                 const accPass = st.accuratePasses || Math.floor(totPass * 0.82);
 
+                const goals = st.goals || 0;
+                const assists = st.assists || 0;
+                const cleanSheet = st.cleanSheet || false;
+
+                let decisiveEvents = [];
+                let posCount = 0;
+                if (goals > 0) { decisiveEvents.push(`⚽ ${goals} Gol (+2,50)`); posCount += goals; }
+                if (assists > 0) { decisiveEvents.push(posCount === 0 ? `👟 ${assists} Assist (+2,50)` : `👟 ${assists} Assist (+1,00)`); posCount += assists; }
+                if (cleanSheet) { decisiveEvents.push(posCount === 0 ? `🧤 Clean Sheet (+2,50)` : `🧤 Clean Sheet (+1,00)`); posCount++; }
+
                 playerStatsMap[p.displayName] = {
                   mins: st.minsPlayed || 90,
                   totalPasses: totPass,
                   accuratePasses: accPass,
                   passAccuracy: totPass > 0 ? Math.round((accPass / totPass) * 100) : 0,
                   keyPasses: st.keyPasses || 1,
-                  bigChancesCreated: st.goals > 0 ? 1 : 0,
+                  bigChancesCreated: goals > 0 ? 1 : 0,
                   accurateCrosses: 1,
                   lostBalls: Math.floor(dec * 1.6 + 5),
-                  goals: st.goals || 0,
-                  assists: st.assists || 0,
-                  shots: (st.goals || 0) + 1,
-                  shotsOnTarget: st.goals || 0,
+                  goals: goals,
+                  assists: assists,
+                  cleanSheet: cleanSheet,
+                  shots: goals + 1,
+                  shotsOnTarget: goals,
                   successfulDribbles: 2,
                   duelsWon: st.wonContest || 4,
                   duelsLost: 3,
@@ -2320,7 +2405,7 @@
                   redCards: st.redCards || 0,
                   penaltiesWon: 0,
                   penaltiesConceded: 0,
-                  decisiveEvents: (st.goals > 0 ? ['⚽ Gol (+2,50)'] : (st.assists > 0 ? ['👟 Assist (+2,50)'] : []))
+                  decisiveEvents: decisiveEvents
                 };
                 dataFound = true;
               }
