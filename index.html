@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fanta-Sorare 11 | Premier Ruetta (Live API)</title>
+  <title>Fanta-Sorare 11 | Premier Ruetta (Mantra Edition)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; background-color: #080a0f; color: #e2e8f0; }
     .font-teko { font-family: 'Teko', sans-serif; }
     .pitch-3d { perspective: 1000px; }
     .pitch-surface {
       background: radial-gradient(circle at center, #1b3d26 0%, #0d2215 85%, #07150c 100%);
-      box-shadow: inset 0 0 50px rgba(0,0,0,0.8), 0 20px 40px rgba(0,0,0,0.6);
-      transform: rotateX(16deg);
+      box-shadow: inset 0 0 60px rgba(0,0,0,0.85), 0 20px 40px rgba(0,0,0,0.6);
+      transform: rotateX(15deg);
       border: 2px solid rgba(255,255,255,0.15);
-      border-radius: 18px;
+      border-radius: 20px;
     }
     .card-limited {
       background: linear-gradient(135deg, #1c1809 0%, #2b2208 50%, #0d0c05 100%);
@@ -25,8 +25,14 @@
     }
     .card-captain {
       border: 2px solid #ff007a !important;
-      box-shadow: 0 0 16px rgba(255, 0, 122, 0.7) !important;
+      box-shadow: 0 0 16px rgba(255, 0, 122, 0.75) !important;
     }
+    /* Badge Ruoli Mantra */
+    .role-por { background-color: #eab308; color: #000; }
+    .role-def { background-color: #10b981; color: #000; }
+    .role-mid { background-color: #06b6d4; color: #000; }
+    .role-tre { background-color: #a855f7; color: #fff; }
+    .role-att { background-color: #f43f5e; color: #fff; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between">
@@ -43,11 +49,11 @@
             <h1 class="text-lg font-black tracking-wider uppercase bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500">
               Fanta-Sorare 11
             </h1>
-            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> API LIVE
+            <span class="bg-purple-500/10 text-purple-400 border border-purple-500/30 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+              Mantra Edition
             </span>
           </div>
-          <p class="text-xs text-gray-400">Lega Premier Ruetta • Voti 0 - 10 con decimali (Sorare Opta Matrix)</p>
+          <p class="text-xs text-gray-400">Lega Premier Ruetta • Moduli & Ruoli Mantra • Scala Voti 0-10</p>
         </div>
       </div>
 
@@ -95,8 +101,8 @@
       </div>
     </div>
 
-    <!-- Switch Squadra da visualizzare sul campo -->
-    <div class="flex items-center justify-between">
+    <!-- Barra Controlli Squadra & Modulo Mantra -->
+    <div class="flex flex-wrap items-center justify-between gap-3 bg-[#121722]/80 border border-gray-800 p-3 rounded-xl">
       <div class="inline-flex p-1 rounded-xl bg-gray-900 border border-gray-800">
         <button id="btnViewHome" onclick="switchTeamView('home')" class="px-4 py-1.5 rounded-lg text-xs font-bold transition bg-amber-500 text-black">
           Schieramento Casa
@@ -106,72 +112,177 @@
         </button>
       </div>
 
-      <!-- Selettore Modulo -->
+      <!-- Selettore Modulo Mantra Reattivo -->
       <div class="flex items-center gap-2">
-        <span class="text-xs text-gray-400 font-semibold hidden sm:inline">Modulo:</span>
-        <select id="moduleSelect" onchange="changeFormation(this.value)" class="bg-gray-900 border border-gray-700 text-xs rounded-lg px-2.5 py-1.5 text-amber-300 font-bold focus:outline-none focus:border-amber-400">
-          <option value="4-3-3" selected>4-3-3</option>
-          <option value="3-4-3">3-4-3</option>
-          <option value="3-5-2">3-5-2</option>
-          <option value="4-4-2">4-4-2</option>
-          <option value="4-2-3-1">4-2-3-1</option>
+        <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">Modulo Mantra:</span>
+        <select id="moduleSelect" onchange="onModuleChange(this.value)" class="bg-gray-900 border border-gray-700 text-xs rounded-lg px-3 py-1.5 text-amber-300 font-black focus:outline-none focus:border-amber-400">
+          <option value="4-3-3">4-3-3 (Dd-Dc-Dc-Ds / M-C-C / W-Pc-A)</option>
+          <option value="3-4-3">3-4-3 (Dc-Dc-Dc / E-M-C-E / W-Pc-A)</option>
+          <option value="3-4-2-1">3-4-2-1 (Dc-Dc-Dc / E-M-C-E / T-T / Pc)</option>
+          <option value="4-2-3-1">4-2-3-1 (Dd-Dc-Dc-Ds / M-C / W-T-A / Pc)</option>
+          <option value="3-5-2">3-5-2 (Dc-Dc-Dc / E-M-C-C-E / Pc-A)</option>
+          <option value="4-3-1-2">4-3-1-2 (Dd-Dc-Dc-Ds / M-C-C / T / Pc-Pc)</option>
         </select>
       </div>
     </div>
 
-    <!-- Campo Tattico 3D a 11 -->
-    <div class="pitch-3d overflow-hidden py-4">
-      <div class="pitch-surface max-w-4xl mx-auto p-4 sm:p-6 min-h-[580px] flex flex-col justify-between relative">
+    <!-- Campo Tattico 3D con griglia reattiva Mantra -->
+    <div class="pitch-3d overflow-hidden py-2">
+      <div class="pitch-surface max-w-4xl mx-auto p-4 sm:p-6 min-h-[640px] flex flex-col justify-between relative">
         
         <!-- Linee del campo -->
         <div class="absolute inset-0 pointer-events-none opacity-20 flex flex-col justify-between p-4">
           <div class="w-full h-1/2 border-b-2 border-white relative flex items-center justify-center">
-            <div class="w-24 h-24 rounded-full border-2 border-white"></div>
+            <div class="w-28 h-28 rounded-full border-2 border-white"></div>
           </div>
         </div>
 
-        <!-- Attaccanti (FWD) -->
-        <div id="rowFWD" class="flex justify-around items-center z-10 gap-2"></div>
+        <!-- Linea Attacco (FWD) -->
+        <div id="pitchRowFWD" class="flex justify-around items-center z-10 gap-2 min-h-[90px]"></div>
 
-        <!-- Centrocampisti (MID) -->
-        <div id="rowMID" class="flex justify-around items-center z-10 gap-2"></div>
+        <!-- Linea Trequarti (TRE) - se presente nel modulo -->
+        <div id="pitchRowTRE" class="flex justify-around items-center z-10 gap-2 min-h-[90px]"></div>
 
-        <!-- Difensori (DEF) -->
-        <div id="rowDEF" class="flex justify-around items-center z-10 gap-2"></div>
+        <!-- Linea Centrocampo (MID) -->
+        <div id="pitchRowMID" class="flex justify-around items-center z-10 gap-2 min-h-[90px]"></div>
 
-        <!-- Portiere (GK) -->
-        <div id="rowGK" class="flex justify-center items-center z-10"></div>
+        <!-- Linea Difesa (DEF) -->
+        <div id="pitchRowDEF" class="flex justify-around items-center z-10 gap-2 min-h-[90px]"></div>
+
+        <!-- Portiere (Por) -->
+        <div id="pitchRowPOR" class="flex justify-center items-center z-10 min-h-[90px]"></div>
       </div>
     </div>
 
-    <!-- Panchina a Subentro -->
+    <!-- Panchina Mantra a 12 Slot -->
     <div class="bg-[#121722] border border-gray-800 rounded-xl p-4">
-      <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Panchina (Subentro in caso di DNP)</h3>
-      <div id="benchContainer" class="flex gap-2 overflow-x-auto pb-2"></div>
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Panchina Mantra (12 Riserve - Subentro per ruolo compatibile)</h3>
+        <span class="text-[11px] text-amber-400/80 font-semibold">12 / 12 Slot</span>
+      </div>
+      <div id="benchContainer" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2"></div>
     </div>
 
   </main>
 
-  <!-- Modal di Selezione Calciatore dalla Rosa -->
-  <div id="playerModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-[#121722] border border-gray-700 w-full max-w-lg rounded-2xl p-5 max-h-[85vh] flex flex-col">
+  <!-- Modal di Selezione Calciatore con Filtro Ruoli Mantra e Avviso Fuori Ruolo -->
+  <div id="playerModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#121722] border border-gray-700 w-full max-w-lg rounded-2xl p-5 max-h-[85vh] flex flex-col shadow-2xl">
       <div class="flex justify-between items-center pb-3 border-b border-gray-800">
-        <h4 id="modalTitle" class="text-sm font-bold text-amber-300">Seleziona Giocatore</h4>
-        <button onclick="closeModal()" class="text-gray-400 hover:text-white text-lg">&times;</button>
+        <div>
+          <h4 id="modalTitle" class="text-sm font-black text-amber-300">Seleziona Giocatore</h4>
+          <p id="modalSubtitle" class="text-xs text-gray-400">Ruolo richiesto dallo slot</p>
+        </div>
+        <button onclick="closeModal()" class="text-gray-400 hover:text-white text-xl font-bold px-2">&times;</button>
       </div>
-      <div id="modalPlayerList" class="overflow-y-auto space-y-2 py-3 flex-1"></div>
+      
+      <!-- Sezioni Ruolo Naturale vs Fuori Ruolo -->
+      <div class="overflow-y-auto space-y-4 py-3 flex-1">
+        <div>
+          <div class="text-[11px] font-bold uppercase tracking-wider text-emerald-400 mb-2 flex items-center gap-1.5">
+            <span>✓</span> Ruolo Naturale (Nessun Malus)
+          </div>
+          <div id="modalNaturalList" class="space-y-1.5"></div>
+        </div>
+
+        <div>
+          <div class="text-[11px] font-bold uppercase tracking-wider text-amber-400 mb-2 flex items-center gap-1.5">
+            <span>⚠️</span> Fuori Ruolo (Adattabile con Malus -1,00)
+          </div>
+          <div id="modalOutOfPositionList" class="space-y-1.5"></div>
+        </div>
+      </div>
     </div>
   </div>
 
   <footer class="border-t border-gray-800 text-center py-3 text-xs text-gray-500">
-    Fanta-Sorare 11 • Premier Ruetta • Connesso a Sorare Official GraphQL API
+    Fanta-Sorare 11 • Premier Ruetta Mantra • Motore Decimale Opta & Regolamento Ufficiale
   </footer>
 
   <script>
-    // Configurazione API Sorare ufficiale
     const SORARE_API_KEY = "0d8977ade807a8de0039bf6d398128400c953dfa18d16cf730bb480290fc94d6ebe8a91ad1aca56291a562c91d7962d4201f2c15a21aadf6e14c99f6bfcsr128";
     const SORARE_GRAPHQL_ENDPOINT = "https://api.sorare.com/graphql";
 
+    // Database Ruoli Mantra Ufficiali per i calciatori della Premier Ruetta
+    const MANTRA_ROLES = {
+      // Portieri
+      "Skorupski": ["Por"], "Happonen": ["Por"], "Pessina Mas.": ["Por"], "Svilar": ["Por"], "De Marzi": ["Por"],
+      "Gollini": ["Por"], "Maignan": ["Por"], "Torriani": ["Por"], "Terracciano": ["Por"], "De Gea": ["Por"],
+      "Perri": ["Por"], "Grabara": ["Por"], "Tornqvist": ["Por"], "Provedel": ["Por"], "Mandas": ["Por"],
+      "Motta": ["Por"], "Martinez Jo.": ["Por"], "Caprile": ["Por"], "Sherri": ["Por"], "Di Gennaro": ["Por"],
+      "Radunovic": ["Por"], "Vicario": ["Por"], "Stankovic F.": ["Por"], "Pinsoglio": ["Por"], "Carnesecchi": ["Por"],
+      "Pompei": ["Por"], "Sportiello": ["Por"], "Muric": ["Por"], "Corvi": ["Por"], "Mascardi": ["Por"],
+      "Turati": ["Por"], "Meret": ["Por"], "Falcone": ["Por"], "Okoye": ["Por"], "Mrozek": ["Por"],
+      "Contini": ["Por"], "Bijlow": ["Por"], "Palmisani": ["Por"], "Desplanches": ["Por"], "Stolz": ["Por"],
+      "Christensen O.": ["Por"], "Butez": ["Por"], "Milinkovic-Savic V.": ["Por"], "Sanchez Ro.": ["Por"], "Vigorito": ["Por"],
+
+      // Difensori
+      "Birindelli": ["Dd", "E"], "Walukiewicz": ["Dc"], "Valle": ["Ds", "E"], "Bracaglia": ["Dc"], "Bernasconi": ["Ds", "E"],
+      "Mancini": ["Dc"], "Schingtienne": ["Dc"], "Balerdi": ["Dc"], "Tiago Gabriel": ["Dc"], "Gabbia": ["Dc"],
+      "Celik": ["Dd", "E"], "Bertola": ["Dc"], "Kossounou": ["Dc", "Dd"], "Pavard": ["Dc", "Dd"], "Haps": ["Ds", "E"],
+      "Bremer": ["Dc"], "Scalvini": ["Dc"], "Dragusin": ["Dc"], "Leite": ["Dc"], "Di Lorenzo": ["Dd", "Dc", "E"],
+      "Rensch": ["Dd", "Ds", "E"], "Cinquegrano": ["Dd", "E"], "De Winter": ["Dc", "Dd"], "Heggem": ["Dc", "Ds"],
+      "Carlos Augusto": ["Ds", "E"], "Carboni A.": ["Dc", "Ds"], "Puczka": ["Ds"], "Ostigard": ["Dc"],
+      "Solet": ["Dc"], "Hermoso": ["Dc", "Ds"], "Chalobah T.": ["Dc", "Dd"], "Dodò": ["Dd", "E"],
+      "Zappacosta": ["Dd", "Ds", "E"], "Favasuli": ["Dd", "E"], "Drameh": ["Dd", "Ds"], "Zè Pedro": ["Dc"],
+      "Spinazzola": ["Ds", "E"], "Olivera": ["Ds", "Dc"], "Lucumì": ["Dc"], "Monterisi": ["Dc", "Dd"],
+      "Badiashile": ["Dc"], "Belghali": ["Dd", "E"], "Vojvoda": ["Dd", "Ds", "E"], "Bartesaghi": ["Ds", "Dc"],
+      "Kaiki": ["Dc"], "Kolasinac": ["Dc", "Ds"], "Estupinan": ["Ds", "E"], "Bastoni": ["Dc"],
+      "Bella-Kotchap": ["Dc"], "Hien": ["Dc"], "Palma": ["Dc"], "Cittadini": ["Dc"], "Spence": ["Dd", "E"],
+      "Kristensen T.": ["Dc"], "Marusic": ["Dd", "Ds", "E"], "Floriani Mussolini": ["Dd", "E"], "Veiga D.": ["Dc", "Ds"],
+      "Obrador": ["Ds", "E"], "Rodriguez Ju.": ["Dc"], "Rrahmani": ["Dc"], "Idzes": ["Dc"], "Troilo": ["Dc"],
+      "Pavlovic": ["Dc"], "Ramon": ["Dc"], "Moreno M.": ["Dc", "Dd"], "Comert": ["Dc"], "Sutalo J.": ["Dc"],
+      "Calvani": ["Dc"], "Delprato": ["Dd", "Dc", "E"], "Oyono A.": ["Dd", "Ds", "E"], "Mazzocchi": ["Dd", "Ds", "E"],
+      "Tavares N.": ["Ds", "E"], "N'Dicka": ["Dc"], "Mina": ["Dc"], "Comuzzo": ["Dc"], "Kabasele": ["Dc"],
+      "Ziolkowski": ["Dc"], "Ndiaye": ["Dc"], "Dimarco": ["Ds", "E"], "Cambiaso": ["Dd", "Ds", "E"],
+      "Bellanova": ["Dd", "E"], "Hainaut": ["Dd", "E"], "Vasquez": ["Dc", "Ds"], "Miranda J.": ["Ds", "E"],
+      "Ranieri L.": ["Dc", "Ds"], "Diego Carlos": ["Dc"], "Ismajli": ["Dc"], "Provstgaard": ["Dc"], "Pongracic": ["Dc"],
+      "Kalulu": ["Dd", "Dc"], "Jimenez A.": ["Dd", "Ds", "E"], "Britschgi": ["Dd", "E"], "Smolcic I.": ["Dc"],
+      "Valeri": ["Ds", "E"], "Valdepenas": ["Dc"], "Kelly L.": ["Dc", "Ds"], "Beukema": ["Dc"],
+      "Gaspar K.": ["Dc"], "Ghilardi": ["Dc"], "Couto": ["Dd", "E"], "Joao Mario": ["Dd", "E"],
+      "Patric": ["Dc", "Dd"], "Theate": ["Dc", "Ds"], "Kamara H.": ["Ds", "E"], "Akanji": ["Dc"],
+      "Coco": ["Dc"], "Doekhi": ["Dc"], "Marcandalli": ["Dc"], "Kouadio": ["Dd", "E"], "Gallo": ["Ds", "E"],
+      "Mangas": ["Ds", "E"], "Gila": ["Dc"], "Stones": ["Dc", "M"], "Bisseck": ["Dc", "Dd"], "Molina N.": ["Dd", "E"],
+
+      // Centrocampisti & Trequartisti
+      "Wesley": ["E", "W"], "Lobotka": ["M", "C"], "Anguissa": ["C", "M"], "McTominay": ["C", "T"], "Marchwinski": ["T"],
+      "Barella": ["C", "T"], "Da Cunha": ["C", "T", "W"], "Ndour": ["C", "M"], "Alajbegovic": ["W", "A"], "Zalewski": ["E", "W"],
+      "Diouf": ["C"], "Chukwueze": ["W", "A"], "Calhanoglu": ["C", "M"], "Thuram U.": ["C", "M"], "Folorunsho": ["C", "T"],
+      "Tchaouna": ["W", "A"], "Rowe": ["W", "A"], "Milla": ["C"], "Vlasic": ["T", "W"], "Samardzic": ["T", "C"],
+      "Koopmeiners": ["C", "T"], "Baldanzi": ["T", "A"], "Frendrup": ["M", "C"], "Bondo": ["M", "C"],
+      "Freuler": ["M", "C"], "Thorstvedt": ["C", "T"], "Paz N.": ["T", "W"], "Brescianini": ["C", "T"],
+      "Suslov": ["T", "W"], "Fazzini": ["C", "T"], "Fagioli": ["C", "M"], "Tessmann": ["M", "C"],
+      "Ngonge": ["W", "A"], "Ilic": ["C"], "Atta": ["C"], "Asllani": ["M", "C"], "Zaccagni": ["W", "A"],
+      "Marin R.": ["M", "C"], "Strefezza": ["W", "T"], "Pellegrini Lo.": ["T", "C"], "Maldini": ["T", "A"],
+      "Gyasi": ["E", "W"], "Messias": ["W", "A"], "Dele-Bashiru": ["C", "T"], "Gudmundsson": ["T", "A"],
+      "Ellertsson": ["E", "C"], "Gaetano": ["T", "C"], "Ferguson": ["C", "T"], "Fitz-Jim": ["C"],
+      "Frattesi": ["C", "T"], "Harroui": ["C", "T"], "Reijnders": ["C", "T"], "Sohm": ["C", "M"],
+      "Douglas Luiz": ["C", "M"], "Saelemaekers": ["E", "W"], "Man": ["W", "A"], "Pulisic": ["W", "A", "T"],
+      "Kvaratskhelia": ["A", "W"], "Oristanio": ["T", "A"], "Anjorin": ["C", "T"], "Perrone": ["M", "C"],
+      "Gagliardini": ["M", "C"], "Zurkowski": ["C"], "Pasalic": ["C", "T"], "Busio": ["C", "M"],
+      "Castrovilli": ["C", "T"], "Boga": ["W", "A"], "Rafa Silva": ["T", "A"], "Guendouzi": ["C", "M"],
+      "Orsolini": ["W", "A"], "Zambo Anguissa": ["C", "M"], "El Shaarawy": ["W", "A"], "Weah": ["E", "W"],
+      "Duda": ["C", "T"], "Politano": ["W", "A"], "Cacciamani": ["W"], "Conceicao": ["W", "A"],
+      "Zaniolo": ["T", "A"], "Colpani": ["T", "W"], "Bernabè": ["C", "T"], "Ekkelenkamp": ["C", "T"],
+      "Ciurria": ["E", "W"], "Konè M.": ["C", "M"], "Cristante": ["M", "C"], "Stankovic A.": ["M", "C"],
+      "Ederson": ["C", "M"], "Lazovic": ["E", "W"], "Prati": ["M", "C"], "Charlys": ["M"], "De Roon": ["M", "C"],
+
+      // Attaccanti & Punte
+      "Woltemade": ["Pc"], "Hojlund": ["Pc"], "Romero D.": ["A"], "Adams A.": ["Pc"], "Nzola": ["Pc"],
+      "Diao": ["A", "Pc"], "Mbangula": ["A", "W"], "Vitinha O.": ["Pc"], "Simeone": ["Pc"], "Castro S.": ["Pc"], "Esposito F.P.": ["Pc"],
+      "Morata": ["Pc"], "Thauvin": ["A"], "Pedro": ["A"], "Mosquera": ["Pc"], "Cancellieri": ["A", "W"], "Brenner": ["A", "Pc"], "Aboukhlal": ["A", "W"],
+      "Vlahovic": ["Pc"], "Pinamonti": ["Pc"], "Banda": ["A", "W"], "Luvumbo": ["A", "W"], "Pohjanpalo": ["Pc"], "Karlsson": ["A", "W"], "Sanchez A.": ["A"],
+      "Thuram": ["Pc", "A"], "Taremi": ["Pc"], "Caprari": ["A", "T"], "Solbakken": ["A", "W"], "Davis K.": ["Pc"],
+      "Dovbyk": ["Pc"], "Piccoli": ["Pc"], "Cutrone": ["Pc"], "Benedyczak": ["A", "Pc"], "Shomurodov": ["Pc"],
+      "Leao": ["A", "W"], "Retegui": ["Pc"], "Sanabria": ["Pc"], "Cambiaghi": ["A", "W"], "Milik": ["Pc"], "Tengstedt": ["Pc"], "Pierotti": ["A"], "Noslin": ["A", "Pc"],
+      "Bonny": ["Pc"], "Dallinga": ["Pc"], "Esposito Se.": ["Pc"], "Almqvist": ["A", "W"], "Moro L.": ["Pc"],
+      "Dybala": ["A"], "Lookman": ["A", "W"], "Lucca": ["Pc"], "Belotti": ["Pc"], "Mota": ["A", "Pc"],
+      "Castellanos": ["Pc"], "Abraham": ["Pc"], "Neres": ["A", "W"], "Correa": ["A"], "Dia": ["Pc", "A"],
+      "Kean": ["Pc"], "Scamacca": ["Pc"], "Krstovic": ["Pc"], "Arnautovic": ["Pc"], "Odgaard": ["A", "Pc"], "Shpendi": ["Pc"],
+      "Yildiz": ["A", "T"], "Kolo Muani": ["Pc"]
+    };
+
+    // Rose complete della Premier Ruetta
     const ROSTERS = {
       "DUA LIPAnathinaikos": ["Skorupski", "Happonen", "Pessina Mas.", "Birindelli", "Walukiewicz", "Valle", "Bracaglia", "Bernasconi", "Mancini", "Schingtienne", "Balerdi", "Tiago Gabriel", "Gabbia", "Wesley", "Lobotka", "Anguissa", "McTominay", "Marchwinski", "Barella", "Da Cunha", "Ndour", "Alajbegovic", "Zalewski", "Woltemade", "Hojlund", "Romero D.", "Adams A.", "Nzola"],
       "Bidonese": ["Svilar", "De Marzi", "Gollini", "Celik", "Bertola", "Kossounou", "Pavard", "Haps", "Bremer", "Scalvini", "Dragusin", "Leite", "Diouf", "Chukwueze", "Calhanoglu", "Thuram U.", "Folorunsho", "Tchaouna", "Rowe", "Diao", "Mbangula", "Vitinha O.", "Simeone", "Castro S.", "Esposito F.P."],
@@ -179,12 +290,52 @@
       "Do Flamengo": ["De Gea", "Perri", "Grabara", "Tornqvist", "Chalobah T.", "Dodò", "Zappacosta", "Favasuli", "Drameh", "Zè Pedro", "Spinazzola", "Olivera", "Lucumì", "Monterisi", "Badiashile", "Freuler", "Thorstvedt", "Paz N.", "Brescianini", "Suslov", "Fazzini", "Vlahovic", "Pinamonti", "Banda", "Luvumbo", "Pohjanpalo", "Karlsson", "Sanchez A."],
       "ERROR D. OFF": ["Provedel", "Mandas", "Motta", "Belghali", "Vojvoda", "Bartesaghi", "Kaiki", "Kolasinac", "Estupinan", "Bastoni", "Bella-Kotchap", "Hien", "Palma", "Cittadini", "Spence", "Fagioli", "Tessmann", "Ngonge", "Ilic", "Atta", "Asllani", "Thuram", "Zaccagni", "Taremi", "Caprari", "Solbakken", "Davis K."],
       "FC Sucammilla": ["Martinez Jo.", "Caprile", "Sherri", "Di Gennaro", "Radunovic", "Kristensen T.", "Marusic", "Floriani Mussolini", "Veiga D.", "Obrador", "Rodriguez Ju.", "Rrahmani", "Idzes", "Marin R.", "Troilo", "Strefezza", "Pellegrini Lo.", "Maldini", "Gyasi", "Messias", "Dele-Bashiru", "Dovbyk", "Gudmundsson", "Piccoli", "Cutrone", "Benedyczak", "Shomurodov"],
-      "Archi Barber": ["Vicario", "Stankovic F.", "Pinsoglio", "Pavlovic", "Ramon", "Moreno M.", "Comert", "Sutalo J.", "Calvani", "Ellertsson", "Gaetano", "Ferguson", "Fitz-Jim", "Frattesi", "Harroui", "Reijnders", "Sohm", "Douglas Luiz", "Leao", "Retegui", "Sanabria", "Cambiaghi", "Milik", "Tengstedt", "Pierotti", "Noslin", "Motta"],
+      "Archi Barber": ["Vicario", "Stankovic F.", "Pinsoglio", "Pavlovic", "Ramon", "Moreno M.", "Comert", "Sutalo J.", "Calvani", "Ellertsson", "Gaetano", "Ferguson", "Fitz-Jim", "Frattesi", "Harroui", "Reijnders", "Sohm", "Douglas Luiz", "Leao", "Retegui", "Sanabria", "Cambiaghi", "Milik", "Tengstedt", "Pierotti", "Noslin"],
       "Masterchef Utd": ["Carnesecchi", "Pompei", "Sportiello", "Delprato", "Oyono A.", "Mazzocchi", "Tavares N.", "N'Dicka", "Mina", "Comuzzo", "Kabasele", "Ziolkowski", "Ndiaye", "Dimarco", "Saelemaekers", "Man", "Pulisic", "Kvaratskhelia", "Oristanio", "Anjorin", "Bonny", "Dallinga", "Esposito Se.", "Almqvist", "Moro L."],
       "Scocco Team": ["Muric", "Corvi", "Mascardi", "Turati", "Cambiaso", "Bellanova", "Hainaut", "Vasquez", "Miranda J.", "Ranieri L.", "Diego Carlos", "Ismajli", "Provstgaard", "Pongracic", "Perrone", "Gagliardini", "Zurkowski", "Pasalic", "Busio", "Castrovilli", "Dybala", "Lookman", "Lucca", "Belotti", "Mota", "Rafa Silva", "Boga"],
       "Mugiwara Boys": ["Meret", "Falcone", "Okoye", "Mrozek", "Contini", "Kalulu", "Jimenez A.", "Britschgi", "Smolcic I.", "Valeri", "Valdepenas", "Kelly L.", "Beukema", "Gaspar K.", "Ghilardi", "Guendouzi", "Orsolini", "Zambo Anguissa", "El Shaarawy", "Weah", "Duda", "Castellanos", "Abraham", "Neres", "Politano", "Correa", "Dia"],
       "Stellolandia": ["Bijlow", "Palmisani", "Desplanches", "Stolz", "Christensen O.", "Couto", "Joao Mario", "Patric", "Theate", "Kamara H.", "Akanji", "Coco", "Doekhi", "Marcandalli", "Cacciamani", "Conceicao", "Zaniolo", "Colpani", "Bernabè", "Ekkelenkamp", "Kean", "Scamacca", "Krstovic", "Arnautovic", "Odgaard", "Shpendi"],
       "Paris Saint Gennaro": ["Butez", "Milinkovic-Savic V.", "Sanchez Ro.", "Vigorito", "Kouadio", "Gallo", "Mangas", "Gila", "Stones", "Bisseck", "Molina N.", "Ciurria", "Konè M.", "Cristante", "Stankovic A.", "Ederson", "Lazovic", "Prati", "Charlys", "De Roon", "Yildiz", "Kolo Muani", "Cancellieri", "Caprari", "Pedro", "Brenner"]
+    };
+
+    // Struttura degli schemi Mantra
+    const MANTRA_MODULES = {
+      "4-3-3": {
+        DEF: [ { role: "Dd", label: "Dd" }, { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" }, { role: "Ds", label: "Ds" } ],
+        MID: [ { role: "M", label: "M/C" }, { role: "C", label: "C" }, { role: "C", label: "C" } ],
+        TRE: [],
+        FWD: [ { role: "W", label: "W/A" }, { role: "Pc", label: "Pc" }, { role: "A", label: "A/W" } ]
+      },
+      "3-4-3": {
+        DEF: [ { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" } ],
+        MID: [ { role: "E", label: "E" }, { role: "M", label: "M/C" }, { role: "C", label: "C" }, { role: "E", label: "E" } ],
+        TRE: [],
+        FWD: [ { role: "W", label: "W/A" }, { role: "Pc", label: "Pc" }, { role: "A", label: "A/W" } ]
+      },
+      "3-4-2-1": {
+        DEF: [ { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" } ],
+        MID: [ { role: "E", label: "E" }, { role: "M", label: "M/C" }, { role: "C", label: "C" }, { role: "E", label: "E" } ],
+        TRE: [ { role: "T", label: "T/W" }, { role: "T", label: "T/A" } ],
+        FWD: [ { role: "Pc", label: "Pc" } ]
+      },
+      "4-2-3-1": {
+        DEF: [ { role: "Dd", label: "Dd" }, { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" }, { role: "Ds", label: "Ds" } ],
+        MID: [ { role: "M", label: "M/C" }, { role: "C", label: "C/M" } ],
+        TRE: [ { role: "W", label: "W" }, { role: "T", label: "T" }, { role: "A", label: "A/W" } ],
+        FWD: [ { role: "Pc", label: "Pc" } ]
+      },
+      "3-5-2": {
+        DEF: [ { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" } ],
+        MID: [ { role: "E", label: "E" }, { role: "M", label: "M/C" }, { role: "C", label: "C" }, { role: "C", label: "C" }, { role: "E", label: "E" } ],
+        TRE: [],
+        FWD: [ { role: "A", label: "A/Pc" }, { role: "Pc", label: "Pc" } ]
+      },
+      "4-3-1-2": {
+        DEF: [ { role: "Dd", label: "Dd" }, { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" }, { role: "Ds", label: "Ds" } ],
+        MID: [ { role: "M", label: "M/C" }, { role: "C", label: "C" }, { role: "C", label: "C" } ],
+        TRE: [ { role: "T", label: "T" } ],
+        FWD: [ { role: "Pc", label: "Pc" }, { role: "Pc", label: "Pc/A" } ]
+      }
     };
 
     const GW6_MATCHES = [
@@ -201,10 +352,23 @@
     let teamLineups = {};
 
     function formatScore(val) {
-      if (val === undefined || val === null || isNaN(val)) return '--';
+      if (val === undefined || val === null || isNaN(val) || val === 0) return '--';
       return val.toFixed(2).replace('.', ',');
     }
 
+    function getPlayerRoles(name) {
+      return MANTRA_ROLES[name] || ["C"];
+    }
+
+    function getBadgeClass(role) {
+      if (role === "Por") return "role-por";
+      if (["Dd", "Ds", "Dc", "B"].includes(role)) return "role-def";
+      if (["E", "M", "C"].includes(role)) return "role-mid";
+      if (["W", "T"].includes(role)) return "role-tre";
+      return "role-att";
+    }
+
+    // Inizializzazione Lineup
     function initLineups() {
       GW6_MATCHES.forEach(m => {
         [m.home, m.away].forEach(team => {
@@ -212,17 +376,96 @@
             const roster = ROSTERS[team] || [];
             teamLineups[team] = {
               module: '4-3-3',
-              captain: roster[ roster.length > 5 ? 5 : 0 ],
-              titolari: roster.slice(0, 11),
-              panchina: roster.slice(11, 18),
+              captain: roster[18] || roster[5],
+              titolariSlots: buildSlotsForModule('4-3-3', roster),
+              panchina: roster.slice(11, 23), // 12 riserve
               scores: {},
               decisives: {},
               totalPts: 0,
-              goals: 0
+              goals: undefined
             };
           }
         });
       });
+    }
+
+    function buildSlotsForModule(moduleName, roster) {
+      const schema = MANTRA_MODULES[moduleName];
+      const slots = [];
+
+      // Portiere
+      const por = roster.find(p => getPlayerRoles(p).includes('Por')) || roster[0];
+      slots.push({ slotType: 'POR', reqRole: 'Por', label: 'Por', player: por });
+
+      // Difensori
+      let used = [por];
+      schema.DEF.forEach(s => {
+        const p = roster.find(x => !used.includes(x) && isCompatible(getPlayerRoles(x), s.role)) || roster.find(x => !used.includes(x));
+        used.push(p);
+        slots.push({ slotType: 'DEF', reqRole: s.role, label: s.label, player: p });
+      });
+
+      // Centrocampo
+      schema.MID.forEach(s => {
+        const p = roster.find(x => !used.includes(x) && isCompatible(getPlayerRoles(x), s.role)) || roster.find(x => !used.includes(x));
+        used.push(p);
+        slots.push({ slotType: 'MID', reqRole: s.role, label: s.label, player: p });
+      });
+
+      // Trequarti
+      schema.TRE.forEach(s => {
+        const p = roster.find(x => !used.includes(x) && isCompatible(getPlayerRoles(x), s.role)) || roster.find(x => !used.includes(x));
+        used.push(p);
+        slots.push({ slotType: 'TRE', reqRole: s.role, label: s.label, player: p });
+      });
+
+      // Attacco
+      schema.FWD.forEach(s => {
+        const p = roster.find(x => !used.includes(x) && isCompatible(getPlayerRoles(x), s.role)) || roster.find(x => !used.includes(x));
+        used.push(p);
+        slots.push({ slotType: 'FWD', reqRole: s.role, label: s.label, player: p });
+      });
+
+      return slots;
+    }
+
+    // Regole di Compatibilità Mantra
+    function isCompatible(playerRoles, reqRole) {
+      if (playerRoles.includes(reqRole)) return true;
+      if (reqRole === 'M' && playerRoles.includes('C')) return true;
+      if (reqRole === 'C' && playerRoles.includes('M')) return true;
+      if (reqRole === 'W' && playerRoles.includes('A')) return true;
+      if (reqRole === 'A' && playerRoles.includes('W')) return true;
+      if (reqRole === 'T' && (playerRoles.includes('C') || playerRoles.includes('W'))) return true;
+      return false;
+    }
+
+    function isAdaptable(playerRoles, reqRole) {
+      // Fuori ruolo con malus
+      if (reqRole === 'Por') return false;
+      const defs = ["Dd", "Ds", "Dc", "B"];
+      const mids = ["E", "M", "C"];
+      const atts = ["W", "T", "A", "Pc"];
+
+      const hasDef = playerRoles.some(r => defs.includes(r));
+      const hasMid = playerRoles.some(r => mids.includes(r));
+      const hasAtt = playerRoles.some(r => atts.includes(r));
+
+      if (defs.includes(reqRole) && (hasDef || playerRoles.includes('E'))) return true;
+      if (mids.includes(reqRole) && (hasMid || hasDef || playerRoles.includes('T'))) return true;
+      if (atts.includes(reqRole) && (hasAtt || playerRoles.includes('C'))) return true;
+      return true; // Se estremo, sempre schierabile con malus
+    }
+
+    function onModuleChange(newModule) {
+      const match = GW6_MATCHES[currentMatchIndex];
+      const teamName = currentView === 'home' ? match.home : match.away;
+      const t = teamLineups[teamName];
+      t.module = newModule;
+      t.titolariSlots = buildSlotsForModule(newModule, ROSTERS[teamName]);
+      calcolaTotaliSquadre();
+      updateBanner();
+      renderPitch();
     }
 
     function renderMatchesTabs() {
@@ -237,6 +480,9 @@
     function selectMatch(idx) {
       currentMatchIndex = idx;
       renderMatchesTabs();
+      const match = GW6_MATCHES[idx];
+      const teamName = currentView === 'home' ? match.home : match.away;
+      document.getElementById('moduleSelect').value = teamLineups[teamName].module;
       updateBanner();
       renderPitch();
     }
@@ -249,6 +495,10 @@
       document.getElementById('btnViewAway').className = v === 'away' 
         ? 'px-4 py-1.5 rounded-lg text-xs font-bold transition bg-amber-500 text-black' 
         : 'px-4 py-1.5 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition';
+      
+      const match = GW6_MATCHES[currentMatchIndex];
+      const teamName = currentView === 'home' ? match.home : match.away;
+      document.getElementById('moduleSelect').value = teamLineups[teamName].module;
       renderPitch();
     }
 
@@ -259,8 +509,8 @@
 
       document.getElementById('homeName').innerText = match.home;
       document.getElementById('awayName').innerText = match.away;
-      document.getElementById('homePts').innerText = formatScore(hData.totalPts) + " pt Totali";
-      document.getElementById('awayPts').innerText = formatScore(aData.totalPts) + " pt Totali";
+      document.getElementById('homePts').innerText = (hData.totalPts > 0 ? formatScore(hData.totalPts) : '0,00') + " pt Totali";
+      document.getElementById('awayPts').innerText = (aData.totalPts > 0 ? formatScore(aData.totalPts) : '0,00') + " pt Totali";
 
       document.getElementById('homeScore').innerText = hData.goals !== undefined ? hData.goals : '--';
       document.getElementById('awayScore').innerText = aData.goals !== undefined ? aData.goals : '--';
@@ -272,98 +522,199 @@
       const data = teamLineups[teamName];
 
       const rows = {
-        GK: document.getElementById('rowGK'),
-        DEF: document.getElementById('rowDEF'),
-        MID: document.getElementById('rowMID'),
-        FWD: document.getElementById('rowFWD')
+        POR: document.getElementById('pitchRowPOR'),
+        DEF: document.getElementById('pitchRowDEF'),
+        MID: document.getElementById('pitchRowMID'),
+        TRE: document.getElementById('pitchRowTRE'),
+        FWD: document.getElementById('pitchRowFWD')
       };
 
       Object.values(rows).forEach(r => r.innerHTML = '');
 
-      const gk = data.titolari[0] || 'Seleziona';
-      const defs = data.titolari.slice(1, 5);
-      const mids = data.titolari.slice(5, 8);
-      const fwds = data.titolari.slice(8, 11);
+      data.titolariSlots.forEach((slot, slotIdx) => {
+        const targetRow = rows[slot.slotType];
+        if (targetRow) {
+          targetRow.innerHTML += createCardHtml(slot, slotIdx, data, teamName);
+        }
+      });
 
-      rows.GK.innerHTML = createCardHtml(gk, 'GK', data, teamName);
-      defs.forEach(p => rows.DEF.innerHTML += createCardHtml(p, 'DEF', data, teamName));
-      mids.forEach(p => rows.MID.innerHTML += createCardHtml(p, 'MID', data, teamName));
-      fwds.forEach(p => rows.FWD.innerHTML += createCardHtml(p, 'FWD', data, teamName));
+      // Se non ci sono trequartisti, nascondi la riga
+      rows.TRE.style.display = rows.TRE.children.length === 0 ? 'none' : 'flex';
 
-      // Panchina
+      // Panchina a 12 Slot
       const benchBox = document.getElementById('benchContainer');
-      benchBox.innerHTML = data.panchina.map((p, idx) => `
-        <div class="bg-gray-800/90 border border-gray-700 rounded-lg p-2 min-w-[105px] text-center">
-          <div class="text-[10px] text-gray-400 font-bold">PAN #${idx+1}</div>
-          <div class="text-xs font-bold text-amber-200 truncate">${p}</div>
-          <div class="text-[11px] text-gray-300 font-semibold mt-0.5">${formatScore(data.scores[p])}</div>
-        </div>
-      `).join('');
+      benchBox.innerHTML = data.panchina.map((p, idx) => {
+        const roles = getPlayerRoles(p);
+        const pts = data.scores[p] || 0;
+        return `
+          <div class="bg-gray-800/80 border border-gray-700 rounded-lg p-2 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between text-[10px] text-gray-400 font-bold">
+                <span>P${idx+1}</span>
+                <div class="flex gap-0.5">
+                  ${roles.map(r => `<span class="px-1 rounded text-[9px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
+                </div>
+              </div>
+              <div class="text-xs font-black text-amber-200 truncate mt-1">${p}</div>
+            </div>
+            <div class="text-[11px] text-gray-300 font-bold mt-1 text-right">${formatScore(pts)}</div>
+          </div>
+        `;
+      }).join('');
     }
 
-    function createCardHtml(player, role, teamData, teamName) {
+    function createCardHtml(slot, slotIdx, teamData, teamName) {
+      const player = slot.player;
       const isCaptain = teamData.captain === player;
+      const pRoles = getPlayerRoles(player);
+      const isNatural = isCompatible(pRoles, slot.reqRole);
       const baseScore = teamData.scores[player] || 0;
-      const finalScore = isCaptain ? (baseScore * 1.5) : baseScore;
-      const decisives = teamData.decisives[player] || [];
+      
+      // Calcolo con malus -1,00 se fuori ruolo
+      let effectiveScore = baseScore;
+      if (baseScore > 0 && !isNatural) {
+        effectiveScore = Math.max(0, effectiveScore - 1.0);
+      }
+      if (baseScore > 0 && isCaptain) {
+        effectiveScore *= 1.5;
+      }
 
       let badgeBg = 'bg-gray-700 text-white';
       if (baseScore >= 7.0) badgeBg = 'bg-emerald-500 text-black';
       else if (baseScore >= 6.0) badgeBg = 'bg-amber-400 text-black';
-      else if (baseScore > 0) badgeBg = 'bg-red-500/80 text-white';
+      else if (baseScore > 0) badgeBg = 'bg-rose-500 text-white';
 
       return `
-        <div onclick="openPlayerModal('${player}', '${role}', '${teamName}')" class="cursor-pointer flex flex-col items-center group">
+        <div onclick="openPlayerModal(${slotIdx}, '${teamName}')" class="cursor-pointer flex flex-col items-center group">
           <div class="card-limited w-16 sm:w-20 rounded-lg p-1.5 flex flex-col items-center relative transition group-hover:scale-105 ${isCaptain ? 'card-captain' : ''}">
             ${isCaptain ? '<div class="absolute -top-2 -right-1 bg-[#ff007a] text-white text-[9px] font-black px-1.5 py-0.2 rounded shadow">C (x1,5)</div>' : ''}
-            <div class="text-[9px] font-bold text-amber-400 uppercase tracking-tighter">${role}</div>
-            <div class="text-[11px] font-black text-white text-center leading-tight truncate w-full mt-1">${player}</div>
+            ${!isNatural ? '<div class="absolute -top-2 -left-1 bg-amber-500 text-black text-[9px] font-black px-1 rounded shadow" title="Fuori Ruolo: Malus -1,00">-1</div>' : ''}
+            
+            <div class="text-[9px] font-black text-amber-400 uppercase tracking-tighter">${slot.label}</div>
+            <div class="text-[11px] font-black text-white text-center leading-tight truncate w-full mt-0.5">${player}</div>
+            
+            <div class="flex gap-0.5 mt-1">
+              ${pRoles.map(r => `<span class="px-1 rounded text-[8px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
+            </div>
           </div>
           <div class="mt-1 flex items-center gap-1">
             <span class="px-2 py-0.5 rounded-full text-[10px] font-black ${badgeBg} shadow">
-              ${baseScore > 0 ? formatScore(finalScore) : '--'}
+              ${baseScore > 0 ? formatScore(effectiveScore) : '--'}
             </span>
-            ${decisives.length ? `<span class="text-[10px]">${decisives.join('')}</span>` : ''}
           </div>
         </div>
       `;
     }
 
-    // Chiamata Live a Sorare API GraphQL con autenticazione API Key
+    // Modal Selezione Giocatore (Naturale vs Fuori Ruolo)
+    let activeSlotIndex = null;
+    let activeTeam = null;
+
+    function openPlayerModal(slotIdx, teamName) {
+      activeSlotIndex = slotIdx;
+      activeTeam = teamName;
+      const t = teamLineups[teamName];
+      const slot = t.titolariSlots[slotIdx];
+
+      document.getElementById('modalTitle').innerText = `Sostituisci nello Slot ${slot.label}`;
+      document.getElementById('modalSubtitle').innerText = `Titolare attuale: ${slot.player} • Ruolo richiesto: ${slot.reqRole}`;
+
+      const roster = ROSTERS[teamName] || [];
+      const naturalContainer = document.getElementById('modalNaturalList');
+      const outContainer = document.getElementById('modalOutOfPositionList');
+
+      naturalContainer.innerHTML = '';
+      outContainer.innerHTML = '';
+
+      roster.forEach(name => {
+        const roles = getPlayerRoles(name);
+        const natural = isCompatible(roles, slot.reqRole);
+        const isCurrent = slot.player === name;
+        const isCap = t.captain === name;
+
+        const rowHtml = `
+          <div class="flex items-center justify-between p-2 rounded-lg bg-gray-800/90 hover:bg-gray-700 transition">
+            <div>
+              <span class="text-xs font-black ${isCurrent ? 'text-amber-400' : 'text-gray-100'}">${name}</span>
+              <div class="flex gap-1 mt-0.5">
+                ${roles.map(r => `<span class="px-1 rounded text-[9px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="setCaptain('${name}')" class="px-2 py-1 rounded text-[10px] font-bold ${isCap ? 'bg-[#ff007a] text-white' : 'bg-gray-700 text-gray-300 hover:text-white'}">
+                ${isCap ? 'Capitano' : 'Fai C'}
+              </button>
+              <button onclick="assignPlayerToSlot('${name}')" class="px-2.5 py-1 rounded text-[10px] font-black ${natural ? 'bg-emerald-400 hover:bg-emerald-300 text-black' : 'bg-amber-500 hover:bg-amber-400 text-black'}">
+                Schiera
+              </button>
+            </div>
+          </div>
+        `;
+
+        if (natural) {
+          naturalContainer.innerHTML += rowHtml;
+        } else {
+          outContainer.innerHTML += rowHtml;
+        }
+      });
+
+      if (!naturalContainer.children.length) {
+        naturalContainer.innerHTML = '<div class="text-xs text-gray-500 italic p-2">Nessun giocatore in rosa con questo ruolo naturale.</div>';
+      }
+
+      document.getElementById('playerModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('playerModal').classList.add('hidden');
+    }
+
+    function assignPlayerToSlot(playerName) {
+      if (activeSlotIndex === null || !activeTeam) return;
+      teamLineups[activeTeam].titolariSlots[activeSlotIndex].player = playerName;
+      closeModal();
+      calcolaTotaliSquadre();
+      updateBanner();
+      renderPitch();
+    }
+
+    function setCaptain(playerName) {
+      if (!activeTeam) return;
+      teamLineups[activeTeam].captain = playerName;
+      closeModal();
+      calcolaTotaliSquadre();
+      updateBanner();
+      renderPitch();
+    }
+
+    // Chiamata Live Sorare API via Proxy trasparente (Niente numeri casuali)
     async function fetchLiveSorareScores() {
       const spinner = document.getElementById('apiSpinner');
       spinner.classList.remove('hidden');
 
-      try {
-        // Query GraphQL standard di Sorare
-        const query = `
-          query GetFootballPlayers($slugs: [String!]!) {
-            football {
-              players(slugs: $slugs) {
-                slug
-                displayName
-                latestScores(last: 1) {
-                  score
-                  playerGameStats {
-                    goals
-                    assists
-                    cleanSheet
-                  }
-                }
+      const query = `
+        query GetFootballPlayers($slugs: [String!]!) {
+          football {
+            players(slugs: $slugs) {
+              displayName
+              latestScores(last: 1) {
+                score
               }
             }
           }
-        `;
+        }
+      `;
 
-        // Raccoglie tutti i nomi dei giocatori schierati
-        let allPlayers = [];
-        Object.values(teamLineups).forEach(t => {
-          allPlayers.push(...t.titolari);
-        });
+      let allPlayers = [];
+      Object.values(teamLineups).forEach(t => {
+        t.titolariSlots.forEach(s => allPlayers.push(s.player));
+      });
+      const uniquePlayers = [...new Set(allPlayers)];
+      const slugs = uniquePlayers.map(p => p.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'));
 
-        // Converte in slug per Sorare (es. "Lautaro Martinez" -> "lautaro-martinez")
-        const slugs = [...new Set(allPlayers)].map(p => p.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'));
+      let dataFound = false;
 
+      try {
         const response = await fetch(SORARE_GRAPHQL_ENDPOINT, {
           method: 'POST',
           headers: {
@@ -377,55 +728,37 @@
         });
 
         if (response.ok) {
-          const resData = await response.json();
-          // Mappa i voti Sorare reali restituiti
-          if (resData.data && resData.data.football && resData.data.football.players) {
-            resData.data.football.players.forEach(p => {
-              const score100 = p.latestScores && p.latestScores[0] ? p.latestScores[0].score : null;
-              if (score100 !== null) {
-                // Converte in decimale 0-10 (es. 68.4 -> 6.84)
-                const decScore = Math.round((score100 / 10) * 100) / 100;
-                applyScoreToPlayer(p.displayName, decScore);
+          const res = await response.json();
+          if (res.data && res.data.football && res.data.football.players) {
+            res.data.football.players.forEach(p => {
+              if (p.latestScores && p.latestScores[0] && p.latestScores[0].score !== null) {
+                const dec = Math.round((p.latestScores[0].score / 10) * 100) / 100;
+                applyScore(p.displayName, dec);
+                dataFound = true;
               }
             });
           }
-        } else {
-          // Se la partita è fuori orario o l'endpoint richiede proxy CORS da browser, applica la matrice Opta locale
-          applicaMatriceLocale();
         }
-      } catch (err) {
-        // Fallback robusto locale
-        applicaMatriceLocale();
-      } finally {
-        spinner.classList.add('hidden');
+      } catch (e) {
+        console.warn("Chiamata API in attesa:", e);
+      }
+
+      spinner.classList.add('hidden');
+
+      if (!dataFound) {
+        alert("Nessun voto live disponibile al momento da Sorare per le partite in corso. I punteggi restano in attesa.");
+      } else {
         calcolaTotaliSquadre();
         updateBanner();
         renderPitch();
       }
     }
 
-    function applicaMatriceLocale() {
-      Object.keys(teamLineups).forEach(team => {
-        const t = teamLineups[team];
-        t.titolari.forEach(p => {
-          let raw = (Math.random() * 3.4 + 3.4);
-          let decisives = [];
-          const roll = Math.random();
-          if (roll < 0.14) { raw += 2.50; decisives.push('⚽'); }
-          else if (roll < 0.25) { raw += 2.50; decisives.push('👟'); }
-          else if (roll < 0.40) { raw += 1.00; decisives.push('🧤'); }
-
-          t.scores[p] = Math.min(10.0, Math.max(0.0, Math.round(raw * 100) / 100));
-          t.decisives[p] = decisives;
-        });
-      });
-    }
-
-    function applyScoreToPlayer(playerName, score) {
+    function applyScore(name, score) {
       Object.values(teamLineups).forEach(t => {
-        t.titolari.forEach(p => {
-          if (p.toLowerCase().includes(playerName.toLowerCase()) || playerName.toLowerCase().includes(p.toLowerCase())) {
-            t.scores[p] = score;
+        t.titolariSlots.forEach(s => {
+          if (s.player.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(s.player.toLowerCase())) {
+            t.scores[s.player] = score;
           }
         });
       });
@@ -435,79 +768,40 @@
       Object.keys(teamLineups).forEach(team => {
         const t = teamLineups[team];
         let total = 0;
-        t.titolari.forEach(p => {
-          let pts = t.scores[p] || 0;
-          if (t.captain === p) pts *= 1.5;
-          total += pts;
+        let anyScore = false;
+
+        t.titolariSlots.forEach(s => {
+          const base = t.scores[s.player] || 0;
+          if (base > 0) {
+            anyScore = true;
+            let eff = base;
+            // Malus -1,00 se fuori ruolo
+            if (!isCompatible(getPlayerRoles(s.player), s.reqRole)) {
+              eff = Math.max(0, eff - 1.0);
+            }
+            if (t.captain === s.player) {
+              eff *= 1.5;
+            }
+            total += eff;
+          }
         });
 
-        t.totalPts = Math.round(total * 100) / 100;
-
-        // Soglie Gol Fantacalcio a 11
-        if (total < 66.0) t.goals = 0;
-        else if (total < 72.0) t.goals = 1;
-        else if (total < 78.0) t.goals = 2;
-        else if (total < 84.0) t.goals = 3;
-        else t.goals = 3 + Math.floor((total - 84.0) / 6.0);
+        if (anyScore) {
+          t.totalPts = Math.round(total * 100) / 100;
+          // Soglie Gol Classiche su 11 giocatori
+          if (total < 66.0) t.goals = 0;
+          else if (total < 72.0) t.goals = 1;
+          else if (total < 78.0) t.goals = 2;
+          else if (total < 84.0) t.goals = 3;
+          else t.goals = 3 + Math.floor((total - 84.0) / 6.0);
+        } else {
+          t.totalPts = 0;
+          t.goals = undefined;
+        }
       });
     }
 
-    // Modal gestione giocatore
-    let activeSlot = null;
-    function openPlayerModal(player, role, teamName) {
-      activeSlot = { player, role, teamName };
-      document.getElementById('modalTitle').innerText = `Sostituisci ${player} (${role}) - ${teamName}`;
-      const listEl = document.getElementById('modalPlayerList');
-      const roster = ROSTERS[teamName] || [];
-
-      listEl.innerHTML = roster.map(name => {
-        const isCurrent = name === player;
-        const isCap = teamLineups[teamName].captain === name;
-        return `
-          <div class="flex items-center justify-between p-2 rounded-lg bg-gray-800/80 hover:bg-gray-700 transition">
-            <span class="text-xs font-bold ${isCurrent ? 'text-amber-400' : 'text-gray-200'}">${name}</span>
-            <div class="flex gap-2">
-              <button onclick="setCaptain('${name}')" class="px-2 py-1 rounded text-[10px] font-bold ${isCap ? 'bg-[#ff007a] text-white' : 'bg-gray-700 text-gray-300 hover:text-white'}">
-                ${isCap ? 'Capitano' : 'Fai C'}
-              </button>
-              <button onclick="assignPlayer('${name}')" class="px-2 py-1 rounded text-[10px] font-bold bg-amber-500 hover:bg-amber-400 text-black">
-                Schiera
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      document.getElementById('playerModal').classList.remove('hidden');
-    }
-
-    function closeModal() {
-      document.getElementById('playerModal').classList.add('hidden');
-    }
-
-    function setCaptain(name) {
-      if (!activeSlot) return;
-      teamLineups[activeSlot.teamName].captain = name;
-      closeModal();
-      calcolaTotaliSquadre();
-      updateBanner();
-      renderPitch();
-    }
-
-    function assignPlayer(newName) {
-      if (!activeSlot) return;
-      const t = teamLineups[activeSlot.teamName];
-      const idx = t.titolari.indexOf(activeSlot.player);
-      if (idx !== -1) {
-        t.titolari[idx] = newName;
-      }
-      closeModal();
-      calcolaTotaliSquadre();
-      updateBanner();
-      renderPitch();
-    }
-
-    // Importazione file Excel per formazioni
+    // Importazione Excel formazioni
     document.getElementById('excelInput').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -517,18 +811,16 @@
         try {
           const data = new Uint8Array(evt.target.result);
           const workbook = XLSX.read(data, {type: 'array'});
-          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          const json = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
-
-          alert("Formazioni caricate con successo dal file Excel!");
+          alert("File formazioni caricato con successo!");
           renderPitch();
         } catch (err) {
-          alert("Errore nella lettura del file Excel: " + err.message);
+          alert("Errore nella lettura del file: " + err.message);
         }
       };
       reader.readAsArrayBuffer(file);
     });
 
+    // Avvio
     initLineups();
     renderMatchesTabs();
     updateBanner();
