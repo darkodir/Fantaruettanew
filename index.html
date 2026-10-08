@@ -225,7 +225,7 @@
       <!-- Glow ambient -->
       <div class="absolute -top-16 -right-16 w-52 h-52 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
 
-      <!-- Header Carta Sorare Limited con Foto -->
+      <!-- Header Carta Sorare Limited con Foto Ufficiale con Maglia -->
       <div class="flex items-start justify-between border-b border-white/10 pb-4">
         <div class="flex items-center gap-3">
           <div class="sorare-card-frame w-20 h-28 rounded-2xl p-1.5 flex flex-col items-center justify-between text-center relative shadow-xl">
@@ -234,9 +234,9 @@
               <span>LIMITED</span>
             </div>
             
-            <!-- Immagine/Avatar Ritagliato -->
+            <!-- Immagine Ritagliata Sorare con Maglia -->
             <div class="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center my-0.5 border border-amber-400/30 bg-black/50">
-              <img id="scPlayerImg" src="" alt="Player" class="w-full h-full object-cover">
+              <img id="scPlayerImg" src="" alt="Player" class="w-full h-full object-cover object-top" onerror="handleImgError(this)">
             </div>
 
             <div class="w-full">
@@ -384,7 +384,7 @@
         </div>
       </div>
 
-      <!-- Pulsanti Azione (Supporta cambio Titolari E cambio Riserve in Panchina) -->
+      <!-- Pulsanti Azione -->
       <div class="pt-3 border-t border-white/10 flex items-center justify-between">
         <button onclick="closeSorareCardModal()" class="px-4 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/15 text-gray-300 transition">
           Chiudi
@@ -645,7 +645,7 @@
       },
       "3-5-2": {
         DEF: [ { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" } ],
-        MID: [ { role: "E", label: "E" }, { role: "M", label: "M/C" }, { role: "C", label: "C" }, { role: "C", label: "C" }, { role: "E", label: "E" } ],
+        MID: [ { role: "E", label: "E" }, { role: "M", label: "M/C" }, { role: "C", label: "C" }, { role: "E", label: "E" } ],
         TRE: [],
         FWD: [ { role: "A", label: "A/Pc" }, { role: "Pc", label: "Pc" } ]
       },
@@ -671,10 +671,94 @@
     let teamLineups = {};
     let playerStatsMap = {};
 
+    // Mappatura Slug Ufficiali Sorare per le foto ritagliate dei calciatori
+    const SORARE_CUSTOM_SLUGS = {
+      "Martinez Jo.": "josep-martinez",
+      "Stankovic F.": "filip-stankovic",
+      "Pessina Mas.": "massi-pessina",
+      "Tiago Gabriel": "tiago-gabriel",
+      "Thuram U.": "khephren-thuram",
+      "Esposito F.P.": "francesco-pio-esposito",
+      "Esposito Se.": "sebastiano-esposito",
+      "Vitinha O.": "vitinha-19991206",
+      "Castro S.": "santiago-castro",
+      "Carlos Augusto": "carlos-augusto-zopolato-neves",
+      "Carboni A.": "andrea-carboni",
+      "Sucic P.": "petar-sucic",
+      "Cissè A.": "alphadjo-cisse",
+      "Dominguez B.": "benjamin-dominguez",
+      "Pellegrino M.": "marco-pellegrino",
+      "Chalobah T.": "trevoh-chalobah",
+      "Zè Pedro": "ze-pedro-19970606",
+      "Sarr P.": "pape-matar-sarr",
+      "Paz N.": "nico-paz",
+      "Robinho Junior": "robinho-junior",
+      "Martinez L.": "lautaro-martinez",
+      "Ederson D.S.": "ederson-jose-dos-santos-lourenco-da-silva",
+      "Santos A.": "andrey-santos",
+      "Davis K.": "keinan-davis",
+      "Floriani Mussolini": "romano-floriani",
+      "Veiga D.": "diego-veiga",
+      "Rodriguez Ju.": "juan-rodriguez-20050805",
+      "Marin R.": "razvan-marin",
+      "Sutalo J.": "josip-sutalo",
+      "Moreno M.": "matias-moreno",
+      "Yeboah J.": "john-yeboah",
+      "Rrahmani Al.": "albion-rrahmani",
+      "Oyono A.": "anthony-oyono",
+      "Tavares N.": "nuno-tavares",
+      "Keita M.": "mandela-keita",
+      "El Azzouzi A.": "anass-el-azzouzi",
+      "Ramos G.": "goncalo-ramos",
+      "Miranda J.": "juan-miranda-20000119",
+      "Ranieri L.": "luca-ranieri",
+      "Gudmundsson A.": "albert-gudmundsson-19970615",
+      "Goncalves P.": "pedro-goncalves",
+      "Unai Gomez": "unai-gomez",
+      "Varela G.": "gustavo-varela",
+      "Jimenez A.": "alex-jimenez-20050508",
+      "Smolcic I.": "ivan-smolcic",
+      "Kelly L.": "lloyd-kelly",
+      "Gaspar K.": "kialonda-gaspar",
+      "Coulibaly L.": "lassana-coulibaly",
+      "Taylor K.": "ken-taylor",
+      "Adams C.": "che-adams",
+      "Adams A.": "adams-albert",
+      "Romero D.": "diego-romero",
+      "Christensen O.": "oliver-christensen",
+      "Patric *": "patricio-gabarron-gil",
+      "Patric": "patricio-gabarron-gil",
+      "Kamara H.": "hassane-kamara",
+      "Jones C.": "curtis-jones",
+      "Kevin Carlos": "kevin-carlos-omogiade",
+      "Tourè E.": "el-bilal-toure",
+      "Milinkovic-Savic V.": "vanja-milinkovic-savic",
+      "Sanchez Ro.": "robert-sanchez-19971118",
+      "Molina N.": "nahuel-molina",
+      "Konè M.": "manu-kone",
+      "Stankovic A.": "aleksandar-stankovic",
+      "Zambo Anguissa": "andre-frank-zambo-anguissa",
+      "Mendy P.": "pedro-mendy"
+    };
+
+    function getSorareSlug(name) {
+      if (SORARE_CUSTOM_SLUGS[name]) return SORARE_CUSTOM_SLUGS[name];
+      return name.toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]/g, '-')
+        .replace(/-+/g, '-');
+    }
+
+    // URL Foto Ufficiale Sorare con divisa da gioco reale
     function getPlayerAvatarUrl(name) {
-      // Avatar vettoriale sagomato ad alta risoluzione in stile Sorare
-      const safe = encodeURIComponent(name);
-      return `https://api.dicebear.com/7.x/bottts/svg?seed=${safe}&backgroundColor=transparent`;
+      const slug = getSorareSlug(name);
+      return `https://assets.sorare.com/player_pictures/${slug}-body.png`;
+    }
+
+    function handleImgError(img) {
+      // Se l'immagine non è presente su Sorare CDN, carica un fallback pulito
+      img.onerror = null;
+      img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(img.alt || 'P')}&background=1a2234&color=d4af37&bold=true&format=svg`;
     }
 
     function toggleLineupLock() {
@@ -868,7 +952,7 @@
 
       rows.TRE.style.display = rows.TRE.children.length === 0 ? 'none' : 'flex';
 
-      // Panchina Mantra a 12 Slot con gestione click
+      // Panchina Mantra a 12 Slot
       const benchBox = document.getElementById('benchContainer');
       benchBox.innerHTML = data.panchina.map((p, idx) => {
         const roles = getPlayerRoles(p);
@@ -877,7 +961,7 @@
           <div onclick="openSorareCardModal('${p}', null, '${teamName}', ${idx})" class="cursor-pointer bg-white/5 hover:bg-white/10 active:scale-95 transition border border-white/5 rounded-2xl p-2 flex flex-col justify-between shadow-sm">
             <div class="flex items-center gap-2">
               <div class="w-8 h-8 rounded-full overflow-hidden bg-black/40 border border-amber-400/20 flex-shrink-0">
-                <img src="${getPlayerAvatarUrl(p)}" alt="" class="w-full h-full object-cover">
+                <img src="${getPlayerAvatarUrl(p)}" alt="${p}" class="w-full h-full object-cover object-top" onerror="handleImgError(this)">
               </div>
               <div class="min-w-0 flex-1">
                 <div class="flex items-center justify-between text-[8px] text-gray-400 font-black">
@@ -928,9 +1012,9 @@
               <span class="text-[7px] text-gray-400">SR</span>
             </div>
             
-            <!-- Immagine Ritagliata Sorare -->
+            <!-- Immagine Ritagliata Ufficiale Sorare con Divisa del Club -->
             <div class="w-12 h-12 rounded-full overflow-hidden my-1 border border-amber-400/30 bg-black/40 flex items-center justify-center shadow-inner">
-              <img src="${getPlayerAvatarUrl(player)}" alt="" class="w-full h-full object-cover">
+              <img src="${getPlayerAvatarUrl(player)}" alt="${player}" class="w-full h-full object-cover object-top" onerror="handleImgError(this)">
             </div>
 
             <div class="text-[10px] sm:text-[11px] font-black text-white text-center leading-tight truncate w-full tracking-tight">${player}</div>
@@ -949,7 +1033,7 @@
       `;
     }
 
-    // Modal Sorare Breakdown & Gestione Slot (Titolare o Panchina)
+    // Modal Sorare Breakdown & Gestione Slot
     let currentModalPlayer = null;
     let currentModalSlotIdx = null;
     let currentModalBenchIdx = null;
@@ -970,7 +1054,11 @@
 
       document.getElementById('scPlayerName').innerText = playerName;
       document.getElementById('scCardMiniName').innerText = playerName;
-      document.getElementById('scPlayerImg').src = getPlayerAvatarUrl(playerName);
+      
+      const scImg = document.getElementById('scPlayerImg');
+      scImg.alt = playerName;
+      scImg.src = getPlayerAvatarUrl(playerName);
+
       document.getElementById('scBadgeRole').innerText = roles[0];
       document.getElementById('scBadgeRole').className = `text-[8px] font-black px-1.5 py-0.5 rounded ${getBadgeClass(roles[0])}`;
       
@@ -1033,11 +1121,9 @@
         lockedWarn.classList.add('hidden');
 
         if (benchIdx !== null) {
-          // Si sta gestendo una riserva in panchina
           capBtn.classList.add('hidden');
           replaceBtn.innerText = "Cambia in Panchina";
         } else {
-          // Si sta gestendo un titolare in campo
           capBtn.classList.remove('hidden');
           replaceBtn.innerText = "Sostituisci";
         }
@@ -1068,7 +1154,7 @@
       openPlayerModal(s, t, b);
     }
 
-    // Generatore Realistico di Statistiche Opta Complete con Matrice Sorare
+    // Generatore Realistico di Statistiche Opta Complete
     function generateMockStats(player, score) {
       const isPor = getPlayerRoles(player).includes('Por');
       const hasYellow = Math.random() < 0.18;
@@ -1108,7 +1194,7 @@
       };
     }
 
-    // Modal Sostituto: Supporta sia Slot Titolare che Slot Panchina
+    // Modal Sostituto
     let activeSlotIndex = null;
     let activeBenchIndex = null;
     let activeTeam = null;
@@ -1128,14 +1214,12 @@
       naturalContainer.innerHTML = '';
       outContainer.innerHTML = '';
 
-      // Se stiamo gestendo la PANCHINA
       if (benchIdx !== null) {
         const currentBenchPlayer = t.panchina[benchIdx];
         document.getElementById('modalTitle').innerText = `Cambia Riserva #${benchIdx + 1} in Panchina`;
         document.getElementById('modalSubtitle').innerText = `Attuale riserva: ${currentBenchPlayer}`;
-        outSection.classList.add('hidden'); // In panchina non c'è malus di slot
+        outSection.classList.add('hidden');
 
-        // Mostra i giocatori della rosa che NON sono né in campo né in panchina
         const titolariNames = t.titolariSlots.map(s => s.player);
         const benchNames = t.panchina;
         const availablePool = roster.filter(p => !titolariNames.includes(p) && (!benchNames.includes(p) || p === currentBenchPlayer));
@@ -1148,7 +1232,7 @@
             <div class="flex items-center justify-between p-2 rounded-2xl bg-white/5 hover:bg-white/10 transition">
               <div class="flex items-center gap-2">
                 <div class="w-8 h-8 rounded-full overflow-hidden bg-black/40 border border-amber-400/20 flex-shrink-0">
-                  <img src="${getPlayerAvatarUrl(name)}" alt="" class="w-full h-full object-cover">
+                  <img src="${getPlayerAvatarUrl(name)}" alt="${name}" class="w-full h-full object-cover object-top" onerror="handleImgError(this)">
                 </div>
                 <div>
                   <span class="text-xs font-black ${isCurrent ? 'text-amber-400' : 'text-gray-100'}">${name}</span>
@@ -1165,7 +1249,6 @@
         });
 
       } else {
-        // Se stiamo gestendo un TITOLARE in Campo
         outSection.classList.remove('hidden');
         const slot = t.titolariSlots[slotIdx];
         document.getElementById('modalTitle').innerText = `Sostituisci nello Slot ${slot.label}`;
@@ -1197,7 +1280,7 @@
             <div class="flex items-center justify-between p-2 rounded-2xl bg-white/5 hover:bg-white/10 transition ${isAlreadyFieldedElsewhere ? 'opacity-40' : ''}">
               <div class="flex items-center gap-2">
                 <div class="w-8 h-8 rounded-full overflow-hidden bg-black/40 border border-amber-400/20 flex-shrink-0">
-                  <img src="${getPlayerAvatarUrl(name)}" alt="" class="w-full h-full object-cover">
+                  <img src="${getPlayerAvatarUrl(name)}" alt="${name}" class="w-full h-full object-cover object-top" onerror="handleImgError(this)">
                 </div>
                 <div>
                   <span class="text-xs font-black ${isCurrent ? 'text-amber-400' : 'text-gray-100'}">${name}</span>
@@ -1233,7 +1316,6 @@
 
       t.titolariSlots[activeSlotIndex].player = playerName;
 
-      // Scambia con panchina se il giocatore era una riserva
       const benchIdx = t.panchina.indexOf(playerName);
       if (benchIdx !== -1) {
         t.panchina[benchIdx] = oldPlayer;
@@ -1314,7 +1396,7 @@
       else alert("Nessuna corrispondenza valida trovata.");
     }
 
-    // Sorare Live API con Parsing Esteso
+    // Sorare Live API
     async function fetchLiveSorareScores() {
       const spinner = document.getElementById('apiSpinner');
       spinner.classList.remove('hidden');
@@ -1352,7 +1434,7 @@
         allPlayers.push(...t.panchina);
       });
       const uniquePlayers = [...new Set(allPlayers)];
-      const slugs = uniquePlayers.map(p => p.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'));
+      const slugs = uniquePlayers.map(p => getSorareSlug(p));
 
       let dataFound = false;
 
