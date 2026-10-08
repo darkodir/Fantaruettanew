@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- Bypassa il blocco anti-hotlinking 403 dei server di immagini -->
+  <meta name="referrer" content="no-referrer">
   <title>Fanta-Sorare 11 | Premier Ruetta (Pro Edition)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -234,8 +236,8 @@
             </div>
             
             <!-- Immagine Ritagliata Sorare con Maglia -->
-            <div class="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center my-0.5 border border-amber-400/30 bg-black/50">
-              <img id="scPlayerImg" src="" alt="Player" class="w-full h-full object-cover object-top" onerror="handleImgError(this)">
+            <div id="scPlayerImgBox" class="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center my-0.5 border border-amber-400/30 bg-black/50">
+              <img id="scPlayerImg" src="" alt="Player" referrerpolicy="no-referrer" class="w-full h-full object-cover object-top" onerror="handleImgError(this, 'scPlayerImgBox')">
             </div>
 
             <div class="w-full">
@@ -462,7 +464,7 @@
 
     let isLineupLocked = false;
 
-    // Rose Ufficiali Complete della Premier Ruetta
+    // Rose Ufficiali Complete
     const ROSTERS = {
       "DUA LIPAnathinaikos": [
         "Skorupski", "Happonen", "Pessina Mas.", "Birindelli", "Walukiewicz", "Valle", "Bracaglia", 
@@ -669,7 +671,7 @@
     let teamLineups = {};
     let playerStatsMap = {};
 
-    // Mappatura fotografica diretta senza blocchi hotlink (Sofascore & Serie A Open CDN)
+    // Mappatura fotografica diretta senza blocchi hotlink
     const PLAYER_PHOTO_IDS = {
       // DUA LIPAnathinaikos
       "Skorupski": "https://api.sofascore.app/api/v1/player/43977/image",
@@ -763,17 +765,23 @@
       "Pinamonti": "https://api.sofascore.app/api/v1/player/846050/image"
     };
 
+    // Generatore Maglietta Ufficiale Stilizzata per Club Serie A
+    function getClubJerseySvg(name) {
+      const initial = (name || "P").substring(0, 2).toUpperCase();
+      return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%23d4af37"/><stop offset="100%" stop-color="%237a5f15"/></linearGradient></defs><circle cx="40" cy="40" r="39" fill="%23121722" stroke="%23d4af37" stroke-width="2"/><path d="M22 25 L32 16 L48 16 L58 25 L52 35 L48 31 L48 64 L32 64 L32 31 L28 35 Z" fill="url(%23g)" stroke="%23fff" stroke-width="1.2"/><text x="40" y="52" fill="%23000" font-family="sans-serif" font-weight="900" font-size="14" text-anchor="middle">${initial}</text></svg>`;
+    }
+
     function getPlayerAvatarUrl(name) {
       if (PLAYER_PHOTO_IDS[name]) {
         return PLAYER_PHOTO_IDS[name];
       }
-      // Fallback: avatar sagomato ad alta risoluzione con iniziale oro
-      return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1c1708&color=d4af37&bold=true&size=128&rounded=true`;
+      return getClubJerseySvg(name);
     }
 
-    function handleImgError(img) {
+    function handleImgError(img, containerId = null) {
       img.onerror = null;
-      img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(img.alt || 'P')}&background=1c1708&color=d4af37&bold=true&size=128&rounded=true`;
+      const playerName = img.alt || "P";
+      img.src = getClubJerseySvg(playerName);
     }
 
     function toggleLineupLock() {
@@ -976,7 +984,7 @@
           <div onclick="openSorareCardModal('${p}', null, '${teamName}', ${idx})" class="cursor-pointer bg-white/5 hover:bg-white/10 active:scale-95 transition border border-white/5 rounded-2xl p-2 flex flex-col justify-between shadow-sm">
             <div class="flex items-center gap-2">
               <div class="w-8 h-8 rounded-full overflow-hidden bg-black/40 border border-amber-400/20 flex-shrink-0">
-                <img src="${getPlayerAvatarUrl(p)}" alt="${p}" class="w-full h-full object-cover object-top" onerror="handleImgError(this)">
+                <img src="${getPlayerAvatarUrl(p)}" alt="${p}" referrerpolicy="no-referrer" class="w-full h-full object-cover object-top" onerror="handleImgError(this)">
               </div>
               <div class="min-w-0 flex-1">
                 <div class="flex items-center justify-between text-[8px] text-gray-400 font-black">
@@ -1029,7 +1037,7 @@
             
             <!-- Immagine Ritagliata con Maglia -->
             <div class="w-12 h-12 rounded-full overflow-hidden my-1 border border-amber-400/30 bg-black/40 flex items-center justify-center shadow-inner">
-              <img src="${getPlayerAvatarUrl(player)}" alt="${player}" class="w-full h-full object-cover object-top" onerror="handleImgError(this)">
+              <img src="${getPlayerAvatarUrl(player)}" alt="${player}" referrerpolicy="no-referrer" class="w-full h-full object-cover object-top" onerror="handleImgError(this)">
             </div>
 
             <div class="text-[10px] sm:text-[11px] font-black text-white text-center leading-tight truncate w-full tracking-tight">${player}</div>
@@ -1245,7 +1253,7 @@
             <div class="flex items-center justify-between p-2 rounded-2xl bg-white/5 hover:bg-white/10 transition">
               <div class="flex items-center gap-2">
                 <div class="w-8 h-8 rounded-full overflow-hidden bg-black/40 border border-amber-400/20 flex-shrink-0">
-                  <img src="${getPlayerAvatarUrl(name)}" alt="${name}" class="w-full h-full object-cover object-top" onerror="handleImgError(this)">
+                  <img src="${getPlayerAvatarUrl(name)}" alt="${name}" referrerpolicy="no-referrer" class="w-full h-full object-cover object-top" onerror="handleImgError(this)">
                 </div>
                 <div>
                   <span class="text-xs font-black ${isCurrent ? 'text-amber-400' : 'text-gray-100'}">${name}</span>
@@ -1293,7 +1301,7 @@
             <div class="flex items-center justify-between p-2 rounded-2xl bg-white/5 hover:bg-white/10 transition ${isAlreadyFieldedElsewhere ? 'opacity-40' : ''}">
               <div class="flex items-center gap-2">
                 <div class="w-8 h-8 rounded-full overflow-hidden bg-black/40 border border-amber-400/20 flex-shrink-0">
-                  <img src="${getPlayerAvatarUrl(name)}" alt="${name}" class="w-full h-full object-cover object-top" onerror="handleImgError(this)">
+                  <img src="${getPlayerAvatarUrl(name)}" alt="${name}" referrerpolicy="no-referrer" class="w-full h-full object-cover object-top" onerror="handleImgError(this)">
                 </div>
                 <div>
                   <span class="text-xs font-black ${isCurrent ? 'text-amber-400' : 'text-gray-100'}">${name}</span>
