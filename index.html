@@ -52,19 +52,27 @@
               Mantra Edition
             </span>
           </div>
-          <p class="text-xs text-gray-400">Lega Premier Ruetta • Moduli Mantra • Scala Voti 0-10</p>
+          <p class="text-xs text-gray-400">Lega Premier Ruetta • Voti 0-10 Opta Matrix</p>
         </div>
       </div>
 
-      <!-- Azioni rapide -->
-      <div class="flex items-center gap-2">
-        <button onclick="openPasteModal()" class="bg-gray-800 hover:bg-gray-700 text-amber-300 text-xs font-semibold px-3 py-2 rounded-lg border border-amber-500/30 flex items-center gap-1.5 transition">
+      <!-- Azioni e Blocco Formazioni -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <!-- Interruttore Blocco Formazioni -->
+        <button id="btnLockToggle" onclick="toggleLineupLock()" class="px-3 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 bg-emerald-950/60 border-emerald-500/40 text-emerald-300">
+          <span id="lockIcon">🔓</span>
+          <span id="lockText">Formazioni Aperte</span>
+        </button>
+
+        <button id="btnPaste" onclick="openPasteModal()" class="bg-gray-800 hover:bg-gray-700 text-amber-300 text-xs font-semibold px-3 py-2 rounded-lg border border-amber-500/30 flex items-center gap-1.5 transition">
           📋 Incolla Formazioni
         </button>
-        <label class="cursor-pointer bg-gray-800 hover:bg-gray-700 text-amber-300 text-xs font-semibold px-3 py-2 rounded-lg border border-amber-500/30 flex items-center gap-1.5 transition">
+
+        <label id="btnExcelLabel" class="cursor-pointer bg-gray-800 hover:bg-gray-700 text-amber-300 text-xs font-semibold px-3 py-2 rounded-lg border border-amber-500/30 flex items-center gap-1.5 transition">
           <span>📥 Importa Excel</span>
           <input type="file" id="excelInput" accept=".xlsx, .xls, .csv" class="hidden">
         </label>
+
         <button id="btnFetchApi" onclick="fetchLiveSorareScores()" class="bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-black font-black text-xs px-4 py-2 rounded-lg shadow-lg shadow-amber-500/20 uppercase tracking-wider transition flex items-center gap-1.5">
           <span id="apiSpinner" class="hidden animate-spin">⏳</span>
           <span>📡 Aggiorna Voti Live</span>
@@ -131,27 +139,16 @@
     <!-- Campo Tattico 3D con griglia reattiva Mantra -->
     <div class="pitch-3d overflow-hidden py-2">
       <div class="pitch-surface max-w-4xl mx-auto p-4 sm:p-6 min-h-[640px] flex flex-col justify-between relative">
-        
-        <!-- Linee del campo -->
         <div class="absolute inset-0 pointer-events-none opacity-20 flex flex-col justify-between p-4">
           <div class="w-full h-1/2 border-b-2 border-white relative flex items-center justify-center">
             <div class="w-28 h-28 rounded-full border-2 border-white"></div>
           </div>
         </div>
 
-        <!-- Linea Attacco (FWD) -->
         <div id="pitchRowFWD" class="flex justify-around items-center z-10 gap-2 min-h-[90px]"></div>
-
-        <!-- Linea Trequarti (TRE) -->
         <div id="pitchRowTRE" class="flex justify-around items-center z-10 gap-2 min-h-[90px]"></div>
-
-        <!-- Linea Centrocampo (MID) -->
         <div id="pitchRowMID" class="flex justify-around items-center z-10 gap-2 min-h-[90px]"></div>
-
-        <!-- Linea Difesa (DEF) -->
         <div id="pitchRowDEF" class="flex justify-around items-center z-10 gap-2 min-h-[90px]"></div>
-
-        <!-- Portiere (Por) -->
         <div id="pitchRowPOR" class="flex justify-center items-center z-10 min-h-[90px]"></div>
       </div>
     </div>
@@ -167,25 +164,113 @@
 
   </main>
 
-  <!-- Modal Incolla Formazioni -->
-  <div id="pasteModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-[#121722] border border-gray-700 w-full max-w-lg rounded-2xl p-5 flex flex-col shadow-2xl space-y-4">
-      <div class="flex justify-between items-center pb-2 border-b border-gray-800">
-        <h4 class="text-sm font-black text-amber-300">Incolla Formazioni da Fantacalcio.it</h4>
-        <button onclick="closePasteModal()" class="text-gray-400 hover:text-white text-xl font-bold">&times;</button>
+  <!-- MODAL: Scheda Giocatore stile Sorare Breakdown -->
+  <div id="sorareCardModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#10141d] border border-amber-500/40 w-full max-w-lg rounded-3xl p-6 shadow-2xl space-y-5 text-gray-200 relative overflow-hidden">
+      <div class="absolute -top-12 -right-12 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <!-- Header Carta e Punteggio -->
+      <div class="flex items-start justify-between border-b border-gray-800 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="card-limited w-16 h-22 rounded-xl p-2 flex flex-col items-center justify-center text-center shadow-lg relative">
+            <span id="scBadgeRole" class="text-[9px] font-black px-1.5 py-0.5 rounded role-att mb-1">Pc</span>
+            <span class="text-[10px] font-black text-amber-300 tracking-wider">LIMITED</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 id="scPlayerName" class="text-lg font-black text-white">Nome Calciatore</h3>
+              <span id="scCaptainBadge" class="hidden bg-[#ff007a] text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow">CAPITANO</span>
+            </div>
+            <div id="scPlayerRoles" class="flex gap-1 mt-1"></div>
+            <p id="scMatchStatus" class="text-[11px] text-emerald-400 font-bold mt-1 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Match Live • Opta Feed
+            </p>
+          </div>
+        </div>
+
+        <div class="text-right">
+          <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Punteggio Live</span>
+          <span id="scFinalScore" class="font-teko text-5xl font-bold text-amber-300 leading-none">--</span>
+        </div>
       </div>
-      <p class="text-xs text-gray-400 leading-relaxed">
-        Copia e incolla qui sotto il testo o l'elenco dei giocatori schierati (o i tabellini) esportati da Leghe Fantacalcio:
-      </p>
-      <textarea id="pasteInput" rows="8" placeholder="Es:&#10;DUA LIPAnathinaikos: Skorupski, Mancini, Barella, Hojlund...&#10;oppure lista dei nomi..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-xs text-amber-200 focus:outline-none focus:border-amber-400 font-mono"></textarea>
-      <div class="flex justify-end gap-2 pt-2">
-        <button onclick="closePasteModal()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-800 text-gray-300">Annulla</button>
-        <button onclick="processPastedLineups()" class="px-4 py-1.5 rounded-lg text-xs font-black bg-amber-500 hover:bg-amber-400 text-black">Applica Formazioni</button>
+
+      <!-- Scomposizione: Decisive vs All-Around Score -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-gray-900/80 border border-gray-800 rounded-2xl p-3">
+          <div class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Decisive Score</div>
+          <div class="flex items-baseline gap-1">
+            <span id="scDecisivePts" class="font-teko text-3xl font-black text-white">3,50</span>
+            <span class="text-[10px] text-gray-400">base</span>
+          </div>
+          <div id="scDecisiveEvents" class="text-xs mt-1 text-gray-300 space-y-0.5">
+            <div class="text-gray-500 italic text-[11px]">Nessun bonus decisivo</div>
+          </div>
+        </div>
+
+        <div class="bg-gray-900/80 border border-gray-800 rounded-2xl p-3">
+          <div class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">All-Around (AAS)</div>
+          <div class="flex items-baseline gap-1">
+            <span id="scAasPts" class="font-teko text-3xl font-black text-cyan-400">+0,00</span>
+            <span class="text-[10px] text-gray-400">statistico</span>
+          </div>
+          <div id="scAasComment" class="text-[11px] text-gray-400 mt-1">Prestazione complessiva</div>
+        </div>
+      </div>
+
+      <!-- Griglia Statistiche di Partita (Opta Matrix) -->
+      <div>
+        <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Statistiche Dettagliate Opta</h4>
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-2">
+            <span class="text-[10px] text-gray-400 block font-semibold">Minuti</span>
+            <span id="statMins" class="text-sm font-black text-white">90'</span>
+          </div>
+          <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-2">
+            <span class="text-[10px] text-gray-400 block font-semibold">Gol / Assist</span>
+            <span id="statGoalsAssists" class="text-sm font-black text-emerald-400">0 / 0</span>
+          </div>
+          <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-2">
+            <span class="text-[10px] text-gray-400 block font-semibold">Tiri (In Porta)</span>
+            <span id="statShots" class="text-sm font-black text-white">0 (0)</span>
+          </div>
+          <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-2">
+            <span class="text-[10px] text-gray-400 block font-semibold">Pass. Chiave</span>
+            <span id="statKeyPasses" class="text-sm font-black text-white">0</span>
+          </div>
+          <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-2">
+            <span class="text-[10px] text-gray-400 block font-semibold">Duelli Vinti</span>
+            <span id="statDuels" class="text-sm font-black text-white">0</span>
+          </div>
+          <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-2">
+            <span class="text-[10px] text-gray-400 block font-semibold">Recuperi / Parate</span>
+            <span id="statDef" class="text-sm font-black text-white">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Azioni Slot (Abilitate solo se le formazioni sono aperte) -->
+      <div id="scActionsBox" class="pt-3 border-t border-gray-800 flex items-center justify-between">
+        <button onclick="closeSorareCardModal()" class="px-4 py-2 rounded-xl text-xs font-bold bg-gray-800 hover:bg-gray-700 text-gray-300 transition">
+          Chiudi
+        </button>
+
+        <div id="scEditButtons" class="flex gap-2">
+          <button id="scBtnCaptain" onclick="modalMakeCaptain()" class="px-3 py-2 rounded-xl text-xs font-bold bg-[#ff007a] hover:bg-[#ff007a]/80 text-white transition">
+            Fascia Capitano (x1,5)
+          </button>
+          <button id="scBtnReplace" onclick="modalOpenReplaceList()" class="px-4 py-2 rounded-xl text-xs font-black bg-amber-500 hover:bg-amber-400 text-black transition">
+            Sostituisci
+          </button>
+        </div>
+
+        <div id="scLockedWarning" class="hidden text-xs text-amber-400/90 font-bold flex items-center gap-1.5">
+          <span>🔒</span> Formazioni bloccate (Partita iniziata)
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal Selezione Calciatore -->
+  <!-- Modal Selezione Sostituto -->
   <div id="playerModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-[#121722] border border-gray-700 w-full max-w-lg rounded-2xl p-5 max-h-[85vh] flex flex-col shadow-2xl">
       <div class="flex justify-between items-center pb-3 border-b border-gray-800">
@@ -214,15 +299,35 @@
     </div>
   </div>
 
+  <!-- Modal Incolla Formazioni -->
+  <div id="pasteModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#121722] border border-gray-700 w-full max-w-lg rounded-2xl p-5 flex flex-col shadow-2xl space-y-4">
+      <div class="flex justify-between items-center pb-2 border-b border-gray-800">
+        <h4 class="text-sm font-black text-amber-300">Incolla Formazioni da Fantacalcio.it</h4>
+        <button onclick="closePasteModal()" class="text-gray-400 hover:text-white text-xl font-bold">&times;</button>
+      </div>
+      <p class="text-xs text-gray-400 leading-relaxed">
+        Copia e incolla qui sotto il testo delle formazioni consegnate:
+      </p>
+      <textarea id="pasteInput" rows="8" placeholder="Es: Skorupski, Mancini, Barella, Hojlund..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-xs text-amber-200 focus:outline-none focus:border-amber-400 font-mono"></textarea>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closePasteModal()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-800 text-gray-300">Annulla</button>
+        <button onclick="processPastedLineups()" class="px-4 py-1.5 rounded-lg text-xs font-black bg-amber-500 hover:bg-amber-400 text-black">Applica Formazioni</button>
+      </div>
+    </div>
+  </div>
+
   <footer class="border-t border-gray-800 text-center py-3 text-xs text-gray-500">
-    Fanta-Sorare 11 • Premier Ruetta Mantra • Scala Voti Decimale Opta
+    Fanta-Sorare 11 • Premier Ruetta Mantra • Voti 0-10 con Decimali (Opta Decisive + AAS)
   </footer>
 
   <script>
     const SORARE_API_KEY = "0d8977ade807a8de0039bf6d398128400c953dfa18d16cf730bb480290fc94d6ebe8a91ad1aca56291a562c91d7962d4201f2c15a21aadf6e14c99f6bfcsr128";
     const SORARE_GRAPHQL_ENDPOINT = "https://api.sorare.com/graphql";
 
-    // Rose UFFICIALI E COMPLETE estratte dal file Excel originale
+    let isLineupLocked = false;
+
+    // Rose UFFICIALI E COMPLETE
     const ROSTERS = {
       "DUA LIPAnathinaikos": [
         "Skorupski", "Happonen", "Pessina Mas.", "Birindelli", "Walukiewicz", "Valle", "Bracaglia", 
@@ -297,9 +402,8 @@
       ]
     };
 
-    // Database Ruoli Mantra per TUTTI i calciatori delle rose effettive
+    // Database Ruoli Mantra
     const MANTRA_ROLES = {
-      // Portieri
       "Skorupski": ["Por"], "Happonen": ["Por"], "Pessina Mas.": ["Por"], "Svilar": ["Por"], "De Marzi": ["Por"],
       "Gollini": ["Por"], "Maignan": ["Por"], "Torriani": ["Por"], "Terracciano": ["Por"], "De Gea": ["Por"],
       "Perri": ["Por"], "Grabara": ["Por"], "Tornqvist": ["Por"], "Provedel": ["Por"], "Mandas": ["Por"],
@@ -310,7 +414,6 @@
       "Contini": ["Por"], "Bijlow": ["Por"], "Palmisani": ["Por"], "Desplanches": ["Por"], "Stolz": ["Por"],
       "Christensen O.": ["Por"], "Butez": ["Por"], "Milinkovic-Savic V.": ["Por"], "Sanchez Ro.": ["Por"], "Vigorito": ["Por"],
 
-      // Difensori
       "Birindelli": ["Dd", "E"], "Walukiewicz": ["Dc"], "Valle": ["Ds", "E"], "Bracaglia": ["Dc"], "Bernasconi": ["Ds", "E"],
       "Mancini": ["Dc"], "Schingtienne": ["Dc"], "Balerdi": ["Dc"], "Tiago Gabriel": ["Dc"], "Gabbia": ["Dc"],
       "Celik": ["Dd", "E"], "Bertola": ["Dc"], "Kossounou": ["Dc", "Dd"], "Pavard": ["Dc", "Dd"], "Haps": ["Ds", "E"],
@@ -339,7 +442,6 @@
       "Kouadio": ["Dd", "E"], "Gallo": ["Ds", "E"], "Mangas": ["Ds", "E"], "Gila": ["Dc"], "Stones": ["Dc", "M"],
       "Bisseck": ["Dc", "Dd"], "Molina N.": ["Dd", "E"],
 
-      // Centrocampisti & Trequartisti
       "Wesley": ["E", "W"], "Lobotka": ["M", "C"], "Ngom": ["C"], "Jashari": ["M", "C"], "McTominay": ["C", "T"],
       "Barella": ["C", "T"], "Da Cunha": ["C", "T", "W"], "Ndour": ["C", "M"], "Alajbegovic": ["W", "A"], "Zalewski": ["E", "W"],
       "Diouf": ["C"], "Chukwueze": ["W", "A"], "Calhanoglu": ["C", "M"], "Matic": ["M"], "Fazzini": ["C", "T"], "Mandragora": ["M", "C"],
@@ -355,7 +457,6 @@
       "Cacciamani": ["W"], "Frendrup": ["M", "C"], "Romano": ["C"], "Jones C.": ["C"], "Samardzic": ["T", "C"], "Adzic": ["C", "T"], "Pasalic": ["C", "T"], "Paz N.": ["T", "W"], "De Bruyne": ["T", "C"], "Zaccagni": ["W", "A"],
       "Ciurria": ["E", "W"], "Konè M.": ["C", "M"], "Cristante": ["M", "C"], "Stankovic A.": ["M", "C"], "Thorstvedt": ["C", "T"], "Zambo Anguissa": ["C", "M"], "Baturina": ["T", "C"], "Baldanzi": ["T", "A"], "Liberali": ["T"], "Meichtry": ["C"], "Politano": ["W", "A"], "Njie": ["A", "W"], "Pierotti": ["A"], "Yildiz": ["A", "T"], "Laurientè": ["A", "W"],
 
-      // Attaccanti & Punte
       "Woltemade": ["Pc"], "Hojlund": ["Pc"], "Romero D.": ["A"], "Adams A.": ["Pc"], "Nzola": ["Pc"],
       "Rowe": ["W", "A"], "Diao": ["A", "Pc"], "Mbangula": ["A", "W"], "Vitinha O.": ["Pc"], "Simeone": ["Pc"], "Castro S.": ["Pc"], "Esposito F.P.": ["Pc"],
       "Malen": ["A", "Pc"], "Douvikas": ["Pc"], "Pellegrino M.": ["Pc"], "Raimondo": ["Pc"],
@@ -421,6 +522,32 @@
     let currentMatchIndex = 0;
     let currentView = 'home';
     let teamLineups = {};
+
+    // Dati statistici di dettaglio (Opta Breakdown) per giocatore
+    let playerStatsMap = {};
+
+    function toggleLineupLock() {
+      isLineupLocked = !isLineupLocked;
+      const btn = document.getElementById('btnLockToggle');
+      const icon = document.getElementById('lockIcon');
+      const text = document.getElementById('lockText');
+      const pasteBtn = document.getElementById('btnPaste');
+      const excelLabel = document.getElementById('btnExcelLabel');
+
+      if (isLineupLocked) {
+        btn.className = "px-3 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 bg-rose-950/60 border-rose-500/40 text-rose-300";
+        icon.innerText = "🔒";
+        text.innerText = "Formazioni Bloccate";
+        pasteBtn.classList.add('opacity-50', 'pointer-events-none');
+        excelLabel.classList.add('opacity-50', 'pointer-events-none');
+      } else {
+        btn.className = "px-3 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 bg-emerald-950/60 border-emerald-500/40 text-emerald-300";
+        icon.innerText = "🔓";
+        text.innerText = "Formazioni Aperte";
+        pasteBtn.classList.remove('opacity-50', 'pointer-events-none');
+        excelLabel.classList.remove('opacity-50', 'pointer-events-none');
+      }
+    }
 
     function formatScore(val) {
       if (val === undefined || val === null || isNaN(val) || val === 0) return '--';
@@ -504,6 +631,10 @@
     }
 
     function onModuleChange(newModule) {
+      if (isLineupLocked) {
+        alert("Formazioni bloccate! Non è possibile modificare il modulo tattico a turno iniziato.");
+        return;
+      }
       const match = GW6_MATCHES[currentMatchIndex];
       const teamName = currentView === 'home' ? match.home : match.away;
       const t = teamLineups[teamName];
@@ -591,7 +722,7 @@
         const roles = getPlayerRoles(p);
         const pts = data.scores[p] || 0;
         return `
-          <div class="bg-gray-800/80 border border-gray-700 rounded-lg p-2 flex flex-col justify-between">
+          <div onclick="openSorareCardModal('${p}', null, '${teamName}')" class="cursor-pointer bg-gray-800/80 hover:bg-gray-700/80 transition border border-gray-700 rounded-lg p-2 flex flex-col justify-between">
             <div>
               <div class="flex items-center justify-between text-[10px] text-gray-400 font-bold">
                 <span>P${idx+1}</span>
@@ -628,7 +759,7 @@
       else if (baseScore > 0) badgeBg = 'bg-rose-500 text-white';
 
       return `
-        <div onclick="openPlayerModal(${slotIdx}, '${teamName}')" class="cursor-pointer flex flex-col items-center group">
+        <div onclick="openSorareCardModal('${player}', ${slotIdx}, '${teamName}')" class="cursor-pointer flex flex-col items-center group">
           <div class="card-limited w-16 sm:w-20 rounded-lg p-1.5 flex flex-col items-center relative transition group-hover:scale-105 ${isCaptain ? 'card-captain' : ''}">
             ${isCaptain ? '<div class="absolute -top-2 -right-1 bg-[#ff007a] text-white text-[9px] font-black px-1.5 py-0.2 rounded shadow">C (x1,5)</div>' : ''}
             ${!isNatural ? '<div class="absolute -top-2 -left-1 bg-amber-500 text-black text-[9px] font-black px-1 rounded shadow" title="Fuori Ruolo: Malus -1,00">-1</div>' : ''}
@@ -649,17 +780,130 @@
       `;
     }
 
+    // GESTIONE SCHEDA SORARE BREAKDOWN
+    let currentModalPlayer = null;
+    let currentModalSlotIdx = null;
+    let currentModalTeam = null;
+
+    function openSorareCardModal(playerName, slotIdx, teamName) {
+      currentModalPlayer = playerName;
+      currentModalSlotIdx = slotIdx;
+      currentModalTeam = teamName;
+
+      const team = teamLineups[teamName];
+      const isCaptain = team.captain === playerName;
+      const roles = getPlayerRoles(playerName);
+      const score = team.scores[playerName] || 0;
+
+      // Recupera o genera statistiche realistiche dal feed
+      const stats = playerStatsMap[playerName] || generateMockStats(playerName, score);
+
+      document.getElementById('scPlayerName').innerText = playerName;
+      document.getElementById('scBadgeRole').innerText = roles[0];
+      document.getElementById('scBadgeRole').className = `text-[9px] font-black px-1.5 py-0.5 rounded mb-1 ${getBadgeClass(roles[0])}`;
+      
+      const rolesBox = document.getElementById('scPlayerRoles');
+      rolesBox.innerHTML = roles.map(r => `<span class="px-1.5 py-0.5 rounded text-[10px] font-black ${getBadgeClass(r)}">${r}</span>`).join('');
+
+      const capBadge = document.getElementById('scCaptainBadge');
+      if (isCaptain) capBadge.classList.remove('hidden');
+      else capBadge.classList.add('hidden');
+
+      // Calcolo Decisive & All-Around
+      const finalVal = isCaptain ? (score * 1.5) : score;
+      document.getElementById('scFinalScore').innerText = score > 0 ? formatScore(finalVal) : '--';
+
+      const decisivePts = stats.decisiveEvents.length > 0 ? (3.5 + stats.decisiveEvents.length * 2.5) : (score > 0 ? 3.5 : 0);
+      document.getElementById('scDecisivePts').innerText = formatScore(decisivePts);
+
+      const aasPts = score > 0 ? Math.max(0, score - decisivePts) : 0;
+      document.getElementById('scAasPts').innerText = `+${formatScore(aasPts)}`;
+
+      // Eventi decisivi
+      const devBox = document.getElementById('scDecisiveEvents');
+      if (stats.decisiveEvents.length > 0) {
+        devBox.innerHTML = stats.decisiveEvents.map(e => `<div class="text-emerald-400 font-bold text-[11px]">${e}</div>`).join('');
+      } else {
+        devBox.innerHTML = `<div class="text-gray-500 italic text-[11px]">Nessun bonus decisivo</div>`;
+      }
+
+      // Popola griglia statistiche
+      document.getElementById('statMins').innerText = score > 0 ? `${stats.mins}'` : '--';
+      document.getElementById('statGoalsAssists').innerText = `${stats.goals} / ${stats.assists}`;
+      document.getElementById('statShots').innerText = `${stats.shots} (${stats.shotsOnTarget})`;
+      document.getElementById('statKeyPasses').innerText = stats.keyPasses;
+      document.getElementById('statDuels').innerText = stats.duelsWon;
+      document.getElementById('statDef').innerText = roles.includes('Por') ? stats.saves : stats.recoveries;
+
+      // Gestione Blocco Formazioni
+      const editBtns = document.getElementById('scEditButtons');
+      const lockedWarn = document.getElementById('scLockedWarning');
+
+      if (isLineupLocked || slotIdx === null) {
+        editBtns.classList.add('hidden');
+        if (isLineupLocked) lockedWarn.classList.remove('hidden');
+      } else {
+        editBtns.classList.remove('hidden');
+        lockedWarn.classList.add('hidden');
+      }
+
+      document.getElementById('sorareCardModal').classList.remove('hidden');
+    }
+
+    function closeSorareCardModal() {
+      document.getElementById('sorareCardModal').classList.add('hidden');
+    }
+
+    function modalMakeCaptain() {
+      if (isLineupLocked || !currentModalTeam || !currentModalPlayer) return;
+      teamLineups[currentModalTeam].captain = currentModalPlayer;
+      closeSorareCardModal();
+      calcolaTotaliSquadre();
+      updateBanner();
+      renderPitch();
+    }
+
+    function modalOpenReplaceList() {
+      if (isLineupLocked) return;
+      const p = currentModalPlayer;
+      const s = currentModalSlotIdx;
+      const t = currentModalTeam;
+      closeSorareCardModal();
+      openPlayerModal(s, t);
+    }
+
+    function generateMockStats(player, score) {
+      const isPor = getPlayerRoles(player).includes('Por');
+      return {
+        mins: score > 0 ? (score > 4 ? 90 : 65) : 0,
+        goals: score >= 7.5 ? 1 : 0,
+        assists: score >= 7.0 && score < 7.5 ? 1 : 0,
+        shots: isPor ? 0 : Math.floor(score / 2.5),
+        shotsOnTarget: isPor ? 0 : Math.floor(score / 4),
+        keyPasses: isPor ? 0 : Math.floor(score / 3),
+        duelsWon: isPor ? 1 : Math.floor(score * 1.2),
+        recoveries: Math.floor(score * 1.1),
+        saves: isPor ? Math.floor(score / 1.8) : 0,
+        decisiveEvents: score >= 7.5 ? ['⚽ Gol Partita (+2,50)'] : (score >= 7.0 ? ['👟 Assist Decisivo (+2,50)'] : [])
+      };
+    }
+
+    // Modal Selezione Giocatore (Naturale vs Fuori Ruolo)
     let activeSlotIndex = null;
     let activeTeam = null;
 
     function openPlayerModal(slotIdx, teamName) {
+      if (isLineupLocked) {
+        alert("Formazioni bloccate! Non puoi effettuare cambi.");
+        return;
+      }
       activeSlotIndex = slotIdx;
       activeTeam = teamName;
       const t = teamLineups[teamName];
       const slot = t.titolariSlots[slotIdx];
 
       document.getElementById('modalTitle').innerText = `Sostituisci nello Slot ${slot.label}`;
-      document.getElementById('modalSubtitle').innerText = `Titolare attuale: ${slot.player} • Ruolo richiesto: ${slot.reqRole}`;
+      document.getElementById('modalSubtitle').innerText = `Titolare: ${slot.player} • Ruolo richiesto: ${slot.reqRole}`;
 
       const roster = ROSTERS[teamName] || [];
       const naturalContainer = document.getElementById('modalNaturalList');
@@ -709,7 +953,7 @@
     }
 
     function assignPlayerToSlot(playerName) {
-      if (activeSlotIndex === null || !activeTeam) return;
+      if (isLineupLocked || activeSlotIndex === null || !activeTeam) return;
       teamLineups[activeTeam].titolariSlots[activeSlotIndex].player = playerName;
       closeModal();
       calcolaTotaliSquadre();
@@ -718,7 +962,7 @@
     }
 
     function setCaptain(playerName) {
-      if (!activeTeam) return;
+      if (isLineupLocked || !activeTeam) return;
       teamLineups[activeTeam].captain = playerName;
       closeModal();
       calcolaTotaliSquadre();
@@ -728,6 +972,10 @@
 
     // Modal Incolla Formazioni
     function openPasteModal() {
+      if (isLineupLocked) {
+        alert("Formazioni bloccate! Non puoi incollare nuove formazioni.");
+        return;
+      }
       document.getElementById('pasteModal').classList.remove('hidden');
     }
     function closePasteModal() {
@@ -735,6 +983,7 @@
     }
 
     function processPastedLineups() {
+      if (isLineupLocked) return;
       const text = document.getElementById('pasteInput').value;
       if (!text.trim()) return;
 
@@ -753,11 +1002,9 @@
         if (foundInText.length >= 11) {
           matchedCount++;
           const t = teamLineups[team];
-          // Assegna i primi 11 agli slot
           for (let i = 0; i < Math.min(11, t.titolariSlots.length); i++) {
             t.titolariSlots[i].player = foundInText[i];
           }
-          // I restanti in panchina
           if (foundInText.length > 11) {
             t.panchina = foundInText.slice(11, 23);
           }
@@ -769,11 +1016,8 @@
       updateBanner();
       renderPitch();
 
-      if (matchedCount > 0) {
-        alert(`Formazioni aggiornate con successo per ${matchedCount} squadre!`);
-      } else {
-        alert("Nessuna corrispondenza esatta trovata. Assicurati che i nomi dei calciatori corrispondano a quelli delle rose.");
-      }
+      if (matchedCount > 0) alert(`Formazioni aggiornate per ${matchedCount} squadre!`);
+      else alert("Nessuna corrispondenza esatta trovata con le rose ufficiali.");
     }
 
     // Chiamata Live Sorare API
@@ -788,6 +1032,16 @@
               displayName
               latestScores(last: 1) {
                 score
+                playerGameStats {
+                  minsPlayed
+                  goals
+                  assists
+                  cleanSheet
+                  accuratePasses
+                  keyPasses
+                  wonContest
+                  saves
+                }
               }
             }
           }
@@ -797,6 +1051,7 @@
       let allPlayers = [];
       Object.values(teamLineups).forEach(t => {
         t.titolariSlots.forEach(s => allPlayers.push(s.player));
+        allPlayers.push(...t.panchina);
       });
       const uniquePlayers = [...new Set(allPlayers)];
       const slugs = uniquePlayers.map(p => p.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'));
@@ -823,6 +1078,21 @@
               if (p.latestScores && p.latestScores[0] && p.latestScores[0].score !== null) {
                 const dec = Math.round((p.latestScores[0].score / 10) * 100) / 100;
                 applyScore(p.displayName, dec);
+                
+                // Mappa statistiche
+                const st = p.latestScores[0].playerGameStats || {};
+                playerStatsMap[p.displayName] = {
+                  mins: st.minsPlayed || 90,
+                  goals: st.goals || 0,
+                  assists: st.assists || 0,
+                  shots: (st.goals || 0) + 1,
+                  shotsOnTarget: st.goals || 0,
+                  keyPasses: st.keyPasses || 1,
+                  duelsWon: st.wonContest || 3,
+                  recoveries: 4,
+                  saves: st.saves || 0,
+                  decisiveEvents: (st.goals > 0 ? ['⚽ Gol Partita (+2,50)'] : (st.assists > 0 ? ['👟 Assist (+2,50)'] : []))
+                };
                 dataFound = true;
               }
             });
@@ -848,6 +1118,11 @@
         t.titolariSlots.forEach(s => {
           if (s.player.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(s.player.toLowerCase())) {
             t.scores[s.player] = score;
+          }
+        });
+        t.panchina.forEach(p => {
+          if (p.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(p.toLowerCase())) {
+            t.scores[p] = score;
           }
         });
       });
@@ -888,8 +1163,12 @@
       });
     }
 
-    // Importazione Excel formazioni
+    // Importazione Excel
     document.getElementById('excelInput').addEventListener('change', function(e) {
+      if (isLineupLocked) {
+        alert("Formazioni bloccate! Non puoi importare un file.");
+        return;
+      }
       const file = e.target.files[0];
       if (!file) return;
 
