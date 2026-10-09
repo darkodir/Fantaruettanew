@@ -64,6 +64,10 @@
       background: rgba(18, 24, 38, 0.65);
       backdrop-filter: blur(4px);
     }
+    .slot-bench-dashed {
+      border: 2px dashed rgba(100, 116, 139, 0.5);
+      background: rgba(15, 23, 42, 0.4);
+    }
 
     .m-role-por { background: #f59e0b; color: #000; }
     .m-role-def { background: #10b981; color: #000; }
@@ -127,7 +131,7 @@
       🏟️ Campo & Formazione
     </button>
     <button onclick="switchMainTab('roster')" id="tabBtnRoster" class="px-4 py-2 rounded-xl text-xs font-black transition bg-white/5 text-gray-400 hover:text-white border border-white/5">
-      📋 Rosa Completa (Tribuna)
+      📋 Rosa Completa
     </button>
     <button onclick="switchMainTab('standings')" id="tabBtnStandings" class="px-4 py-2 rounded-xl text-xs font-black transition bg-white/5 text-gray-400 hover:text-white border border-white/5">
       🏆 Classifica
@@ -137,8 +141,9 @@
   <!-- Main Container -->
   <main class="max-w-6xl mx-auto p-3 sm:p-5 flex-1 w-full space-y-4">
 
-    <!-- TAB 1: CAMPO E FORMAZIONE -->
+    <!-- TAB 1: CAMPO E FORMAZIONE (CON PANCHINA E TRIBUNA SOTTOSTANTE) -->
     <div id="tabContentPitch" class="space-y-4">
+      <!-- Selettore Partite 6ª Giornata -->
       <div class="bg-[#0b101a] border border-white/5 rounded-2xl p-3 shadow-lg">
         <div class="flex items-center justify-between gap-2 mb-2 px-1">
           <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Scontri Diretti 6ª Giornata</span>
@@ -146,6 +151,7 @@
         </div>
         <div class="flex gap-1.5 overflow-x-auto pb-1" id="matchesTabs"></div>
 
+        <!-- Banner Risultato -->
         <div class="mt-3 bg-gradient-to-r from-black/60 via-[#101726]/80 to-black/60 border border-white/10 rounded-xl p-3 sm:p-4 flex items-center justify-between text-center relative overflow-hidden">
           <div class="flex-1">
             <div id="homeName" class="text-sm sm:text-base font-black text-amber-300 truncate">Casa</div>
@@ -163,6 +169,7 @@
         </div>
       </div>
 
+      <!-- Barra Squadra e Modulo Mantra -->
       <div class="flex flex-wrap items-center justify-between gap-2 bg-[#0b101a] border border-white/5 p-2 sm:p-3 rounded-2xl">
         <div class="inline-flex p-1 rounded-xl bg-black/50 border border-white/10">
           <button id="btnViewHome" onclick="switchTeamView('home')" class="px-3.5 py-1.5 rounded-lg text-xs font-black transition bg-amber-500 text-black shadow-md">
@@ -191,6 +198,7 @@
         </div>
       </div>
 
+      <!-- Campo Tattico 3D con Slot Tratteggiati quando vuoti -->
       <div class="pitch-viewport overflow-hidden py-3">
         <div class="realistic-pitch max-w-3xl mx-auto p-3 sm:p-6 min-h-[660px] flex flex-col justify-between">
           <div class="absolute inset-0 pointer-events-none p-4 flex flex-col justify-between">
@@ -209,28 +217,47 @@
         </div>
       </div>
 
+      <!-- Panchina Mantra a 12 Slot (Svuotabile e con tutti i ruoli esposti) -->
       <div class="bg-[#0b101a] border border-white/5 rounded-2xl p-4 shadow-lg">
         <div class="flex items-center justify-between mb-3 px-1">
           <h3 class="text-xs font-black text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
-            <span>🛡️</span> Panchina Mantra (12 Riserve)
+            <span>🛡️</span> Panchina Mantra (12 Slot • Svuotabile & Drag & Drop)
           </h3>
           <span class="text-[10px] text-amber-400 font-bold bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
-            12 Slot
+            12 Riserve
           </span>
         </div>
         <div id="benchContainer" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2"></div>
       </div>
+
+      <!-- Tribuna (Non Convocati) integrata sotto la Panchina -->
+      <div class="bg-[#0b101a] border border-white/5 rounded-2xl p-4 shadow-lg">
+        <div class="flex items-center justify-between mb-3 px-1">
+          <div>
+            <h3 class="text-xs font-black text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+              <span>🏟️</span> Tribuna (Giocatori disponibili non convocati)
+            </h3>
+            <p class="text-[10px] text-gray-400">Qui risiedono tutti i calciatori della squadra non schierati né in campo né in panchina</p>
+          </div>
+          <span id="pitchTribunaCount" class="text-[10px] text-gray-400 bg-white/5 px-2 py-0.5 rounded-full font-bold">-- Giocatori</span>
+        </div>
+        <div id="pitchTribunaContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2"></div>
+      </div>
     </div>
 
-    <!-- TAB 2: ROSA COMPLETA (TRIBUNA) -->
+    <!-- TAB 2: ROSA COMPLETA (CON MENU A TENDINA PER NAVIGARE QUALSIASI SQUADRA) -->
     <div id="tabContentRoster" class="hidden space-y-4">
       <div class="bg-[#0b101a] border border-white/5 rounded-2xl p-4 shadow-lg">
-        <div class="flex items-center justify-between mb-3">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4 border-b border-white/5 pb-3">
           <div>
-            <h3 class="text-sm font-black text-amber-300 uppercase" id="rosterTeamTitle">Rosa Completa</h3>
-            <p class="text-xs text-gray-400">Tutti i calciatori della squadra con L5, L10 (senza DNP)</p>
+            <h3 class="text-sm font-black text-amber-300 uppercase">Rosa Completa Premier Ruetta</h3>
+            <p class="text-xs text-gray-400">Seleziona la squadra per visualizzare l'intera rosa, ruoli Mantra e statistiche Trend</p>
           </div>
-          <span id="rosterTotalCount" class="text-xs bg-white/5 text-amber-400 font-bold px-2.5 py-1 rounded-xl">-- Giocatori</span>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-gray-400 font-bold uppercase">Squadra:</span>
+            <select id="rosterTeamSelect" onchange="renderRosterTab()" class="bg-[#121927] border border-white/10 text-xs rounded-xl px-3 py-1.5 text-amber-300 font-black focus:outline-none focus:border-amber-400">
+            </select>
+          </div>
         </div>
         <div id="rosterListContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5"></div>
       </div>
@@ -305,13 +332,14 @@
               <h3 id="scPlayerName" class="text-base sm:text-lg font-black text-white leading-tight">Nome Giocatore</h3>
               <span id="scCaptainBadge" class="hidden bg-[#ff007a] text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow">CAP</span>
             </div>
-            <div id="scPlayerRoles" class="flex gap-1 mt-1"></div>
+            <!-- Mostra TUTTI i ruoli Mantra senza troncare -->
+            <div id="scPlayerRoles" class="flex flex-wrap gap-1 mt-1"></div>
             
             <div class="flex items-center gap-1.5 mt-1.5">
               <span id="scBadgeL5" class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">L5: --</span>
               <span id="scBadgeL10" class="px-2 py-0.5 rounded text-[10px] font-black bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">L10: --</span>
               <button id="scBtnOpenTrend" onclick="modalOpenTrendView()" class="px-2 py-0.5 rounded text-[10px] font-black bg-amber-500/20 text-amber-300 hover:bg-amber-500 hover:text-black border border-amber-500/30 transition">
-                📈 Trend Ultime 10
+                📈 Trend G1–G5
               </button>
             </div>
           </div>
@@ -392,6 +420,7 @@
         </div>
       </div>
 
+      <!-- Pulsanti Azione (Con Tasto Svuota Slot sia per Campo che per Panchina) -->
       <div class="pt-3 border-t border-white/10 flex items-center justify-between">
         <button onclick="closeSorareCardModal()" class="px-4 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/15 text-gray-300 transition">
           Chiudi
@@ -416,16 +445,16 @@
     </div>
   </div>
 
-  <!-- MODAL: TREND E MATCH LOG ULTIME 10 PARTITE (SENZA DNP) -->
+  <!-- MODAL: TREND UNIFICATO GRAFICO HD CON CLICK SULLA BARRA PER MATCH DETAIL -->
   <div id="trendModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-5">
-    <div class="bg-gradient-to-b from-[#131b2c] via-[#0d131f] to-[#070a10] border border-cyan-500/40 w-full max-w-lg rounded-3xl p-5 shadow-2xl space-y-4 text-gray-200 relative overflow-hidden max-h-[90vh] overflow-y-auto">
+    <div class="bg-gradient-to-b from-[#131b2c] via-[#0d131f] to-[#070a10] border border-cyan-500/40 w-full max-w-lg rounded-3xl p-5 shadow-2xl space-y-4 text-gray-200 relative overflow-hidden max-h-[92vh] overflow-y-auto">
       <div class="flex items-start justify-between border-b border-white/10 pb-3">
         <div>
           <div class="flex items-center gap-2">
             <h3 id="trendPlayerName" class="text-base sm:text-lg font-black text-white">Trend Calciatore</h3>
-            <span id="trendPlayerRoleBadge" class="px-1.5 py-0.5 rounded text-[9px] font-black m-role-mid">C</span>
+            <div id="trendPlayerRoleBadge" class="flex gap-1"></div>
           </div>
-          <p class="text-xs text-gray-400">Match Log delle prime 5 giornate di Serie A (DNP esclusi)</p>
+          <p class="text-xs text-gray-400">Tocca una barra del grafico per aprire il dettaglio statistico della singola partita</p>
         </div>
         <button onclick="closeTrendModal()" class="text-gray-400 hover:text-white text-xl font-bold">&times;</button>
       </div>
@@ -443,24 +472,105 @@
         </div>
       </div>
 
-      <div class="bg-black/50 border border-white/10 rounded-2xl p-3">
-        <div class="flex justify-between items-center text-[10px] text-gray-400 font-bold mb-2">
-          <span>Andamento Voti Serie A (G1–G5)</span>
+      <!-- Grafico Unificato ad alta fedeltà con Decisive sopra e Squadra (C/T) sotto -->
+      <div class="bg-black/60 border border-white/10 rounded-2xl p-3 sm:p-4">
+        <div class="flex justify-between items-center text-[10px] text-gray-400 font-bold mb-3">
+          <span>Rendimento Serie A G1–G5</span>
           <span class="flex items-center gap-1.5">
             <span class="w-3 h-0.5 bg-amber-400 inline-block"></span> Soglia 6.00
           </span>
         </div>
-        <div id="trendChartSvgContainer" class="w-full h-36 flex items-center justify-center"></div>
+        <div id="trendChartSvgContainer" class="w-full flex items-center justify-center"></div>
       </div>
 
-      <div>
-        <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Dettaglio Partite & Decisive</h4>
-        <div id="trendMatchLogList" class="space-y-1.5 max-h-56 overflow-y-auto"></div>
+      <div class="text-[11px] text-gray-400 text-center italic">
+        💡 Clicca direttamente su una barra per aprire la matrice Opta completa della gara
       </div>
 
       <div class="pt-2 border-t border-white/10 text-right">
         <button onclick="closeTrendModal()" class="px-4 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/15 text-gray-200">
           Chiudi
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: DETTAGLIO SINGOLA GARA CLICCATA DAL GRAFICO -->
+  <div id="matchDetailModal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[60] hidden flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-gradient-to-b from-[#131b2c] via-[#0d131f] to-[#070a10] border border-cyan-500/50 w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4 text-gray-200 relative overflow-hidden">
+      <div class="flex items-start justify-between border-b border-white/10 pb-3">
+        <div>
+          <div class="text-[10px] font-black text-amber-400 uppercase tracking-widest" id="mdlMatchday">Giornata 1</div>
+          <h3 id="mdlPlayerAndOpponent" class="text-base font-black text-white">Nome vs Avversario</h3>
+        </div>
+        <div class="text-right">
+          <span class="text-[9px] text-gray-400 font-bold uppercase block">Punteggio</span>
+          <span id="mdlFinalScore" class="font-teko text-4xl font-black text-amber-300 leading-none">--</span>
+        </div>
+      </div>
+
+      <!-- Scomposizione Decisive vs AAS -->
+      <div class="grid grid-cols-2 gap-2.5">
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-2.5">
+          <div class="text-[9px] text-gray-400 font-black uppercase">Decisive Score</div>
+          <div id="mdlDecisiveScore" class="font-teko text-2xl font-black text-white mt-0.5">3,50</div>
+          <div id="mdlDecisiveList" class="text-[10px] text-emerald-400 font-bold mt-1"></div>
+        </div>
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-2.5">
+          <div class="text-[9px] text-gray-400 font-black uppercase">All-Around (AAS)</div>
+          <div id="mdlAasScore" class="font-teko text-2xl font-black text-cyan-400 mt-0.5">+0,00</div>
+          <div class="text-[9px] text-gray-400 mt-1">Volume netto Opta</div>
+        </div>
+      </div>
+
+      <!-- Matrice Statistica Completa Gara -->
+      <div>
+        <h4 class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Statistiche di Gara</h4>
+        <div class="bg-black/40 border border-white/5 rounded-2xl p-3">
+          <div class="grid grid-cols-3 gap-2 text-center text-xs">
+            <div>
+              <span class="text-[8px] text-gray-400 block font-semibold">Minuti</span>
+              <span id="mdlMins" class="font-black text-white">--</span>
+            </div>
+            <div>
+              <span class="text-[8px] text-emerald-400 block font-semibold">Gol / Assist</span>
+              <span id="mdlGoalsAssists" class="font-black text-emerald-300">0 / 0</span>
+            </div>
+            <div>
+              <span class="text-[8px] text-cyan-400 block font-semibold">Pass. Chiave</span>
+              <span id="mdlKeyPasses" class="font-black text-cyan-300">0</span>
+            </div>
+            <div>
+              <span class="text-[8px] text-gray-400 block font-semibold">Tiri (Porta)</span>
+              <span id="mdlShots" class="font-black text-white">0 (0)</span>
+            </div>
+            <div>
+              <span class="text-[8px] text-gray-400 block font-semibold">Contrasti Vinti</span>
+              <span id="mdlTackles" class="font-black text-white">0</span>
+            </div>
+            <div>
+              <span class="text-[8px] text-gray-400 block font-semibold">Intercetti</span>
+              <span id="mdlInterceptions" class="font-black text-white">0</span>
+            </div>
+            <div>
+              <span class="text-[8px] text-yellow-400 block font-semibold">Parate</span>
+              <span id="mdlSaves" class="font-black text-yellow-400">0</span>
+            </div>
+            <div>
+              <span class="text-[8px] text-amber-400 block font-semibold">Gialli</span>
+              <span id="mdlYellows" class="font-black text-amber-300">0</span>
+            </div>
+            <div>
+              <span class="text-[8px] text-rose-400 block font-semibold">Rossi</span>
+              <span id="mdlReds" class="font-black text-rose-300">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-white/10 text-right">
+        <button onclick="closeMatchDetailModal()" class="px-4 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/15 text-gray-200">
+          Torna al Trend
         </button>
       </div>
     </div>
@@ -762,7 +872,6 @@
     let playerHistoryMap = {};
     let leagueStandings = {};
 
-    // FORMULA UFFICIALE SORARE DEFINITIVA
     function computeSorareScore(decisiveCount, aasValue, isStarter = true, hasRedCard = false) {
       let decisiveBase = isStarter ? 3.50 : 2.50;
       if (decisiveCount === 1) decisiveBase = 6.00;
@@ -831,6 +940,13 @@
       });
     }
 
+    function populateRosterDropdown() {
+      const select = document.getElementById('rosterTeamSelect');
+      select.innerHTML = Object.keys(ROSTERS).map(team => `
+        <option value="${team}">${team}</option>
+      `).join('');
+    }
+
     function switchMainTab(tab) {
       currentMainTab = tab;
       const tPitch = document.getElementById('tabContentPitch');
@@ -894,16 +1010,14 @@
       return "bg-rose-500/20 text-rose-300 border border-rose-500/30";
     }
 
-    // MODELLO CALIBRATO SERIE A G1-G5 PER TUTTI I CALCIATORI
     function getDeterministicHistory(playerName) {
-      // Caso Certificato Malen con 44 su Sorare alla G5 (AAS +0.90) e G3 (AAS +0.70 -> 42)
       if (playerName === "Malen") {
         return [
-          { matchday: 1, opponent: "Fiorentina (C)", mins: 68, score: 10.00, isDnp: false, decisives: ["⚽ Gol", "⚽ Gol", "⚽ Gol"] },
-          { matchday: 2, opponent: "Lecce (T)", mins: 67, score: 7.00, isDnp: false, decisives: ["⚽ Gol", "⚽ Gol"] },
-          { matchday: 3, opponent: "Atalanta (C)", mins: 63, score: 4.20, isDnp: false, decisives: [] },
-          { matchday: 4, opponent: "Torino (T)", mins: 57, score: 6.40, isDnp: false, decisives: ["⚽ Gol"] },
-          { matchday: 5, opponent: "Inter (C)", mins: 90, score: 4.40, isDnp: false, decisives: [] }
+          { matchday: 1, opponent: "Fiorentina (C)", mins: 68, score: 10.00, isDnp: false, decisives: ["⚽ Gol", "⚽ Gol", "⚽ Gol"], aas: 2.00, goals: 3, assists: 0, shots: 6, shotsOnTarget: 4, keyPasses: 2, tackles: 1, interceptions: 1, saves: 0, yellows: 0, reds: 0 },
+          { matchday: 2, opponent: "Lecce (T)", mins: 67, score: 7.00, isDnp: false, decisives: ["⚽ Gol", "⚽ Gol"], aas: -0.40, goals: 2, assists: 0, shots: 3, shotsOnTarget: 2, keyPasses: 1, tackles: 0, interceptions: 0, saves: 0, yellows: 0, reds: 0 },
+          { matchday: 3, opponent: "Atalanta (C)", mins: 63, score: 4.20, isDnp: false, decisives: [], aas: 0.70, goals: 0, assists: 0, shots: 2, shotsOnTarget: 1, keyPasses: 1, tackles: 1, interceptions: 0, saves: 0, yellows: 0, reds: 0 },
+          { matchday: 4, opponent: "Torino (T)", mins: 57, score: 6.40, isDnp: false, decisives: ["⚽ Gol"], aas: 0.40, goals: 1, assists: 0, shots: 3, shotsOnTarget: 2, keyPasses: 0, tackles: 1, interceptions: 0, saves: 0, yellows: 0, reds: 0 },
+          { matchday: 5, opponent: "Inter (C)", mins: 90, score: 4.40, isDnp: false, decisives: [], aas: 0.90, goals: 0, assists: 0, shots: 2, shotsOnTarget: 0, keyPasses: 2, tackles: 2, interceptions: 1, saves: 0, yellows: 0, reds: 0 }
         ];
       }
 
@@ -912,9 +1026,7 @@
       const isAtt = pRoles.some(r => ['Pc', 'A', 'W'].includes(r));
       const isDef = pRoles.some(r => ['Dc', 'Dd', 'Ds', 'B'].includes(r));
 
-      const opponents = [
-        "Genoa (T)", "Lecce (C)", "Atalanta (C)", "Monza (T)", "Milan (C)"
-      ];
+      const opponents = ["Genoa (T)", "Lecce (C)", "Atalanta (C)", "Monza (T)", "Milan (C)"];
 
       let hash = 0;
       for (let i = 0; i < playerName.length; i++) {
@@ -926,7 +1038,7 @@
       const history = [];
       for (let g = 0; g < 5; g++) {
         const roundHash = (hash + g * 23) % 100;
-        const isDnp = roundHash < 8; // 8% DNP
+        const isDnp = roundHash < 8;
 
         if (isDnp) {
           history.push({
@@ -935,7 +1047,8 @@
             mins: 0,
             score: 0,
             isDnp: true,
-            decisives: []
+            decisives: [],
+            aas: 0, goals: 0, assists: 0, shots: 0, shotsOnTarget: 0, keyPasses: 0, tackles: 0, interceptions: 0, saves: 0, yellows: 0, reds: 0
           });
         } else {
           const hasGoal = !isPor && (roundHash > 80);
@@ -951,19 +1064,14 @@
 
           const posDecs = (hasGoal ? 1 : 0) + (hasAssist ? 1 : 0) + (hasCleanSheet ? 1 : 0);
 
-          // All-Around Score Realistico Calibrato per Ruolo
           let rawAas = 0;
           if (isAtt) {
-            // Attaccanti: tra +0.20 e +1.10 AAS reale senza decisive (voto 3.70 - 4.60)
             rawAas = 0.20 + ((roundHash % 9) / 10.0) - (hasYellow ? 0.30 : 0.0);
           } else if (isDef) {
-            // Difensori: tra +0.80 e +1.80 AAS (voto 4.30 - 5.30)
             rawAas = 0.80 + ((roundHash % 11) / 10.0) - (hasYellow ? 0.30 : 0.0);
           } else if (isPor) {
-            // Portieri: volume parate
             rawAas = 0.40 + ((roundHash % 12) / 10.0);
           } else {
-            // Centrocampisti: volume passaggi tra +0.70 e +1.90
             rawAas = 0.70 + ((roundHash % 13) / 10.0) - (hasYellow ? 0.30 : 0.0);
           }
 
@@ -975,7 +1083,18 @@
             mins: (roundHash % 2 === 0) ? 90 : 74,
             score: finalScore,
             isDnp: false,
-            decisives: decList
+            decisives: decList,
+            aas: Math.round(rawAas * 100) / 100,
+            goals: hasGoal ? 1 : 0,
+            assists: hasAssist ? 1 : 0,
+            shots: isPor ? 0 : (hasGoal ? 3 : 1),
+            shotsOnTarget: isPor ? 0 : (hasGoal ? 2 : 1),
+            keyPasses: isPor ? 0 : (hasAssist ? 2 : 1),
+            tackles: isPor ? 0 : (isDef ? 3 : 1),
+            interceptions: isPor ? 1 : 2,
+            saves: isPor ? (hasCleanSheet ? 5 : 2) : 0,
+            yellows: hasYellow ? 1 : 0,
+            reds: 0
           });
         }
       }
@@ -990,6 +1109,11 @@
             const slots = buildSlotsForModule('4-3-3', roster);
             const titolariNames = slots.map(s => s.player).filter(Boolean);
             const bench = roster.filter(p => !titolariNames.includes(p)).slice(0, 12);
+
+            // Inizializza con esattamente 12 slot panchina
+            while (bench.length < 12) {
+              bench.push(null);
+            }
 
             teamLineups[team] = {
               module: '4-3-3',
@@ -1141,22 +1265,38 @@
 
       rows.TRE.style.display = rows.TRE.children.length === 0 ? 'none' : 'flex';
 
+      // 1. PANCHINA (12 Slot, svuotabili con box tratteggiato)
       const benchBox = document.getElementById('benchContainer');
       benchBox.innerHTML = data.panchina.map((p, idx) => {
+        if (!p) {
+          return `
+            <div onclick="openPlayerModal(null, '${teamName}', ${idx})" class="cursor-pointer slot-bench-dashed rounded-2xl p-2.5 flex flex-col items-center justify-center text-center min-h-[72px] hover:border-amber-400 transition">
+              <span class="text-[9px] font-black text-gray-400">P${idx+1}</span>
+              <span class="text-base text-amber-400 font-light leading-none my-0.5">+</span>
+              <span class="text-[8px] text-gray-500 font-bold uppercase">Scegli Riserva</span>
+            </div>
+          `;
+        }
+
         const roles = getPlayerRoles(p);
         const pts = data.scores[p] || 0;
         const stats = calculatePlayerL5L10(p);
+
         return `
-          <div onclick="openSorareCardModal('${p}', null, '${teamName}', ${idx})" class="cursor-pointer bg-white/5 hover:bg-white/10 active:scale-95 transition border border-white/5 rounded-2xl p-2 flex flex-col justify-between shadow-sm">
+          <div onclick="openSorareCardModal('${p}', null, '${teamName}', ${idx})" class="cursor-pointer bg-white/5 hover:bg-white/10 active:scale-95 transition border border-white/5 rounded-2xl p-2 flex flex-col justify-between shadow-sm min-h-[72px]">
             <div>
               <div class="flex items-center justify-between text-[8px] text-gray-400 font-black">
                 <span>P${idx+1}</span>
-                <div class="flex gap-0.5">
-                  ${roles.slice(0, 2).map(r => `<span class="px-1 rounded text-[7px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
-                </div>
+                <span class="text-amber-400/80 font-bold text-[7px]">Panchina</span>
               </div>
               <div class="text-[11px] font-black text-amber-200 truncate mt-0.5">${p}</div>
               
+              <!-- Mostra TUTTI i ruoli Mantra completi -->
+              <div class="flex flex-wrap gap-0.5 mt-1">
+                ${roles.map(r => `<span class="px-1 rounded text-[7px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
+              </div>
+
+              <!-- Statistiche L5 e L10 -->
               <div class="flex items-center gap-1 mt-1 text-[8px] font-black">
                 <span class="px-1 rounded ${getLBadgeColor(stats.l5)}">L5: ${stats.l5 ? formatScore(stats.l5) : '--'}</span>
                 <span class="px-1 rounded ${getLBadgeColor(stats.l10)}">L10: ${stats.l10 ? formatScore(stats.l10) : '--'}</span>
@@ -1164,11 +1304,46 @@
             </div>
             
             <div class="text-[10px] text-gray-400 font-bold mt-1 text-right">
-              ${pts > 0 ? `<span class="text-white font-black">${formatScore(pts)}</span> pt` : '<span class="text-amber-400/80">Dettagli</span>'}
+              ${pts > 0 ? `<span class="text-white font-black">${formatScore(pts)}</span> pt` : '<span class="text-amber-400/80 text-[9px]">Dettagli</span>'}
             </div>
           </div>
         `;
       }).join('');
+
+      // 2. TRIBUNA SOTTO LA PANCHINA (Tutti i non convocati)
+      const titolariNames = data.titolariSlots.map(s => s.player).filter(Boolean);
+      const benchNames = data.panchina.filter(Boolean);
+      const roster = ROSTERS[teamName] || [];
+      const tribunaPlayers = roster.filter(p => !titolariNames.includes(p) && !benchNames.includes(p));
+
+      document.getElementById('pitchTribunaCount').innerText = `${tribunaPlayers.length} Giocatori`;
+      const tribunaBox = document.getElementById('pitchTribunaContainer');
+      
+      if (tribunaPlayers.length === 0) {
+        tribunaBox.innerHTML = `<div class="col-span-3 text-xs text-gray-500 italic p-3 text-center bg-white/5 rounded-2xl">Tutti i calciatori sono attualmente schierati tra campo e panchina.</div>`;
+      } else {
+        tribunaBox.innerHTML = tribunaPlayers.map(p => {
+          const roles = getPlayerRoles(p);
+          const stats = calculatePlayerL5L10(p);
+          return `
+            <div class="bg-white/5 border border-white/5 rounded-2xl p-2.5 flex items-center justify-between hover:bg-white/10 transition">
+              <div class="min-w-0 flex-1">
+                <span class="text-xs font-black text-white truncate block">${p}</span>
+                <div class="flex flex-wrap gap-0.5 mt-0.5">
+                  ${roles.map(r => `<span class="px-1 rounded text-[7px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
+                </div>
+                <div class="flex items-center gap-1 mt-1 text-[8px] font-black">
+                  <span class="px-1 rounded ${getLBadgeColor(stats.l5)}">L5: ${stats.l5 ? formatScore(stats.l5) : '--'}</span>
+                  <span class="px-1 rounded ${getLBadgeColor(stats.l10)}">L10: ${stats.l10 ? formatScore(stats.l10) : '--'}</span>
+                </div>
+              </div>
+              <button onclick="openPlayerTrendModal('${p}')" class="ml-2 px-2.5 py-1.5 rounded-xl text-[10px] font-black bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500 hover:text-black border border-cyan-500/30 transition">
+                📈 Trend
+              </button>
+            </div>
+          `;
+        }).join('');
+      }
     }
 
     function createCardOrDottedHtml(slot, slotIdx, teamData, teamName) {
@@ -1228,8 +1403,9 @@
 
             <div class="text-[10px] sm:text-[11px] font-black text-white text-center leading-tight truncate w-full tracking-tight">${player}</div>
             
-            <div class="flex gap-0.5 mt-0.5">
-              ${pRoles.slice(0, 2).map(r => `<span class="px-1 rounded text-[7px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
+            <!-- Mostra i ruoli Mantra -->
+            <div class="flex flex-wrap justify-center gap-0.5 mt-0.5">
+              ${pRoles.map(r => `<span class="px-1 rounded text-[7px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
             </div>
           </div>
           
@@ -1242,17 +1418,15 @@
       `;
     }
 
+    // RENDER TAB ROSA COMPLETA CON MENU A TENDINA PER NAVIGARE TUTTE LE SQUADRE
     function renderRosterTab() {
-      const match = GW6_MATCHES[currentMatchIndex];
-      const teamName = currentView === 'home' ? match.home : match.away;
-      const t = teamLineups[teamName];
-      const roster = ROSTERS[teamName] || [];
+      const select = document.getElementById('rosterTeamSelect');
+      const selectedTeam = select.value || Object.keys(ROSTERS)[0];
+      const roster = ROSTERS[selectedTeam] || [];
+      const t = teamLineups[selectedTeam];
 
-      document.getElementById('rosterTeamTitle').innerText = `Rosa Completa: ${teamName}`;
-      document.getElementById('rosterTotalCount').innerText = `${roster.length} Calciatori`;
-
-      const titolariNames = t.titolariSlots.map(s => s.player).filter(Boolean);
-      const benchNames = t.panchina;
+      const titolariNames = t ? t.titolariSlots.map(s => s.player).filter(Boolean) : [];
+      const benchNames = t ? t.panchina.filter(Boolean) : [];
 
       const container = document.getElementById('rosterListContainer');
       container.innerHTML = roster.map(p => {
@@ -1272,7 +1446,8 @@
                 <span class="text-xs font-black text-white truncate">${p}</span>
                 ${statusBadge}
               </div>
-              <div class="flex gap-1 mt-1">
+              <!-- Ruoli Mantra completi -->
+              <div class="flex flex-wrap gap-1 mt-1">
                 ${roles.map(r => `<span class="px-1 rounded text-[8px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
               </div>
               
@@ -1456,13 +1631,14 @@
         editBtns.classList.remove('hidden');
         lockedWarn.classList.add('hidden');
 
+        // Mostra tasto Svuota Slot sia per i titolari sia per la panchina
+        emptyBtn.classList.remove('hidden');
+
         if (benchIdx !== null) {
           capBtn.classList.add('hidden');
-          emptyBtn.classList.add('hidden');
           replaceBtn.innerText = "Cambia Riserva";
         } else {
           capBtn.classList.remove('hidden');
-          emptyBtn.classList.remove('hidden');
           replaceBtn.innerText = "Sostituisci";
         }
       }
@@ -1474,21 +1650,24 @@
       document.getElementById('sorareCardModal').classList.add('hidden');
     }
 
+    // Svuota slot corrente (sia titolare in campo che riserva in panchina) e manda il giocatore in tribuna
     function modalEmptyCurrentSlot() {
-      if (isLineupLocked || !currentModalTeam || currentModalSlotIdx === null) return;
+      if (isLineupLocked || !currentModalTeam) return;
       const t = teamLineups[currentModalTeam];
-      const removedPlayer = t.titolariSlots[currentModalSlotIdx].player;
 
-      t.titolariSlots[currentModalSlotIdx].player = null;
-
-      if (removedPlayer && !t.panchina.includes(removedPlayer)) {
-        t.panchina.push(removedPlayer);
+      if (currentModalSlotIdx !== null) {
+        // Titolare svuotato: diventa null (tratteggiato sul campo)
+        t.titolariSlots[currentModalSlotIdx].player = null;
+      } else if (currentModalBenchIdx !== null) {
+        // Panchina svuotata: diventa null (tratteggiato in panchina)
+        t.panchina[currentModalBenchIdx] = null;
       }
 
       closeSorareCardModal();
       calcolaTotaliSquadre();
       updateBanner();
       renderPitch();
+      if (currentMainTab === 'roster') renderRosterTab();
     }
 
     function modalMakeCaptain() {
@@ -1515,13 +1694,17 @@
       openPlayerTrendModal(p);
     }
 
+    // MODALE TREND GRAFICO UNIFICATO
+    let currentTrendPlayerName = null;
+
     function openPlayerTrendModal(playerName) {
+      currentTrendPlayerName = playerName;
       const stats = calculatePlayerL5L10(playerName);
       const roles = getPlayerRoles(playerName);
 
       document.getElementById('trendPlayerName').innerText = playerName;
-      document.getElementById('trendPlayerRoleBadge').innerText = roles[0];
-      document.getElementById('trendPlayerRoleBadge').className = `px-1.5 py-0.5 rounded text-[9px] font-black ${getBadgeClass(roles[0])}`;
+      const rolesBadgeBox = document.getElementById('trendPlayerRoleBadge');
+      rolesBadgeBox.innerHTML = roles.map(r => `<span class="px-1.5 py-0.5 rounded text-[9px] font-black ${getBadgeClass(r)}">${r}</span>`).join('');
 
       document.getElementById('trendL5Score').innerText = stats.l5 ? formatScore(stats.l5) : '--';
       document.getElementById('trendL5Sample').innerText = `${stats.l5Count} gare giocate (DNP esclusi)`;
@@ -1529,37 +1712,7 @@
       document.getElementById('trendL10Score').innerText = stats.l10 ? formatScore(stats.l10) : '--';
       document.getElementById('trendL10Sample').innerText = `${stats.l10Count} gare giocate (DNP esclusi)`;
 
-      renderTrendChartSvg(stats.history);
-
-      const logList = document.getElementById('trendMatchLogList');
-      logList.innerHTML = stats.history.map(g => {
-        if (g.isDnp) {
-          return `
-            <div class="bg-white/5 border border-white/5 rounded-xl p-2 flex items-center justify-between text-xs opacity-40">
-              <span class="text-gray-400 font-bold">G${g.matchday} • vs ${g.opponent}</span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-black bg-gray-800 text-gray-400">DNP</span>
-            </div>
-          `;
-        }
-
-        const isGood = g.score >= 6.0;
-        return `
-          <div class="bg-white/5 border border-white/5 rounded-xl p-2 flex items-center justify-between text-xs hover:bg-white/10 transition">
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-2">
-                <span class="text-gray-300 font-bold">G${g.matchday} • vs ${g.opponent}</span>
-                <span class="text-[10px] text-gray-400 font-semibold">${g.mins}'</span>
-              </div>
-              <div class="flex gap-1 mt-0.5">
-                ${g.decisives.map(d => `<span class="text-[9px] font-bold text-amber-300">${d}</span>`).join('')}
-              </div>
-            </div>
-            <span class="px-2 py-0.5 rounded-lg text-xs font-black ${isGood ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}">
-              ${formatScore(g.score)}
-            </span>
-          </div>
-        `;
-      }).join('');
+      renderUnifiedTrendChartSvg(stats.history, playerName);
 
       document.getElementById('trendModal').classList.remove('hidden');
     }
@@ -1568,40 +1721,116 @@
       document.getElementById('trendModal').classList.add('hidden');
     }
 
-    function renderTrendChartSvg(history) {
+    // GRAFICO UNIFICATO SVG: Simboli decisive sopra, barre cliccabili, nome avversario e (C/T) sotto
+    function renderUnifiedTrendChartSvg(history, playerName) {
       const container = document.getElementById('trendChartSvgContainer');
       const width = 360;
-      const height = 120;
+      const height = 180;
       const maxScore = 10.0;
+      const chartTop = 35;
+      const chartBottom = 135;
+      const chartHeight = chartBottom - chartTop;
 
-      const thresholdY = height - (6.0 / maxScore) * height;
+      const thresholdY = chartBottom - (6.0 / maxScore) * chartHeight;
 
       let barsHtml = '';
       history.forEach((g, idx) => {
-        const x = idx * 65 + 25;
+        const x = idx * 68 + 14;
+
         if (g.isDnp) {
           barsHtml += `
-            <rect x="${x}" y="${height - 6}" width="30" height="6" rx="3" fill="#334155" opacity="0.4"/>
-            <text x="${x + 15}" y="${height - 10}" font-size="8" fill="#64748b" text-anchor="middle" font-weight="bold">DNP</text>
+            <g class="cursor-pointer" onclick="openMatchDetailModal(${idx})">
+              <rect x="${x}" y="${chartBottom - 6}" width="42" height="6" rx="3" fill="#334155" opacity="0.5"/>
+              <text x="${x + 21}" y="${chartBottom - 12}" font-size="9" fill="#64748b" text-anchor="middle" font-weight="black">DNP</text>
+              <text x="${x + 21}" y="${chartBottom + 16}" font-size="8.5" fill="#94a3b8" text-anchor="middle" font-weight="bold">${g.opponent.split(' ')[0]}</text>
+              <text x="${x + 21}" y="${chartBottom + 27}" font-size="7.5" fill="#64748b" text-anchor="middle" font-weight="black">${g.opponent.includes('(C)') ? '(C)' : '(T)'}</text>
+            </g>
           `;
         } else {
-          const barHeight = Math.max(10, (g.score / maxScore) * height);
-          const y = height - barHeight;
-          const color = g.score >= 7.0 ? '#10b981' : (g.score >= 6.0 ? '#f59e0b' : '#f43f5e');
+          const barHeight = Math.max(12, (g.score / maxScore) * chartHeight);
+          const y = chartBottom - barHeight;
+
+          // Scala cromatica Sorare
+          let color = '#f43f5e';
+          if (g.score >= 8.5) color = '#059669';
+          else if (g.score >= 7.5) color = '#16a34a';
+          else if (g.score >= 6.5) color = '#22c55e';
+          else if (g.score >= 6.0) color = '#86efac';
+          else if (g.score >= 5.0) color = '#f59e0b';
+
+          // Simboli decisive sopra la colonna
+          let decSymbols = '';
+          if (g.decisives && g.decisives.length > 0) {
+            const icons = g.decisives.map(d => d.split(' ')[0]).join(' ');
+            decSymbols = `<text x="${x + 21}" y="${Math.max(14, y - 16)}" font-size="10" text-anchor="middle">${icons}</text>`;
+          }
 
           barsHtml += `
-            <rect x="${x}" y="${y}" width="30" height="${barHeight}" rx="4" fill="${color}" opacity="0.85"/>
-            <text x="${x + 15}" y="${y - 3}" font-size="8" fill="#fff" text-anchor="middle" font-weight="black">${g.score.toFixed(1)}</text>
+            <g class="cursor-pointer group" onclick="openMatchDetailModal(${idx})">
+              ${decSymbols}
+              <text x="${x + 21}" y="${y - 4}" font-size="9" fill="#fff" text-anchor="middle" font-weight="900">${g.score.toFixed(1)}</text>
+              <rect x="${x}" y="${y}" width="42" height="${barHeight}" rx="5" fill="${color}" opacity="0.9" class="group-hover:opacity-100 transition shadow-lg"/>
+              <text x="${x + 21}" y="${chartBottom + 16}" font-size="8.5" fill="#e2e8f0" text-anchor="middle" font-weight="bold">${g.opponent.split(' ')[0]}</text>
+              <text x="${x + 21}" y="${chartBottom + 27}" font-size="7.5" fill="#94a3b8" text-anchor="middle" font-weight="black">${g.opponent.includes('(C)') ? '(CASA)' : '(TRASF)'}</text>
+            </g>
           `;
         }
       });
 
       container.innerHTML = `
         <svg viewBox="0 0 ${width} ${height}" class="w-full h-full overflow-visible">
-          <line x1="0" y1="${thresholdY}" x2="${width}" y2="${thresholdY}" stroke="#eab308" stroke-dasharray="3,3" stroke-width="1" opacity="0.6"/>
+          <!-- Linea sufficienza 6.0 -->
+          <line x1="10" y1="${thresholdY}" x2="${width - 10}" y2="${thresholdY}" stroke="#eab308" stroke-dasharray="3,3" stroke-width="1.2" opacity="0.7"/>
+          <text x="${width - 8}" y="${thresholdY + 3}" font-size="8" fill="#eab308" text-anchor="end" font-weight="bold">6.0</text>
           ${barsHtml}
         </svg>
       `;
+    }
+
+    // MODALE DETTAGLIO GARA CLICCATA
+    function openMatchDetailModal(matchIndex) {
+      if (!currentTrendPlayerName) return;
+      const history = playerHistoryMap[currentTrendPlayerName];
+      if (!history || !history[matchIndex]) return;
+
+      const g = history[matchIndex];
+
+      document.getElementById('mdlMatchday').innerText = `Serie A • Giornata ${g.matchday}`;
+      document.getElementById('mdlPlayerAndOpponent').innerText = `${currentTrendPlayerName} vs ${g.opponent}`;
+      document.getElementById('mdlFinalScore').innerText = g.isDnp ? 'DNP' : formatScore(g.score);
+
+      // Decisive vs AAS
+      const posDecsCount = (g.decisives || []).filter(e => e.includes("Gol") || e.includes("Assist") || e.includes("Clean Sheet")).length;
+      let decBase = 0;
+      if (!g.isDnp) {
+        if (posDecsCount === 0) decBase = 3.50;
+        else if (posDecsCount === 1) decBase = 6.00;
+        else decBase = Math.min(10.0, 6.00 + (posDecsCount - 1) * 1.00);
+      }
+
+      document.getElementById('mdlDecisiveScore').innerText = g.isDnp ? '--' : formatScore(decBase);
+      document.getElementById('mdlDecisiveList').innerHTML = (g.decisives && g.decisives.length > 0)
+        ? g.decisives.map(d => `<div>${d}</div>`).join('')
+        : `<span class="text-gray-500 italic text-[9px]">Nessun decisive</span>`;
+
+      document.getElementById('mdlAasScore').innerText = g.isDnp ? '--' : (g.aas >= 0 ? `+${formatScore(g.aas)}` : formatScore(g.aas));
+
+      // Statistiche matrice Opta
+      document.getElementById('mdlMins').innerText = g.isDnp ? '0\'' : `${g.mins}'`;
+      document.getElementById('mdlGoalsAssists').innerText = `${g.goals} / ${g.assists}`;
+      document.getElementById('mdlKeyPasses').innerText = g.keyPasses;
+      document.getElementById('mdlShots').innerText = `${g.shots} (${g.shotsOnTarget})`;
+      document.getElementById('mdlTackles').innerText = g.tackles;
+      document.getElementById('mdlInterceptions').innerText = g.interceptions;
+      document.getElementById('mdlSaves').innerText = g.saves;
+      document.getElementById('mdlYellows').innerText = g.yellows;
+      document.getElementById('mdlReds').innerText = g.reds;
+
+      document.getElementById('matchDetailModal').classList.remove('hidden');
+    }
+
+    function closeMatchDetailModal() {
+      document.getElementById('matchDetailModal').classList.add('hidden');
     }
 
     function generateMockStats(player, score) {
@@ -1654,12 +1883,12 @@
 
       if (benchIdx !== null) {
         const currentBenchPlayer = t.panchina[benchIdx];
-        document.getElementById('modalTitle').innerText = `Cambia Riserva #${benchIdx + 1} in Panchina`;
-        document.getElementById('modalSubtitle').innerText = `Attuale riserva: ${currentBenchPlayer}`;
+        document.getElementById('modalTitle').innerText = `Assegna Riserva #${benchIdx + 1} in Panchina`;
+        document.getElementById('modalSubtitle').innerText = currentBenchPlayer ? `Attuale riserva: ${currentBenchPlayer}` : `Slot attualmente vuoto`;
         outSection.classList.add('hidden');
 
         const titolariNames = t.titolariSlots.map(s => s.player).filter(Boolean);
-        const benchNames = t.panchina;
+        const benchNames = t.panchina.filter(Boolean);
         const availablePool = roster.filter(p => !titolariNames.includes(p) && (!benchNames.includes(p) || p === currentBenchPlayer));
 
         availablePool.forEach(name => {
@@ -1671,8 +1900,9 @@
             <div class="flex items-center justify-between p-2 rounded-2xl bg-white/5 hover:bg-white/10 transition">
               <div class="min-w-0 flex-1">
                 <span class="text-xs font-black ${isCurrent ? 'text-amber-400' : 'text-gray-100'}">${name}</span>
-                <div class="flex gap-1 mt-0.5">
-                  ${roles.map(r => `<span class="px-1 rounded text-[8px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
+                <!-- Mostra TUTTI i ruoli Mantra -->
+                <div class="flex flex-wrap gap-0.5 mt-0.5">
+                  ${roles.map(r => `<span class="px-1 rounded text-[7px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
                 </div>
                 <div class="flex items-center gap-1 mt-1 text-[8px] font-black">
                   <span class="px-1 rounded ${getLBadgeColor(lStats.l5)}">L5: ${lStats.l5 ? formatScore(lStats.l5) : '--'}</span>
@@ -1719,8 +1949,9 @@
             <div class="flex items-center justify-between p-2 rounded-2xl bg-white/5 hover:bg-white/10 transition ${isAlreadyFieldedElsewhere ? 'opacity-40' : ''}">
               <div class="min-w-0 flex-1">
                 <span class="text-xs font-black ${isCurrent ? 'text-amber-400' : 'text-gray-100'}">${name}</span>
-                <div class="flex gap-1 mt-0.5">
-                  ${roles.map(r => `<span class="px-1 rounded text-[8px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
+                <!-- Ruoli Mantra completi -->
+                <div class="flex flex-wrap gap-0.5 mt-0.5">
+                  ${roles.map(r => `<span class="px-1 rounded text-[7px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
                 </div>
                 <div class="flex items-center gap-1 mt-1 text-[8px] font-black">
                   <span class="px-1 rounded ${getLBadgeColor(lStats.l5)}">L5: ${lStats.l5 ? formatScore(lStats.l5) : '--'}</span>
@@ -1754,10 +1985,10 @@
 
       t.titolariSlots[activeSlotIndex].player = playerName;
 
+      // Se il giocatore scelto era in panchina, il vecchio titolare ne prende il posto
       const benchIdx = t.panchina.indexOf(playerName);
       if (benchIdx !== -1) {
-        if (oldPlayer) t.panchina[benchIdx] = oldPlayer;
-        else t.panchina.splice(benchIdx, 1);
+        t.panchina[benchIdx] = oldPlayer;
       }
 
       closeModal();
@@ -1770,6 +2001,13 @@
     function assignPlayerToBench(playerName) {
       if (isLineupLocked || activeBenchIndex === null || !activeTeam) return;
       const t = teamLineups[activeTeam];
+
+      // Se il giocatore era già in un altro slot di panchina, svuotalo
+      const existingBenchIdx = t.panchina.indexOf(playerName);
+      if (existingBenchIdx !== -1) {
+        t.panchina[existingBenchIdx] = null;
+      }
+
       t.panchina[activeBenchIndex] = playerName;
 
       closeModal();
@@ -1823,7 +2061,9 @@
             t.titolariSlots[i].player = foundInText[i];
           }
           if (foundInText.length > 11) {
-            t.panchina = foundInText.slice(11, 23);
+            const rawBench = foundInText.slice(11, 23);
+            while (rawBench.length < 12) rawBench.push(null);
+            t.panchina = rawBench;
           }
         }
       });
@@ -1868,7 +2108,7 @@
       let allPlayers = [];
       Object.values(teamLineups).forEach(t => {
         t.titolariSlots.forEach(s => { if (s.player) allPlayers.push(s.player); });
-        allPlayers.push(...t.panchina);
+        t.panchina.forEach(p => { if (p) allPlayers.push(p); });
       });
       const uniquePlayers = [...new Set(allPlayers)];
       const slugs = uniquePlayers.map(p => p.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'));
@@ -1949,7 +2189,7 @@
           }
         });
         t.panchina.forEach(p => {
-          if (p.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(p.toLowerCase())) {
+          if (p && (p.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(p.toLowerCase()))) {
             t.scores[p] = score;
           }
         });
@@ -2017,6 +2257,7 @@
 
     initStandings();
     initLineups();
+    populateRosterDropdown();
     renderMatchesTabs();
     updateBanner();
     renderPitch();
