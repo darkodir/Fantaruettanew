@@ -2468,7 +2468,7 @@ function initLineups() {
     }
 
 document.getElementById('excelInput').addEventListener('change', function(e) {
-  if (isLineupLocked) { alert("Formazioni bloccate!"); return; }
+  if (typeof isLineupLocked !== 'undefined' && isLineupLocked) { alert("Formazioni bloccate!"); return; }
   const file = e.target.files[0];
   if (!file) return;
 
@@ -2480,76 +2480,98 @@ document.getElementById('excelInput').addEventListener('change', function(e) {
       const primaPagina = workbook.Sheets[workbook.SheetNames[0]];
       const righeExcel = XLSX.utils.sheet_to_json(primaPagina, {header: 1});
       
-      let squadraAttuale = null;
-      let giocatoriInseriti = 0;
-      let panchinariInseriti = 0;
+      let teamSx = null, teamDx = null;
+      let titSx = 0, panSx = 0, inPanSx = false;
+      let titDx = 0, panDx = 0, inPanDx = false;
+      let moduliTrovati = [];
 
       righeExcel.forEach(rigaArray => {
-        const rigaTesto = rigaArray.join(" ").trim();
-        if (!rigaTesto) return;
+        // Garantisce che ci siano abbastanza colonne (0-2 per la prima squadra, 4-6 per la seconda)
+        while (rigaArray.length < 7) rigaArray.push("");
+        const c0 = String(rigaArray[0] || "").trim();
+        const c1 = String(rigaArray[1] || "").trim();
+        const c4 = String(rigaArray[4] || "").trim();
+        const c5 = String(rigaArray[5] || "").trim();
 
-        // 1. Trova Squadra
-        const squadraTrovata = Object.keys(ROSTERS).find(team => rigaTesto.toLowerCase().includes(team.toLowerCase()));
-        if (squadraTrovata) {
-          squadraAttuale = squadraTrovata;
-          giocatoriInseriti = 0;
-          panchinariInseriti = 0;
-          teamLineups[squadraAttuale].titolariSlots.forEach(s => s.player = null);
-          teamLineups[squadraAttuale].panchina = new Array(12).fill(null);
+        // 1. Identifica Squadra Sinistra (colonna 0)
+        const findSx = Object.keys(ROSTERS).find(t => c0.toLowerCase().includes(t.toLowerCase()));
+        if (findSx) {
+          teamSx = findSx; titSx = 0; panSx = 0; inPanSx = false;
+          teamLineups[teamSx].titolariSlots.forEach(s => s.player = null);
+          teamLineups[teamSx].panchina = new Array(12).fill(null);
         }
 
-        if (squadraAttuale) {
-          // 2. Trova Modulo (anche se scritto dopo alcuni giocatori)
-          const moduloTrovato = rigaTesto.match(/\b([345]-[12345](-[12345])?)\b/);
-          if (moduloTrovato) {
-            const nuovoModulo = moduloTrovato[0];
-            if (teamLineups[squadraAttuale].module !== nuovoModulo) {
-              teamLineups[squadraAttuale].module = nuovoModulo;
-              
-              // Salva i giocatori già inseriti e ricrea il modulo corretto
-              const vecchi = teamLineups[squadraAttuale].titolariSlots.map(s => s.player);
-              teamLineups[squadraAttuale].titolariSlots = buildSlotsForModule(nuovoModulo, ROSTERS[squadraAttuale]);
-              
-              vecchi.forEach((g, idx) => {
-                if (g && teamLineups[squadraAttuale].titolariSlots[idx]) {
-                  teamLineups[squadraAttuale].titolariSlots[idx].player = g;
-                }
-              });
+        // 2. Identifica Squadra Destra (colonna 4)
+        const findDx = Object.keys(ROSTERS).find(t => c4.toLowerCase().includes(t.toLowerCase()));
+        if (findDx) {
+          teamDx = findDx; titDx = 0; panDx = 0; inPanDx = false;
+          teamLineups[teamDx].titolariSlots.forEach(s => s.player = null);
+          teamLineups[teamDx].panchina = new Array(12).fill(null);
+        }
+
+        // --- ELABORA PARTE SINISTRA ---
+        if (teamSx) {
+          if (c0.toLowerCase().includes("modulo")) {
+            const m = c1.match(/\b([345]-[12345](-[12345])?)\b/) || c1.match(/\b(343|3421|352|3511|442|433|4312|4231|4141|4411|4222|4321|532|541)\b/);
+            if (m) {
+              let mod = m[0];
+              if (mod.length === 3) mod = `${mod[0]}-${mod[1]}-${mod[2]}`;
+              if (mod.length === 4 && !mod.includes("-")) mod = `${mod[0]}-${mod[1]}-${mod[2]}-${mod[3]}`;
+              teamLineups[teamSx].module = mod;
+              teamLineups[teamSx].titolariSlots = buildSlotsForModule(mod, ROSTERS[teamSx]);
+              moduliTrovati.push(`${teamSx}: ${mod}`);
+            }
+          } else if (c0.toLowerCase().includes("panchina")) {
+            inPanSx = true;
+          } else if (c1) {
+            const cleanName = c1.replace(/[ⒸⓋ]/g, '').trim().toLowerCase();
+            const p = ROSTERS[teamSx].find(gioc => cleanName.includes(gioc.toLowerCase()) || gioc.toLowerCase().includes(cleanName));
+            if (p) {
+              if (c1.includes("Ⓒ")) teamLineups[teamSx].captain = p; // Autoselezione Capitano
+              if (!inPanSx && titSx < 11) { teamLineups[teamSx].titolariSlots[titSx].player = p; titSx++; }
+              else if (inPanSx && panSx < 12) { teamLineups[teamSx].panchina[panSx] = p; panSx++; }
             }
           }
+        }
 
-          // 3. Trova Giocatori
-          const giocatoreTrovato = ROSTERS[squadraAttuale].find(p => rigaTesto.toLowerCase().includes(p.toLowerCase()));
-          if (giocatoreTrovato) {
-            const giaTitolare = teamLineups[squadraAttuale].titolariSlots.some(s => s.player === giocatoreTrovato);
-            const giaPanchina = teamLineups[squadraAttuale].panchina.includes(giocatoreTrovato);
-            
-            if (!giaTitolare && !giaPanchina) {
-              if (giocatoriInseriti < 11) {
-                teamLineups[squadraAttuale].titolariSlots[giocatoriInseriti].player = giocatoreTrovato;
-                giocatoriInseriti++;
-              } else if (panchinariInseriti < 12) {
-                teamLineups[squadraAttuale].panchina[panchinariInseriti] = giocatoreTrovato;
-                panchinariInseriti++;
-              }
+        // --- ELABORA PARTE DESTRA ---
+        if (teamDx) {
+          if (c4.toLowerCase().includes("modulo")) {
+            const m = c5.match(/\b([345]-[12345](-[12345])?)\b/) || c5.match(/\b(343|3421|352|3511|442|433|4312|4231|4141|4411|4222|4321|532|541)\b/);
+            if (m) {
+              let mod = m[0];
+              if (mod.length === 3) mod = `${mod[0]}-${mod[1]}-${mod[2]}`;
+              if (mod.length === 4 && !mod.includes("-")) mod = `${mod[0]}-${mod[1]}-${mod[2]}-${mod[3]}`;
+              teamLineups[teamDx].module = mod;
+              teamLineups[teamDx].titolariSlots = buildSlotsForModule(mod, ROSTERS[teamDx]);
+              moduliTrovati.push(`${teamDx}: ${mod}`);
+            }
+          } else if (c4.toLowerCase().includes("panchina")) {
+            inPanDx = true;
+          } else if (c5) {
+            const cleanName = c5.replace(/[ⒸⓋ]/g, '').trim().toLowerCase();
+            const p = ROSTERS[teamDx].find(gioc => cleanName.includes(gioc.toLowerCase()) || gioc.toLowerCase().includes(cleanName));
+            if (p) {
+              if (c5.includes("Ⓒ")) teamLineups[teamDx].captain = p; // Autoselezione Capitano
+              if (!inPanDx && titDx < 11) { teamLineups[teamDx].titolariSlots[titDx].player = p; titDx++; }
+              else if (inPanDx && panDx < 12) { teamLineups[teamDx].panchina[panDx] = p; panDx++; }
             }
           }
         }
       });
 
-      // FORZA l'aggiornamento visivo del menu a tendina
-      const match = GW6_MATCHES[currentMatchIndex];
-      const teamView = currentView === 'home' ? match.home : match.away;
-      if(document.getElementById('moduleSelect')) {
-        document.getElementById('moduleSelect').value = teamLineups[teamView].module;
+      alert(moduliTrovati.length > 0 ? "Importazione Completata!\nModuli caricati: " + moduliTrovati.join(", ") : "Nessun modulo riconosciuto, ma giocatori importati!");
+      
+      if (typeof calcolaTotaliSquadre === 'function') calcolaTotaliSquadre();
+      if (typeof renderPitch === 'function') renderPitch();
+      
+      const sel = document.getElementById('moduleSelect');
+      if (sel && typeof GW6_MATCHES !== 'undefined') {
+        const match = GW6_MATCHES[currentMatchIndex];
+        const currentT = currentView === 'home' ? match.home : match.away;
+        sel.value = teamLineups[currentT] ? teamLineups[currentT].module : '4-3-3';
       }
-
-      alert("Formazioni importate! Moduli e giocatori applicati correttamente.");
-      calcolaTotaliSquadre();
-      renderPitch();
-    } catch (err) {
-      alert("Errore nella lettura del file: " + err.message);
-    }
+    } catch (err) { alert("Errore lettura: " + err.message); }
   };
   reader.readAsArrayBuffer(file);
   e.target.value = ''; 
