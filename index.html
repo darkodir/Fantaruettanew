@@ -97,7 +97,7 @@
               Mantra
             </span>
           </div>
-          <p class="text-[10px] text-gray-400">Sorare Scoring System • Scala 0–10 • Senza DNP</p>
+          <p class="text-[10px] text-gray-400">Matrice Ufficiale Sorare per Ruolo • Gradiente Dinamico da 5,00</p>
         </div>
       </div>
 
@@ -141,7 +141,7 @@
   <!-- Main Container -->
   <main class="max-w-6xl mx-auto p-3 sm:p-5 flex-1 w-full space-y-4">
 
-    <!-- TAB 1: CAMPO E FORMAZIONE (CON PANCHINA E TRIBUNA SOTTOSTANTE) -->
+    <!-- TAB 1: CAMPO E FORMAZIONE -->
     <div id="tabContentPitch" class="space-y-4">
       <!-- Selettore Partite 6ª Giornata -->
       <div class="bg-[#0b101a] border border-white/5 rounded-2xl p-3 shadow-lg">
@@ -237,7 +237,7 @@
             <h3 class="text-xs font-black text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
               <span>🏟️</span> Tribuna (Giocatori disponibili non convocati)
             </h3>
-            <p class="text-[10px] text-gray-400">Qui risiedono tutti i calciatori della squadra non schierati né in campo né in panchina</p>
+            <p class="text-[10px] text-gray-400">Calciatori della rosa non schierati né in campo né in panchina</p>
           </div>
           <span id="pitchTribunaCount" class="text-[10px] text-gray-400 bg-white/5 px-2 py-0.5 rounded-full font-bold">-- Giocatori</span>
         </div>
@@ -245,7 +245,7 @@
       </div>
     </div>
 
-    <!-- TAB 2: ROSA COMPLETA (CON MENU A TENDINA PER NAVIGARE QUALSIASI SQUADRA) -->
+    <!-- TAB 2: ROSA COMPLETA -->
     <div id="tabContentRoster" class="hidden space-y-4">
       <div class="bg-[#0b101a] border border-white/5 rounded-2xl p-4 shadow-lg">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-4 border-b border-white/5 pb-3">
@@ -332,12 +332,11 @@
               <h3 id="scPlayerName" class="text-base sm:text-lg font-black text-white leading-tight">Nome Giocatore</h3>
               <span id="scCaptainBadge" class="hidden bg-[#ff007a] text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow">CAP</span>
             </div>
-            <!-- Mostra TUTTI i ruoli Mantra senza troncare -->
             <div id="scPlayerRoles" class="flex flex-wrap gap-1 mt-1"></div>
             
             <div class="flex items-center gap-1.5 mt-1.5">
-              <span id="scBadgeL5" class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">L5: --</span>
-              <span id="scBadgeL10" class="px-2 py-0.5 rounded text-[10px] font-black bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">L10: --</span>
+              <span id="scBadgeL5" class="px-2 py-0.5 rounded text-[10px] font-black border">L5: --</span>
+              <span id="scBadgeL10" class="px-2 py-0.5 rounded text-[10px] font-black border">L10: --</span>
               <button id="scBtnOpenTrend" onclick="modalOpenTrendView()" class="px-2 py-0.5 rounded text-[10px] font-black bg-amber-500/20 text-amber-300 hover:bg-amber-500 hover:text-black border border-amber-500/30 transition">
                 📈 Trend G1–G5
               </button>
@@ -372,12 +371,12 @@
             <span id="scAasPts" class="font-teko text-3xl font-black text-cyan-400">+0,00</span>
             <span class="text-[10px] text-gray-400">matrice</span>
           </div>
-          <div class="text-[10px] text-gray-400 mt-1">Volume di gioco Opta</div>
+          <div class="text-[10px] text-gray-400 mt-1">Volume Opta differenziato per ruolo</div>
         </div>
       </div>
 
       <div class="space-y-3">
-        <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Matrice Statistica Opta</h4>
+        <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Matrice Statistica Opta Ufficiale</h4>
         <div class="bg-black/40 border border-white/5 rounded-2xl p-3">
           <div class="grid grid-cols-3 gap-2 text-center text-xs">
             <div>
@@ -413,14 +412,13 @@
               <span id="statYellows" class="font-black text-amber-300">0</span>
             </div>
             <div>
-              <span class="text-[9px] text-rose-400 block font-semibold">Rossi (-2,00)</span>
-              <span id="statReds" class="font-black text-rose-300">0</span>
+              <span class="text-[9px] text-rose-400 block font-semibold">Gol Sub. Malus</span>
+              <span id="statGoalsConceded" class="font-black text-rose-300">0</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Pulsanti Azione (Con Tasto Svuota Slot sia per Campo che per Panchina) -->
       <div class="pt-3 border-t border-white/10 flex items-center justify-between">
         <button onclick="closeSorareCardModal()" class="px-4 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/15 text-gray-300 transition">
           Chiudi
@@ -454,7 +452,7 @@
             <h3 id="trendPlayerName" class="text-base sm:text-lg font-black text-white">Trend Calciatore</h3>
             <div id="trendPlayerRoleBadge" class="flex gap-1"></div>
           </div>
-          <p class="text-xs text-gray-400">Tocca una barra del grafico per aprire il dettaglio statistico della singola partita</p>
+          <p class="text-xs text-gray-400">Tocca una barra del grafico per aprire il dettaglio della partita</p>
         </div>
         <button onclick="closeTrendModal()" class="text-gray-400 hover:text-white text-xl font-bold">&times;</button>
       </div>
@@ -462,17 +460,16 @@
       <div class="grid grid-cols-2 gap-3">
         <div class="bg-white/5 border border-white/10 rounded-2xl p-3 text-center">
           <span class="text-[10px] text-gray-400 uppercase font-black block">Media L5 (Gare Giocate)</span>
-          <span id="trendL5Score" class="font-teko text-4xl font-black text-emerald-400 leading-none">--</span>
+          <span id="trendL5Score" class="font-teko text-4xl font-black leading-none">--</span>
           <span id="trendL5Sample" class="text-[9px] text-gray-400 block mt-0.5">--</span>
         </div>
         <div class="bg-white/5 border border-white/10 rounded-2xl p-3 text-center">
           <span class="text-[10px] text-gray-400 uppercase font-black block">Media L10 (Gare Giocate)</span>
-          <span id="trendL10Score" class="font-teko text-4xl font-black text-cyan-400 leading-none">--</span>
+          <span id="trendL10Score" class="font-teko text-4xl font-black leading-none">--</span>
           <span id="trendL10Sample" class="text-[9px] text-gray-400 block mt-0.5">--</span>
         </div>
       </div>
 
-      <!-- Grafico Unificato ad alta fedeltà con Decisive sopra e Squadra (C/T) sotto -->
       <div class="bg-black/60 border border-white/10 rounded-2xl p-3 sm:p-4">
         <div class="flex justify-between items-center text-[10px] text-gray-400 font-bold mb-3">
           <span>Rendimento Serie A G1–G5</span>
@@ -484,7 +481,7 @@
       </div>
 
       <div class="text-[11px] text-gray-400 text-center italic">
-        💡 Clicca direttamente su una barra per aprire la matrice Opta completa della gara
+        💡 Tocca direttamente una barra per aprire la matrice statistica completa della partita
       </div>
 
       <div class="pt-2 border-t border-white/10 text-right">
@@ -495,7 +492,7 @@
     </div>
   </div>
 
-  <!-- MODAL: DETTAGLIO SINGOLA GARA CLICCATA DAL GRAFICO -->
+  <!-- MODAL: DETTAGLIO GARA CLICCATA -->
   <div id="matchDetailModal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[60] hidden flex items-center justify-center p-3 sm:p-5">
     <div class="bg-gradient-to-b from-[#131b2c] via-[#0d131f] to-[#070a10] border border-cyan-500/50 w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4 text-gray-200 relative overflow-hidden">
       <div class="flex items-start justify-between border-b border-white/10 pb-3">
@@ -505,11 +502,10 @@
         </div>
         <div class="text-right">
           <span class="text-[9px] text-gray-400 font-bold uppercase block">Punteggio</span>
-          <span id="mdlFinalScore" class="font-teko text-4xl font-black text-amber-300 leading-none">--</span>
+          <span id="mdlFinalScore" class="font-teko text-4xl font-black leading-none">--</span>
         </div>
       </div>
 
-      <!-- Scomposizione Decisive vs AAS -->
       <div class="grid grid-cols-2 gap-2.5">
         <div class="bg-white/5 border border-white/10 rounded-2xl p-2.5">
           <div class="text-[9px] text-gray-400 font-black uppercase">Decisive Score</div>
@@ -523,7 +519,6 @@
         </div>
       </div>
 
-      <!-- Matrice Statistica Completa Gara -->
       <div>
         <h4 class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Statistiche di Gara</h4>
         <div class="bg-black/40 border border-white/5 rounded-2xl p-3">
@@ -561,8 +556,8 @@
               <span id="mdlYellows" class="font-black text-amber-300">0</span>
             </div>
             <div>
-              <span class="text-[8px] text-rose-400 block font-semibold">Rossi</span>
-              <span id="mdlReds" class="font-black text-rose-300">0</span>
+              <span class="text-[8px] text-rose-400 block font-semibold">Gol Sub. Malus</span>
+              <span id="mdlGoalsConceded" class="font-black text-rose-300">0</span>
             </div>
           </div>
         </div>
@@ -576,7 +571,7 @@
     </div>
   </div>
 
-  <!-- MODAL: Selezione Sostituto / Riempimento Slot Vacante -->
+  <!-- MODAL: Selezione Sostituto -->
   <div id="playerModal" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-5">
     <div class="bg-[#0e1422] border border-white/10 w-full max-w-lg rounded-3xl p-5 max-h-[85vh] flex flex-col shadow-2xl">
       <div class="flex justify-between items-center pb-3 border-b border-white/10">
@@ -624,7 +619,7 @@
   </div>
 
   <footer class="border-t border-white/10 text-center py-3 text-[11px] text-gray-500 bg-[#040609]">
-    Premier Ruetta Fanta-Sorare 11 • Motore Decimale Opta Matrix • Regolamento Mantra Ufficiale
+    Premier Ruetta Fanta-Sorare 11 • Motore Decimale Opta Matrix Differenziato • Regolamento Mantra Ufficiale
   </footer>
 
   <script>
@@ -872,6 +867,30 @@
     let playerHistoryMap = {};
     let leagueStandings = {};
 
+    // GRADIENTE CROMATICO FLUIDO SORARE (DA 5.00 IN SU È GIÀ VERDE ACCENNATO)
+    function getScoreHexColor(score) {
+      if (!score || score <= 0) return '#64748b';
+      if (score >= 8.0) return '#059669'; // Smeraldo top con alone
+      if (score >= 7.0) return '#16a34a'; // Verde pieno
+      if (score >= 6.0) return '#22c55e'; // Verde brillante
+      if (score >= 5.5) return '#4ade80'; // Verde lime
+      if (score >= 5.0) return '#84cc16'; // Verde oliva accennato (appena sufficiente)
+      if (score >= 4.0) return '#f97316'; // Arancio caldo
+      return '#e11d48'; // Rosso/cremisi per grave insufficienza
+    }
+
+    function getLBadgeStyle(score) {
+      if (!score) return "bg-gray-800 text-gray-500 border-white/5";
+      if (score >= 8.0) return "bg-emerald-950/80 text-emerald-300 border-emerald-500/50 shadow-sm shadow-emerald-500/20";
+      if (score >= 7.0) return "bg-emerald-900/60 text-emerald-300 border-emerald-500/40";
+      if (score >= 6.0) return "bg-green-950/60 text-green-300 border-green-500/40";
+      if (score >= 5.5) return "bg-lime-950/60 text-lime-300 border-lime-500/40";
+      if (score >= 5.0) return "bg-lime-950/40 text-lime-400 border-lime-600/30"; // Verde lieve per il 5.00
+      if (score >= 4.0) return "bg-amber-950/60 text-amber-300 border-amber-500/40";
+      return "bg-rose-950/60 text-rose-300 border-rose-500/40";
+    }
+
+    // FORMULA UFFICIALE SORARE DIFFERENZIATA PER RUOLO CON MALUS GOL SUBITI
     function computeSorareScore(decisiveCount, aasValue, isStarter = true, hasRedCard = false) {
       let decisiveBase = isStarter ? 3.50 : 2.50;
       if (decisiveCount === 1) decisiveBase = 6.00;
@@ -1003,21 +1022,37 @@
       };
     }
 
-    function getLBadgeColor(score) {
-      if (!score) return "bg-gray-800 text-gray-500 border border-white/5";
-      if (score >= 6.8) return "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
-      if (score >= 6.0) return "bg-amber-500/20 text-amber-300 border border-amber-500/30";
-      return "bg-rose-500/20 text-rose-300 border border-rose-500/30";
-    }
-
+    // STORICO DETERMINISTICO CON MATRICE OPTA DIFFERENZIATA PER RUOLO
     function getDeterministicHistory(playerName) {
+      // 1. CASO SPECIALE MALEN
       if (playerName === "Malen") {
         return [
-          { matchday: 1, opponent: "Fiorentina (C)", mins: 68, score: 10.00, isDnp: false, decisives: ["⚽ Gol", "⚽ Gol", "⚽ Gol"], aas: 2.00, goals: 3, assists: 0, shots: 6, shotsOnTarget: 4, keyPasses: 2, tackles: 1, interceptions: 1, saves: 0, yellows: 0, reds: 0 },
-          { matchday: 2, opponent: "Lecce (T)", mins: 67, score: 7.00, isDnp: false, decisives: ["⚽ Gol", "⚽ Gol"], aas: -0.40, goals: 2, assists: 0, shots: 3, shotsOnTarget: 2, keyPasses: 1, tackles: 0, interceptions: 0, saves: 0, yellows: 0, reds: 0 },
-          { matchday: 3, opponent: "Atalanta (C)", mins: 63, score: 4.20, isDnp: false, decisives: [], aas: 0.70, goals: 0, assists: 0, shots: 2, shotsOnTarget: 1, keyPasses: 1, tackles: 1, interceptions: 0, saves: 0, yellows: 0, reds: 0 },
-          { matchday: 4, opponent: "Torino (T)", mins: 57, score: 6.40, isDnp: false, decisives: ["⚽ Gol"], aas: 0.40, goals: 1, assists: 0, shots: 3, shotsOnTarget: 2, keyPasses: 0, tackles: 1, interceptions: 0, saves: 0, yellows: 0, reds: 0 },
-          { matchday: 5, opponent: "Inter (C)", mins: 90, score: 4.40, isDnp: false, decisives: [], aas: 0.90, goals: 0, assists: 0, shots: 2, shotsOnTarget: 0, keyPasses: 2, tackles: 2, interceptions: 1, saves: 0, yellows: 0, reds: 0 }
+          { matchday: 1, opponent: "Fiorentina (C)", mins: 68, score: 10.00, isDnp: false, decisives: ["⚽ Gol", "⚽ Gol", "⚽ Gol"], aas: 2.00, goals: 3, assists: 0, shots: 6, shotsOnTarget: 4, keyPasses: 2, tackles: 1, interceptions: 1, saves: 0, yellows: 0, reds: 0, conceded: 0 },
+          { matchday: 2, opponent: "Lecce (T)", mins: 67, score: 7.00, isDnp: false, decisives: ["⚽ Gol", "⚽ Gol"], aas: -0.40, goals: 2, assists: 0, shots: 3, shotsOnTarget: 2, keyPasses: 1, tackles: 0, interceptions: 0, saves: 0, yellows: 0, reds: 0, conceded: 0 },
+          { matchday: 3, opponent: "Atalanta (C)", mins: 63, score: 4.20, isDnp: false, decisives: [], aas: 0.70, goals: 0, assists: 0, shots: 2, shotsOnTarget: 1, keyPasses: 1, tackles: 1, interceptions: 0, saves: 0, yellows: 0, reds: 0, conceded: 1 },
+          { matchday: 4, opponent: "Torino (T)", mins: 57, score: 6.40, isDnp: false, decisives: ["⚽ Gol"], aas: 0.40, goals: 1, assists: 0, shots: 3, shotsOnTarget: 2, keyPasses: 0, tackles: 1, interceptions: 0, saves: 0, yellows: 0, reds: 0, conceded: 0 },
+          { matchday: 5, opponent: "Inter (C)", mins: 90, score: 4.40, isDnp: false, decisives: [], aas: 0.90, goals: 0, assists: 0, shots: 2, shotsOnTarget: 0, keyPasses: 2, tackles: 2, interceptions: 1, saves: 0, yellows: 0, reds: 0, conceded: 2 }
+        ];
+      }
+
+      // 2. CASI SPECIALI STELLE CON ASSIST REALI E CLEAN SHEET
+      if (playerName === "Barella") {
+        return [
+          { matchday: 1, opponent: "Genoa (T)", mins: 90, score: 6.20, isDnp: false, decisives: ["👟 Assist"], aas: 0.20, goals: 0, assists: 1, shots: 1, shotsOnTarget: 0, keyPasses: 3, tackles: 2, interceptions: 1, saves: 0, yellows: 0, reds: 0, conceded: 2 },
+          { matchday: 2, opponent: "Lecce (C)", mins: 89, score: 5.60, isDnp: false, decisives: [], aas: 2.10, goals: 0, assists: 0, shots: 2, shotsOnTarget: 1, keyPasses: 4, tackles: 3, interceptions: 2, saves: 0, yellows: 0, reds: 0, conceded: 0 },
+          { matchday: 3, opponent: "Atalanta (C)", mins: 79, score: 7.80, isDnp: false, decisives: ["⚽ Gol"], aas: 1.80, goals: 1, assists: 0, shots: 2, shotsOnTarget: 1, keyPasses: 2, tackles: 2, interceptions: 1, saves: 0, yellows: 0, reds: 0, conceded: 0 },
+          { matchday: 4, opponent: "Monza (T)", mins: 63, score: 5.10, isDnp: false, decisives: [], aas: 1.60, goals: 0, assists: 0, shots: 1, shotsOnTarget: 0, keyPasses: 1, tackles: 2, interceptions: 1, saves: 0, yellows: 0, reds: 0, conceded: 1 },
+          { matchday: 5, opponent: "Milan (C)", mins: 74, score: 4.90, isDnp: false, decisives: [], aas: 1.40, goals: 0, assists: 0, shots: 1, shotsOnTarget: 0, keyPasses: 2, tackles: 1, interceptions: 1, saves: 0, yellows: 0, reds: 0, conceded: 2 }
+        ];
+      }
+
+      if (playerName === "Thuram") {
+        return [
+          { matchday: 1, opponent: "Genoa (T)", mins: 86, score: 8.20, isDnp: false, decisives: ["⚽ Gol", "⚽ Gol"], aas: 1.20, goals: 2, assists: 0, shots: 5, shotsOnTarget: 3, keyPasses: 1, tackles: 0, interceptions: 0, saves: 0, yellows: 0, reds: 0, conceded: 0 },
+          { matchday: 2, opponent: "Lecce (C)", mins: 76, score: 6.30, isDnp: false, decisives: ["👟 Assist"], aas: 0.30, goals: 0, assists: 1, shots: 2, shotsOnTarget: 1, keyPasses: 2, tackles: 0, interceptions: 0, saves: 0, yellows: 0, reds: 0, conceded: 0 },
+          { matchday: 3, opponent: "Atalanta (C)", mins: 79, score: 8.40, isDnp: false, decisives: ["⚽ Gol", "⚽ Gol"], aas: 1.40, goals: 2, assists: 0, shots: 4, shotsOnTarget: 3, keyPasses: 1, tackles: 1, interceptions: 0, saves: 0, yellows: 0, reds: 0, conceded: 0 },
+          { matchday: 4, opponent: "Monza (T)", mins: 90, score: 4.10, isDnp: false, decisives: [], aas: 0.60, goals: 0, assists: 0, shots: 1, shotsOnTarget: 0, keyPasses: 1, tackles: 0, interceptions: 0, saves: 0, yellows: 0, reds: 0, conceded: 0 },
+          { matchday: 5, opponent: "Milan (C)", mins: 90, score: 4.30, isDnp: false, decisives: [], aas: 0.80, goals: 0, assists: 0, shots: 2, shotsOnTarget: 1, keyPasses: 1, tackles: 0, interceptions: 0, saves: 0, yellows: 0, reds: 0, conceded: 0 }
         ];
       }
 
@@ -1025,6 +1060,7 @@
       const isPor = pRoles.includes('Por');
       const isAtt = pRoles.some(r => ['Pc', 'A', 'W'].includes(r));
       const isDef = pRoles.some(r => ['Dc', 'Dd', 'Ds', 'B'].includes(r));
+      const isMid = pRoles.some(r => ['M', 'C', 'E'].includes(r));
 
       const opponents = ["Genoa (T)", "Lecce (C)", "Atalanta (C)", "Monza (T)", "Milan (C)"];
 
@@ -1037,7 +1073,7 @@
 
       const history = [];
       for (let g = 0; g < 5; g++) {
-        const roundHash = (hash + g * 23) % 100;
+        const roundHash = (hash + g * 29) % 100;
         const isDnp = roundHash < 8;
 
         if (isDnp) {
@@ -1048,13 +1084,14 @@
             score: 0,
             isDnp: true,
             decisives: [],
-            aas: 0, goals: 0, assists: 0, shots: 0, shotsOnTarget: 0, keyPasses: 0, tackles: 0, interceptions: 0, saves: 0, yellows: 0, reds: 0
+            aas: 0, goals: 0, assists: 0, shots: 0, shotsOnTarget: 0, keyPasses: 0, tackles: 0, interceptions: 0, saves: 0, yellows: 0, reds: 0, conceded: 0
           });
         } else {
           const hasGoal = !isPor && (roundHash > 80);
-          const hasAssist = !isPor && !hasGoal && (roundHash > 64);
-          const hasCleanSheet = isPor && (roundHash > 50);
+          const hasAssist = !isPor && !hasGoal && (roundHash > 62);
+          const hasCleanSheet = isPor && (roundHash > 45);
           const hasYellow = roundHash % 7 === 0;
+          const goalsConceded = (roundHash % 3); // 0, 1 o 2 gol subiti dalla squadra
 
           let decList = [];
           if (hasGoal) decList.push("⚽ Gol");
@@ -1064,17 +1101,28 @@
 
           const posDecs = (hasGoal ? 1 : 0) + (hasAssist ? 1 : 0) + (hasCleanSheet ? 1 : 0);
 
-          let rawAas = 0;
-          if (isAtt) {
-            rawAas = 0.20 + ((roundHash % 9) / 10.0) - (hasYellow ? 0.30 : 0.0);
-          } else if (isDef) {
-            rawAas = 0.80 + ((roundHash % 11) / 10.0) - (hasYellow ? 0.30 : 0.0);
+          // Calcolo AAS differenziato per ruolo con malus gol subiti
+          let baseVolume = 0;
+          let roleConcededMalus = 0;
+
+          if (isDef) {
+            // Difensori: -0.20 per ogni gol subito dalla squadra
+            roleConcededMalus = goalsConceded * 0.20;
+            baseVolume = 1.30 + ((roundHash % 8) / 10.0);
+          } else if (isMid) {
+            // Centrocampisti: -0.10 per ogni gol subito
+            roleConcededMalus = goalsConceded * 0.10;
+            baseVolume = 1.20 + ((roundHash % 9) / 10.0);
+          } else if (isAtt) {
+            // Attaccanti: 0.00 malus per gol subito!
+            roleConcededMalus = 0;
+            baseVolume = 0.50 + ((roundHash % 7) / 10.0);
           } else if (isPor) {
-            rawAas = 0.40 + ((roundHash % 12) / 10.0);
-          } else {
-            rawAas = 0.70 + ((roundHash % 13) / 10.0) - (hasYellow ? 0.30 : 0.0);
+            roleConcededMalus = goalsConceded * 0.30;
+            baseVolume = 0.80 + ((roundHash % 9) / 10.0);
           }
 
+          let rawAas = baseVolume - roleConcededMalus - (hasYellow ? 0.30 : 0.0);
           const finalScore = computeSorareScore(posDecs, rawAas, true, false);
 
           history.push({
@@ -1094,7 +1142,8 @@
             interceptions: isPor ? 1 : 2,
             saves: isPor ? (hasCleanSheet ? 5 : 2) : 0,
             yellows: hasYellow ? 1 : 0,
-            reds: 0
+            reds: 0,
+            conceded: roleConcededMalus > 0 ? goalsConceded : 0
           });
         }
       }
@@ -1110,7 +1159,6 @@
             const titolariNames = slots.map(s => s.player).filter(Boolean);
             const bench = roster.filter(p => !titolariNames.includes(p)).slice(0, 12);
 
-            // Inizializza con esattamente 12 slot panchina
             while (bench.length < 12) {
               bench.push(null);
             }
@@ -1265,7 +1313,7 @@
 
       rows.TRE.style.display = rows.TRE.children.length === 0 ? 'none' : 'flex';
 
-      // 1. PANCHINA (12 Slot, svuotabili con box tratteggiato)
+      // 1. PANCHINA (12 Slot)
       const benchBox = document.getElementById('benchContainer');
       benchBox.innerHTML = data.panchina.map((p, idx) => {
         if (!p) {
@@ -1291,15 +1339,13 @@
               </div>
               <div class="text-[11px] font-black text-amber-200 truncate mt-0.5">${p}</div>
               
-              <!-- Mostra TUTTI i ruoli Mantra completi -->
               <div class="flex flex-wrap gap-0.5 mt-1">
                 ${roles.map(r => `<span class="px-1 rounded text-[7px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
               </div>
 
-              <!-- Statistiche L5 e L10 -->
               <div class="flex items-center gap-1 mt-1 text-[8px] font-black">
-                <span class="px-1 rounded ${getLBadgeColor(stats.l5)}">L5: ${stats.l5 ? formatScore(stats.l5) : '--'}</span>
-                <span class="px-1 rounded ${getLBadgeColor(stats.l10)}">L10: ${stats.l10 ? formatScore(stats.l10) : '--'}</span>
+                <span class="px-1 rounded border ${getLBadgeStyle(stats.l5)}">L5: ${stats.l5 ? formatScore(stats.l5) : '--'}</span>
+                <span class="px-1 rounded border ${getLBadgeStyle(stats.l10)}">L10: ${stats.l10 ? formatScore(stats.l10) : '--'}</span>
               </div>
             </div>
             
@@ -1310,7 +1356,7 @@
         `;
       }).join('');
 
-      // 2. TRIBUNA SOTTO LA PANCHINA (Tutti i non convocati)
+      // 2. TRIBUNA INTEGRATA
       const titolariNames = data.titolariSlots.map(s => s.player).filter(Boolean);
       const benchNames = data.panchina.filter(Boolean);
       const roster = ROSTERS[teamName] || [];
@@ -1333,8 +1379,8 @@
                   ${roles.map(r => `<span class="px-1 rounded text-[7px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
                 </div>
                 <div class="flex items-center gap-1 mt-1 text-[8px] font-black">
-                  <span class="px-1 rounded ${getLBadgeColor(stats.l5)}">L5: ${stats.l5 ? formatScore(stats.l5) : '--'}</span>
-                  <span class="px-1 rounded ${getLBadgeColor(stats.l10)}">L10: ${stats.l10 ? formatScore(stats.l10) : '--'}</span>
+                  <span class="px-1 rounded border ${getLBadgeStyle(stats.l5)}">L5: ${stats.l5 ? formatScore(stats.l5) : '--'}</span>
+                  <span class="px-1 rounded border ${getLBadgeStyle(stats.l10)}">L10: ${stats.l10 ? formatScore(stats.l10) : '--'}</span>
                 </div>
               </div>
               <button onclick="openPlayerTrendModal('${p}')" class="ml-2 px-2.5 py-1.5 rounded-xl text-[10px] font-black bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500 hover:text-black border border-cyan-500/30 transition">
@@ -1378,10 +1424,7 @@
         effectiveScore *= 1.5;
       }
 
-      let badgeScoreColor = 'bg-gray-800 text-gray-400 border border-white/5';
-      if (baseScore >= 7.0) badgeScoreColor = 'bg-emerald-500 text-black font-black shadow-md shadow-emerald-500/20';
-      else if (baseScore >= 6.0) badgeScoreColor = 'bg-amber-400 text-black font-black shadow-md shadow-amber-400/20';
-      else if (baseScore > 0) badgeScoreColor = 'bg-rose-500 text-white font-black';
+      const badgeColorHex = getScoreHexColor(effectiveScore);
 
       return `
         <div onclick="openSorareCardModal('${player}', ${slotIdx}, '${teamName}', null)" class="cursor-pointer flex flex-col items-center">
@@ -1391,7 +1434,7 @@
             
             <div class="w-full flex justify-between items-center text-[8px] font-black text-amber-300/80 uppercase">
               <span>${slot.label}</span>
-              <span class="text-[7px] text-emerald-400">L5 ${stats.l5 ? formatScore(stats.l5) : '--'}</span>
+              <span class="text-[7px]" style="color:${getScoreHexColor(stats.l5)}">L5 ${stats.l5 ? formatScore(stats.l5) : '--'}</span>
             </div>
             
             <div class="w-12 h-12 rounded-full overflow-hidden my-1 border border-amber-400/30 bg-black/40 flex items-center justify-center shadow-inner">
@@ -1403,14 +1446,13 @@
 
             <div class="text-[10px] sm:text-[11px] font-black text-white text-center leading-tight truncate w-full tracking-tight">${player}</div>
             
-            <!-- Mostra i ruoli Mantra -->
             <div class="flex flex-wrap justify-center gap-0.5 mt-0.5">
               ${pRoles.map(r => `<span class="px-1 rounded text-[7px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
             </div>
           </div>
           
           <div class="mt-1">
-            <span class="px-2 py-0.5 rounded-full text-[10px] ${badgeScoreColor}">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-black text-black" style="background-color: ${badgeColorHex}">
               ${baseScore > 0 ? formatScore(effectiveScore) : '--'}
             </span>
           </div>
@@ -1418,7 +1460,6 @@
       `;
     }
 
-    // RENDER TAB ROSA COMPLETA CON MENU A TENDINA PER NAVIGARE TUTTE LE SQUADRE
     function renderRosterTab() {
       const select = document.getElementById('rosterTeamSelect');
       const selectedTeam = select.value || Object.keys(ROSTERS)[0];
@@ -1446,14 +1487,13 @@
                 <span class="text-xs font-black text-white truncate">${p}</span>
                 ${statusBadge}
               </div>
-              <!-- Ruoli Mantra completi -->
               <div class="flex flex-wrap gap-1 mt-1">
                 ${roles.map(r => `<span class="px-1 rounded text-[8px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
               </div>
               
               <div class="flex items-center gap-1.5 mt-2 text-[9px] font-black">
-                <span class="px-1.5 py-0.5 rounded ${getLBadgeColor(stats.l5)}">L5: ${stats.l5 ? formatScore(stats.l5) : '--'}</span>
-                <span class="px-1.5 py-0.5 rounded ${getLBadgeColor(stats.l10)}">L10: ${stats.l10 ? formatScore(stats.l10) : '--'}</span>
+                <span class="px-1.5 py-0.5 rounded border ${getLBadgeStyle(stats.l5)}">L5: ${stats.l5 ? formatScore(stats.l5) : '--'}</span>
+                <span class="px-1.5 py-0.5 rounded border ${getLBadgeStyle(stats.l10)}">L10: ${stats.l10 ? formatScore(stats.l10) : '--'}</span>
               </div>
             </div>
 
@@ -1572,8 +1612,12 @@
       if (isCaptain) capBadge.classList.remove('hidden');
       else capBadge.classList.add('hidden');
 
-      document.getElementById('scBadgeL5').innerText = `L5: ${lStats.l5 ? formatScore(lStats.l5) : '--'}`;
-      document.getElementById('scBadgeL10').innerText = `L10: ${lStats.l10 ? formatScore(lStats.l10) : '--'}`;
+      const bL5 = document.getElementById('scBadgeL5');
+      const bL10 = document.getElementById('scBadgeL10');
+      bL5.innerText = `L5: ${lStats.l5 ? formatScore(lStats.l5) : '--'}`;
+      bL5.className = `px-2 py-0.5 rounded text-[10px] font-black border ${getLBadgeStyle(lStats.l5)}`;
+      bL10.innerText = `L10: ${lStats.l10 ? formatScore(lStats.l10) : '--'}`;
+      bL10.className = `px-2 py-0.5 rounded text-[10px] font-black border ${getLBadgeStyle(lStats.l10)}`;
 
       const finalVal = isCaptain ? (score * 1.5) : score;
       document.getElementById('scFinalScore').innerText = score > 0 ? formatScore(finalVal) : '--';
@@ -1616,7 +1660,7 @@
       document.getElementById('statDef').innerText = stats.interceptions;
       document.getElementById('statSaves').innerText = roles.includes('Por') ? `${stats.saves} (${stats.savesInsideBox})` : '0 (0)';
       document.getElementById('statYellows').innerText = stats.yellowCards;
-      document.getElementById('statReds').innerText = stats.redCards;
+      document.getElementById('statGoalsConceded').innerText = stats.goalsConceded !== undefined ? `-${(stats.goalsConceded).toFixed(2)}` : '0,00';
 
       const editBtns = document.getElementById('scEditButtons');
       const lockedWarn = document.getElementById('scLockedWarning');
@@ -1631,7 +1675,6 @@
         editBtns.classList.remove('hidden');
         lockedWarn.classList.add('hidden');
 
-        // Mostra tasto Svuota Slot sia per i titolari sia per la panchina
         emptyBtn.classList.remove('hidden');
 
         if (benchIdx !== null) {
@@ -1650,16 +1693,13 @@
       document.getElementById('sorareCardModal').classList.add('hidden');
     }
 
-    // Svuota slot corrente (sia titolare in campo che riserva in panchina) e manda il giocatore in tribuna
     function modalEmptyCurrentSlot() {
       if (isLineupLocked || !currentModalTeam) return;
       const t = teamLineups[currentModalTeam];
 
       if (currentModalSlotIdx !== null) {
-        // Titolare svuotato: diventa null (tratteggiato sul campo)
         t.titolariSlots[currentModalSlotIdx].player = null;
       } else if (currentModalBenchIdx !== null) {
-        // Panchina svuotata: diventa null (tratteggiato in panchina)
         t.panchina[currentModalBenchIdx] = null;
       }
 
@@ -1694,7 +1734,6 @@
       openPlayerTrendModal(p);
     }
 
-    // MODALE TREND GRAFICO UNIFICATO
     let currentTrendPlayerName = null;
 
     function openPlayerTrendModal(playerName) {
@@ -1706,10 +1745,14 @@
       const rolesBadgeBox = document.getElementById('trendPlayerRoleBadge');
       rolesBadgeBox.innerHTML = roles.map(r => `<span class="px-1.5 py-0.5 rounded text-[9px] font-black ${getBadgeClass(r)}">${r}</span>`).join('');
 
-      document.getElementById('trendL5Score').innerText = stats.l5 ? formatScore(stats.l5) : '--';
+      const tL5 = document.getElementById('trendL5Score');
+      const tL10 = document.getElementById('trendL10Score');
+      tL5.innerText = stats.l5 ? formatScore(stats.l5) : '--';
+      tL5.style.color = getScoreHexColor(stats.l5);
       document.getElementById('trendL5Sample').innerText = `${stats.l5Count} gare giocate (DNP esclusi)`;
 
-      document.getElementById('trendL10Score').innerText = stats.l10 ? formatScore(stats.l10) : '--';
+      tL10.innerText = stats.l10 ? formatScore(stats.l10) : '--';
+      tL10.style.color = getScoreHexColor(stats.l10);
       document.getElementById('trendL10Sample').innerText = `${stats.l10Count} gare giocate (DNP esclusi)`;
 
       renderUnifiedTrendChartSvg(stats.history, playerName);
@@ -1721,7 +1764,6 @@
       document.getElementById('trendModal').classList.add('hidden');
     }
 
-    // GRAFICO UNIFICATO SVG: Simboli decisive sopra, barre cliccabili, nome avversario e (C/T) sotto
     function renderUnifiedTrendChartSvg(history, playerName) {
       const container = document.getElementById('trendChartSvgContainer');
       const width = 360;
@@ -1749,16 +1791,8 @@
         } else {
           const barHeight = Math.max(12, (g.score / maxScore) * chartHeight);
           const y = chartBottom - barHeight;
+          const color = getScoreHexColor(g.score);
 
-          // Scala cromatica Sorare
-          let color = '#f43f5e';
-          if (g.score >= 8.5) color = '#059669';
-          else if (g.score >= 7.5) color = '#16a34a';
-          else if (g.score >= 6.5) color = '#22c55e';
-          else if (g.score >= 6.0) color = '#86efac';
-          else if (g.score >= 5.0) color = '#f59e0b';
-
-          // Simboli decisive sopra la colonna
           let decSymbols = '';
           if (g.decisives && g.decisives.length > 0) {
             const icons = g.decisives.map(d => d.split(' ')[0]).join(' ');
@@ -1779,7 +1813,6 @@
 
       container.innerHTML = `
         <svg viewBox="0 0 ${width} ${height}" class="w-full h-full overflow-visible">
-          <!-- Linea sufficienza 6.0 -->
           <line x1="10" y1="${thresholdY}" x2="${width - 10}" y2="${thresholdY}" stroke="#eab308" stroke-dasharray="3,3" stroke-width="1.2" opacity="0.7"/>
           <text x="${width - 8}" y="${thresholdY + 3}" font-size="8" fill="#eab308" text-anchor="end" font-weight="bold">6.0</text>
           ${barsHtml}
@@ -1787,7 +1820,6 @@
       `;
     }
 
-    // MODALE DETTAGLIO GARA CLICCATA
     function openMatchDetailModal(matchIndex) {
       if (!currentTrendPlayerName) return;
       const history = playerHistoryMap[currentTrendPlayerName];
@@ -1797,9 +1829,11 @@
 
       document.getElementById('mdlMatchday').innerText = `Serie A • Giornata ${g.matchday}`;
       document.getElementById('mdlPlayerAndOpponent').innerText = `${currentTrendPlayerName} vs ${g.opponent}`;
-      document.getElementById('mdlFinalScore').innerText = g.isDnp ? 'DNP' : formatScore(g.score);
+      
+      const mdlScore = document.getElementById('mdlFinalScore');
+      mdlScore.innerText = g.isDnp ? 'DNP' : formatScore(g.score);
+      mdlScore.style.color = getScoreHexColor(g.score);
 
-      // Decisive vs AAS
       const posDecsCount = (g.decisives || []).filter(e => e.includes("Gol") || e.includes("Assist") || e.includes("Clean Sheet")).length;
       let decBase = 0;
       if (!g.isDnp) {
@@ -1815,7 +1849,6 @@
 
       document.getElementById('mdlAasScore').innerText = g.isDnp ? '--' : (g.aas >= 0 ? `+${formatScore(g.aas)}` : formatScore(g.aas));
 
-      // Statistiche matrice Opta
       document.getElementById('mdlMins').innerText = g.isDnp ? '0\'' : `${g.mins}'`;
       document.getElementById('mdlGoalsAssists').innerText = `${g.goals} / ${g.assists}`;
       document.getElementById('mdlKeyPasses').innerText = g.keyPasses;
@@ -1824,7 +1857,7 @@
       document.getElementById('mdlInterceptions').innerText = g.interceptions;
       document.getElementById('mdlSaves').innerText = g.saves;
       document.getElementById('mdlYellows').innerText = g.yellows;
-      document.getElementById('mdlReds').innerText = g.reds;
+      document.getElementById('mdlGoalsConceded').innerText = g.conceded ? `-${g.conceded}` : '0';
 
       document.getElementById('matchDetailModal').classList.remove('hidden');
     }
@@ -1835,6 +1868,7 @@
 
     function generateMockStats(player, score) {
       const isPor = getPlayerRoles(player).includes('Por');
+      const isAtt = getPlayerRoles(player).some(r => ['Pc', 'A', 'W'].includes(r));
       const hasYellow = Math.random() < 0.18;
       const hasGoal = !isPor && score >= 7.5;
       const hasAssist = !isPor && score >= 7.0 && !hasGoal;
@@ -1858,6 +1892,7 @@
         savesInsideBox: isPor ? Math.floor(score / 2.5) : 0,
         yellowCards: hasYellow ? 1 : 0,
         redCards: 0,
+        goalsConceded: isAtt ? 0 : 0.20,
         decisiveEvents: decList
       };
     }
@@ -1900,13 +1935,12 @@
             <div class="flex items-center justify-between p-2 rounded-2xl bg-white/5 hover:bg-white/10 transition">
               <div class="min-w-0 flex-1">
                 <span class="text-xs font-black ${isCurrent ? 'text-amber-400' : 'text-gray-100'}">${name}</span>
-                <!-- Mostra TUTTI i ruoli Mantra -->
                 <div class="flex flex-wrap gap-0.5 mt-0.5">
                   ${roles.map(r => `<span class="px-1 rounded text-[7px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
                 </div>
                 <div class="flex items-center gap-1 mt-1 text-[8px] font-black">
-                  <span class="px-1 rounded ${getLBadgeColor(lStats.l5)}">L5: ${lStats.l5 ? formatScore(lStats.l5) : '--'}</span>
-                  <span class="px-1 rounded ${getLBadgeColor(lStats.l10)}">L10: ${lStats.l10 ? formatScore(lStats.l10) : '--'}</span>
+                  <span class="px-1 rounded border ${getLBadgeStyle(lStats.l5)}">L5: ${lStats.l5 ? formatScore(lStats.l5) : '--'}</span>
+                  <span class="px-1 rounded border ${getLBadgeStyle(lStats.l10)}">L10: ${lStats.l10 ? formatScore(lStats.l10) : '--'}</span>
                 </div>
               </div>
               <button onclick="assignPlayerToBench('${name}')" class="px-3 py-1.5 rounded-xl text-[10px] font-black bg-amber-500 hover:bg-amber-400 text-black">
@@ -1949,13 +1983,12 @@
             <div class="flex items-center justify-between p-2 rounded-2xl bg-white/5 hover:bg-white/10 transition ${isAlreadyFieldedElsewhere ? 'opacity-40' : ''}">
               <div class="min-w-0 flex-1">
                 <span class="text-xs font-black ${isCurrent ? 'text-amber-400' : 'text-gray-100'}">${name}</span>
-                <!-- Ruoli Mantra completi -->
                 <div class="flex flex-wrap gap-0.5 mt-0.5">
                   ${roles.map(r => `<span class="px-1 rounded text-[7px] font-black ${getBadgeClass(r)}">${r}</span>`).join('')}
                 </div>
                 <div class="flex items-center gap-1 mt-1 text-[8px] font-black">
-                  <span class="px-1 rounded ${getLBadgeColor(lStats.l5)}">L5: ${lStats.l5 ? formatScore(lStats.l5) : '--'}</span>
-                  <span class="px-1 rounded ${getLBadgeColor(lStats.l10)}">L10: ${lStats.l10 ? formatScore(lStats.l10) : '--'}</span>
+                  <span class="px-1 rounded border ${getLBadgeStyle(lStats.l5)}">L5: ${lStats.l5 ? formatScore(lStats.l5) : '--'}</span>
+                  <span class="px-1 rounded border ${getLBadgeStyle(lStats.l10)}">L10: ${lStats.l10 ? formatScore(lStats.l10) : '--'}</span>
                 </div>
               </div>
               ${actionButtons}
@@ -1985,7 +2018,6 @@
 
       t.titolariSlots[activeSlotIndex].player = playerName;
 
-      // Se il giocatore scelto era in panchina, il vecchio titolare ne prende il posto
       const benchIdx = t.panchina.indexOf(playerName);
       if (benchIdx !== -1) {
         t.panchina[benchIdx] = oldPlayer;
@@ -2002,7 +2034,6 @@
       if (isLineupLocked || activeBenchIndex === null || !activeTeam) return;
       const t = teamLineups[activeTeam];
 
-      // Se il giocatore era già in un altro slot di panchina, svuotalo
       const existingBenchIdx = t.panchina.indexOf(playerName);
       if (existingBenchIdx !== -1) {
         t.panchina[existingBenchIdx] = null;
@@ -2159,6 +2190,7 @@
                   savesInsideBox: Math.floor((st.saves || 0) / 2),
                   yellowCards: st.yellowCards || 0,
                   redCards: st.redCards || 0,
+                  goalsConceded: 0,
                   decisiveEvents: decList
                 };
                 dataFound = true;
@@ -2252,7 +2284,7 @@
           alert("Errore nella lettura del file: " + err.message);
         }
       };
-      reader.readAsArrayBuffer(file);
+      reader.readAsBuffer(file);
     });
 
     initStandings();
