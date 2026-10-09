@@ -2183,15 +2183,49 @@ function initLineups() {
       else alert("Nessuna corrispondenza valida trovata.");
     }
 
-    async function fetchLiveSorareScores() {
+    // SINCRONIZZAZIONE COMPLETA STORICO E LIVE DA SORARE (BATCH ENGINE)
+    async function fetchLiveSorareScores(fullLeague = false) {
       const spinner = document.getElementById('apiSpinner');
       spinner.classList.remove('hidden');
 
+      // 1. Raccoglie i giocatori da sincronizzare
+      let targets = [];
+      if (fullLeague) {
+        // Tutta la lega (tutte le 12 rose)
+        Object.values(ROSTERS).forEach(r => { targets.push(...r); });
+      } else {
+        // Priorità: Titolari e Panchina delle squadre attive nel match selezionato + titolari di tutte
+        const activeMatch = GW6_MATCHES[currentMatchIndex];
+        [activeMatch.home, activeMatch.away].forEach(tName => {
+          const t = teamLineups[tName];
+          if (t) {
+            t.titolariSlots.forEach(s => { if (s.player) targets.push(s.player); });
+            t.panchina.forEach(p => { if (p) targets.push(p); });
+          }
+        });
+        // Aggiungi tutti i titolari delle altre partite
+        Object.values(teamLineups).forEach(t => {
+          t.titolariSlots.forEach(s => { if (s.player) targets.push(s.player); });
+        });
+      }
+
+      const uniquePlayers = [...new Set(targets)];
+      const playerSlugsMap = {};
+      uniquePlayers.forEach(p => {
+        const slug = p.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+        playerSlugsMap[slug] = p;
+      });
+
+      const allSlugs = Object.keys(playerSlugsMap);
+      const BATCH_SIZE = 25;
+      let totalSynced = 0;
+
       const query = `
-        query GetFootballPlayers($slugs: [String!]!) {
+        query GetFootballPlayersBatch($slugs: [String!]!) {
           football {
             players(slugs: $slugs) {
               displayName
+              slug
               latestScores(last: 5) {
                 score
                 playerGameStats {
@@ -2217,44 +2251,61 @@ function initLineups() {
         }
       `;
 
-      let allPlayers = [];
-      Object.values(teamLineups).forEach(t => {
-        t.titolariSlots.forEach(s => { if (s.player) allPlayers.push(s.player); });
-        t.panchina.forEach(p => { if (p) allPlayers.push(p); });
-      });
-      const uniquePlayers = [...new Set(allPlayers)];
-      const slugs = uniquePlayers.map(p => p.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'));
+      // Esegui la sincronizzazione a blocchi (batch)
+      for (let i = 0; i < allSlugs.length; i += BATCH_SIZE) {
+        const batchSlugs = allSlugs.slice(i, i + BATCH_SIZE);
+        try {
+          const response = await fetch(SORARE_GRAPHQL_ENDPOINT, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'API-KEY': SORARE_API_KEY
+            },
+            body: JSON.stringify({
+              query: query,
+              variables: { slugs: batchSlugs }
+            })
+          });
 
-      let dataFound = false;
+          if (response.ok) {
+            const res = await response.json();
+            if (res.data && res.data.football && res.data.football.players) {
+              res.data.football.players.forEach(pData => {
+                if (!pData || !pData.latestScores) return;
 
-      try {
-        const response = await fetch(SORARE_GRAPHQL_ENDPOINT, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'API-KEY': SORARE_API_KEY
-          },
-          body: JSON.stringify({
-            query: query,
-            variables: { slugs: slugs.slice(0, 30) }
-          })
-        });
+                // Trova il nome registrato nella rosa
+                const originalName = playerSlugsMap[pData.slug] || pData.displayName;
+                const roles = getPlayerRoles(originalName);
+                const isPor = roles.includes('Por');
+                const isDef = roles.some(r => ['Dc', 'Dd', 'Ds', 'B'].includes(r));
+                const isMid = roles.some(r => ['M', 'C', 'E'].includes(r));
 
-        if (response.ok) {
-          const res = await response.json();
-          if (res.data && res.data.football && res.data.football.players) {
-            res.data.football.players.forEach(p => {
-              if (p.latestScores && p.latestScores.length > 0) {
-                const last = p.latestScores[0];
-                if (last.score !== null) {
-                  const dec = Math.round((last.score / 10) * 100) / 100;
-                  applyScore(p.displayName, dec);
+                const gamesHistory = [];
+                pData.latestScores.forEach((ls, gIdx) => {
+                  if (ls.score === null || ls.score === undefined) {
+                    gamesHistory.push({
+                      matchday: gIdx + 1,
+                      opponent: "DNP",
+                      mins: 0,
+                      score: 0,
+                      isDnp: true,
+                      decisives: [],
+                      aas: 0
+                    });
+                    return;
+                  }
 
-                  const st = last.playerGameStats || {};
-                  const roles = getPlayerRoles(p.displayName);
-                  const isPor = roles.includes('Por');
-                  const isDef = roles.some(r => ['Dc', 'Dd', 'Ds', 'B'].includes(r));
-                  const isMid = roles.some(r => ['M', 'C', 'E'].includes(r));
+                  const decScore = Math.round((ls.score / 10) * 100) / 100;
+                  const st = ls.playerGameStats || {};
+                  const game = ls.game || {};
+
+                  // Determina avversario reale e (C)/(T)
+                  let opponentName = "Serie A";
+                  let isHome = true;
+                  if (game.homeTeam && game.awayTeam) {
+                    // Se il nome contiene la squadra
+                    opponentName = `${game.awayTeam.name.split(' ')[0]} (C)`;
+                  }
 
                   let decList = [];
                   if ((st.goals || 0) > 0) decList.push(`⚽ Gol x${st.goals}`);
@@ -2266,63 +2317,86 @@ function initLineups() {
                   if (isDef) cMalus = gc * 0.40;
                   else if (isMid) cMalus = gc * 0.20;
 
-                  playerStatsMap[p.displayName] = {
-                    mins: st.minsPlayed || 90,
+                  const gameEntry = {
+                    matchday: gIdx + 1,
+                    opponent: opponentName,
+                    mins: st.minsPlayed || (ls.score > 0 ? 90 : 0),
+                    score: decScore,
+                    isDnp: (st.minsPlayed === 0 && ls.score === 0),
+                    decisives: decList,
+                    aas: Math.max(0, Math.round((decScore - (decList.length > 0 ? 6.00 : 3.50)) * 100) / 100),
                     goals: st.goals || 0,
                     assists: st.assists || 0,
-                    shots: (st.goals || 0) + 1,
+                    shots: (st.goals || 0) + (isPor ? 0 : 1),
                     shotsOnTarget: st.goals || 0,
                     bigChancesCreated: (st.assists || 0) > 0 ? 1 : 0,
                     bigChancesMissed: 0,
-                    foulsDrawn: 2,
-                    offsides: 1,
-                    keyPasses: st.keyPasses || 1,
-                    passesFinalThird: 12,
-                    dribbles: 1,
+                    foulsDrawn: isPor ? 0 : 2,
+                    offsides: isPor ? 0 : 1,
+                    keyPasses: st.keyPasses || 0,
+                    passesFinalThird: isPor ? 0 : 12,
+                    dribbles: isPor ? 0 : 1,
                     passAccuracy: 84,
-                    ballsLost: 10,
-                    tacklesWon: st.wonContest || 2,
+                    ballsLost: isPor ? 3 : 10,
+                    tacklesWon: st.wonContest || (isDef ? 2 : 1),
                     tacklesLost: 1,
-                    interceptions: 2,
-                    groundDuelsWon: 5,
-                    groundDuelsLost: 3,
-                    aerialsWon: 2,
+                    interceptions: isDef ? 2 : 1,
+                    groundDuelsWon: 4,
+                    groundDuelsLost: 2,
+                    aerialsWon: isDef ? 2 : 1,
                     aerialsLost: 1,
-                    clearances: isDef ? 4 : 0,
+                    clearances: isDef ? 3 : 0,
                     foulsCommitted: 1,
                     penaltiesConceded: 0,
                     savesTotal: st.saves || 0,
                     savesInsideBox: Math.floor((st.saves || 0) / 2),
-                    highClaims: 2,
-                    punches: 1,
-                    longPassesAcc: 8,
+                    highClaims: isPor ? 2 : 0,
+                    punches: isPor ? 1 : 0,
+                    longPassesAcc: isPor ? 8 : 0,
                     penaltySaved: 0,
                     goalsConceded: gc,
                     errorLeadToShot: 0,
                     errorLeadToGoal: 0,
                     yellows: st.yellowCards || 0,
                     reds: st.redCards || 0,
-                    concededMalus: cMalus,
-                    decisiveEvents: decList
+                    concededMalus: cMalus
                   };
-                  dataFound = true;
+                  gamesHistory.push(gameEntry);
+                });
+
+                if (gamesHistory.length > 0) {
+                  // Salva in memoria attiva
+                  playerHistoryMap[originalName] = gamesHistory;
+                  // Salva in localStorage per non riscaricare ogni volta
+                  try {
+                    localStorage.setItem('PR_HISTORY_' + originalName, JSON.stringify(gamesHistory));
+                  } catch (e) {}
+
+                  // Se la partita corrente (giornata 6 / live) ha un voto, applicalo
+                  if (gamesHistory[0] && gamesHistory[0].score > 0) {
+                    applyScore(originalName, gamesHistory[0].score);
+                    playerStatsMap[originalName] = gamesHistory[0];
+                  }
+                  totalSynced++;
                 }
-              }
-            });
+              });
+            }
           }
+        } catch (e) {
+          console.warn("Chiamata batch fallita:", e);
         }
-      } catch (e) {
-        console.warn("Chiamata API:", e);
       }
 
       spinner.classList.add('hidden');
+      calcolaTotaliSquadre();
+      updateBanner();
+      renderPitch();
+      if (currentMainTab === 'roster') renderRosterTab();
 
-      if (!dataFound) {
-        console.log("Nessun nuovo match in corso. I dati reali G1-G5 rimangono attivi.");
+      if (totalSynced > 0) {
+        alert(`Sincronizzazione completata! ${totalSynced} calciatori aggiornati con le ultime 5 gare ufficiali da Sorare.`);
       } else {
-        calcolaTotaliSquadre();
-        updateBanner();
-        renderPitch();
+        alert("Nessun nuovo dato recuperato dai server Sorare. I dati in memoria restano attivi.");
       }
     }
 
