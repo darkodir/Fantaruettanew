@@ -97,12 +97,16 @@
               Mantra
             </span>
           </div>
-          <p class="text-[10px] text-gray-400">Matrice Opta Integrale • Schede Separate Portiere / Movimento</p>
+          <p class="text-[10px] text-gray-400">Matrice Asimmetrica (-0,4 D / -0,2 C) • Verde dal 5,00</p>
         </div>
       </div>
 
       <!-- Action Buttons -->
       <div class="flex items-center gap-1.5">
+        <button id="btnAutoSync" onclick="toggleAutoRefresh()" class="px-2.5 py-1.5 rounded-lg border text-[11px] font-bold transition flex items-center gap-1.5 bg-gray-800 border-white/10 text-gray-400 hover:text-white">
+          <span>⚪</span> <span class="hidden sm:inline">Auto Live: OFF</span><span class="sm:hidden">Auto</span>
+        </button>
+
         <button id="btnLockToggle" onclick="toggleLineupLock()" class="px-2.5 py-1.5 rounded-lg border text-[11px] font-bold transition flex items-center gap-1 bg-emerald-950/80 border-emerald-500/40 text-emerald-300">
           <span id="lockIcon">🔓</span>
           <span id="lockText" class="hidden sm:inline">Aperte</span>
@@ -119,7 +123,7 @@
 
         <button id="btnFetchApi" onclick="fetchLiveSorareScores()" class="bg-gradient-to-r from-amber-500 to-yellow-400 active:scale-95 text-black font-black text-[11px] px-3 py-1.5 rounded-lg shadow-lg shadow-amber-500/20 uppercase tracking-wider transition flex items-center gap-1">
           <span id="apiSpinner" class="hidden animate-spin">⏳</span>
-          <span>📡 Sync Sorare</span>
+          <span>📡 Sync</span>
         </button>
       </div>
     </div>
@@ -365,11 +369,11 @@
             <span id="scAasPts" class="font-teko text-3xl font-black text-cyan-400">+0,00</span>
             <span class="text-[10px] text-gray-400">matrice</span>
           </div>
-          <div class="text-[10px] text-gray-400 mt-1">Volume Opta per ruolo</div>
+          <div class="text-[10px] text-gray-400 mt-1">Volume Opta differenziato</div>
         </div>
       </div>
 
-      <!-- MATRICE DINAMICA INIETTATA PER PORTIERE O MOVIMENTO -->
+      <!-- MATRICE DINAMICA A 4 SEZIONI -->
       <div id="scDynamicMatrixContainer"></div>
 
       <div class="pt-3 border-t border-white/10 flex items-center justify-between">
@@ -405,7 +409,7 @@
             <h3 id="trendPlayerName" class="text-base sm:text-lg font-black text-white">Trend Calciatore</h3>
             <div id="trendPlayerRoleBadge" class="flex gap-1"></div>
           </div>
-          <p class="text-xs text-gray-400">Tocca una barra del grafico per aprire il dettaglio statistico della singola partita</p>
+          <p class="text-xs text-gray-400">Tocca una barra per aprire la matrice Opta dettagliata della gara</p>
         </div>
         <button onclick="closeTrendModal()" class="text-gray-400 hover:text-white text-xl font-bold">&times;</button>
       </div>
@@ -427,14 +431,14 @@
         <div class="flex justify-between items-center text-[10px] text-gray-400 font-bold mb-3">
           <span>Rendimento Serie A G1–G5</span>
           <span class="flex items-center gap-1.5">
-            <span class="w-3 h-0.5 bg-amber-400 inline-block"></span> Soglia 6.00
+            <span class="w-3 h-0.5 bg-[#84cc16] inline-block"></span> Soglia 5.00
           </span>
         </div>
         <div id="trendChartSvgContainer" class="w-full flex items-center justify-center"></div>
       </div>
 
       <div class="text-[11px] text-gray-400 text-center italic">
-        💡 Tocca direttamente una barra per aprire la matrice statistica completa della partita
+        💡 Tocca direttamente una barra per visualizzare il tabellino completo e i malus di quella specifica partita
       </div>
 
       <div class="pt-2 border-t border-white/10 text-right">
@@ -447,7 +451,7 @@
 
   <!-- MODAL: DETTAGLIO GARA CLICCATA -->
   <div id="matchDetailModal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[60] hidden flex items-center justify-center p-3 sm:p-5">
-    <div class="bg-gradient-to-b from-[#131b2c] via-[#0d131f] to-[#070a10] border border-cyan-500/50 w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4 text-gray-200 relative overflow-hidden">
+    <div class="bg-gradient-to-b from-[#131b2c] via-[#0d131f] to-[#070a10] border border-cyan-500/50 w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4 text-gray-200 relative overflow-hidden max-h-[90vh] overflow-y-auto">
       <div class="flex items-start justify-between border-b border-white/10 pb-3">
         <div>
           <div class="text-[10px] font-black text-amber-400 uppercase tracking-widest" id="mdlMatchday">Giornata 1</div>
@@ -472,7 +476,6 @@
         </div>
       </div>
 
-      <!-- MATRICE DETTAGLIO GARA DIFFERENZIATA -->
       <div id="mdlDynamicMatrixContainer"></div>
 
       <div class="pt-2 border-t border-white/10 text-right">
@@ -531,7 +534,7 @@
   </div>
 
   <footer class="border-t border-white/10 text-center py-3 text-[11px] text-gray-500 bg-[#040609]">
-    Premier Ruetta Fanta-Sorare 11 • Matrice Opta Separata Portiere/Movimento • Regolamento Mantra Ufficiale
+    Premier Ruetta Fanta-Sorare 11 • Matrice Asimmetrica Malus (-0,4 D / -0,2 C) • Regolamento Mantra Ufficiale
   </footer>
 
   <script>
@@ -540,6 +543,12 @@
 
     let isLineupLocked = false;
     let currentMainTab = 'pitch';
+
+    // Timer Auto-Sync Loop (60s)
+    let autoRefreshTimer = null;
+    let isAutoRefreshActive = false;
+    const REFRESH_INTERVAL_SECONDS = 60;
+    let secondsUntilNextSync = REFRESH_INTERVAL_SECONDS;
 
     const ROSTERS = {
       "DUA LIPAnathinaikos": [
@@ -781,13 +790,13 @@
 
     function getScoreHexColor(score) {
       if (!score || score <= 0) return '#64748b';
-      if (score >= 8.0) return '#059669';
-      if (score >= 7.0) return '#16a34a';
-      if (score >= 6.0) return '#22c55e';
-      if (score >= 5.5) return '#4ade80';
-      if (score >= 5.0) return '#84cc16'; // Verde accennato dal 5.00
-      if (score >= 4.0) return '#f97316';
-      return '#e11d48';
+      if (score >= 8.0) return '#059669'; // Smeraldo top
+      if (score >= 7.0) return '#16a34a'; // Verde pieno
+      if (score >= 6.0) return '#22c55e'; // Verde brillante
+      if (score >= 5.5) return '#4ade80'; // Verde lime
+      if (score >= 5.0) return '#84cc16'; // Verde tenue già dal 5.00
+      if (score >= 4.0) return '#f97316'; // Arancio
+      return '#e11d48'; // Rosso
     }
 
     function getLBadgeStyle(score) {
@@ -801,6 +810,7 @@
       return "bg-rose-950/60 text-rose-300 border-rose-500/40";
     }
 
+    // FORMULA UFFICIALE SORARE
     function computeSorareScore(decisiveCount, aasValue, isStarter = true, hasRedCard = false) {
       let decisiveBase = isStarter ? 3.50 : 2.50;
       if (decisiveCount === 1) decisiveBase = 6.00;
@@ -818,6 +828,49 @@
       }
 
       return Math.round(finalScore * 100) / 100;
+    }
+
+    // AUTO-REFRESH TIMER LOOP (60 SECONDI)
+    function toggleAutoRefresh() {
+      isAutoRefreshActive = !isAutoRefreshActive;
+      const btn = document.getElementById('btnAutoSync');
+      
+      if (isAutoRefreshActive) {
+        btn.className = "px-2.5 py-1.5 rounded-lg border text-[11px] font-bold transition flex items-center gap-1.5 bg-emerald-950/90 border-emerald-500/50 text-emerald-300";
+        btn.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block"></span> <span class="hidden sm:inline">Live Auto (<span id="countdownSec">60</span>s)</span><span class="sm:hidden">(<span id="countdownSecMobile">60</span>s)</span>`;
+        startAutoSyncLoop();
+      } else {
+        btn.className = "px-2.5 py-1.5 rounded-lg border text-[11px] font-bold transition flex items-center gap-1.5 bg-gray-800 border-white/10 text-gray-400 hover:text-white";
+        btn.innerHTML = `<span>⚪</span> <span class="hidden sm:inline">Auto Live: OFF</span><span class="sm:hidden">Auto</span>`;
+        stopAutoSyncLoop();
+      }
+    }
+
+    function startAutoSyncLoop() {
+      if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+      secondsUntilNextSync = REFRESH_INTERVAL_SECONDS;
+      
+      autoRefreshTimer = setInterval(() => {
+        if (document.hidden) return;
+
+        secondsUntilNextSync--;
+        const cdEl = document.getElementById('countdownSec');
+        const cdMobile = document.getElementById('countdownSecMobile');
+        if (cdEl) cdEl.innerText = secondsUntilNextSync;
+        if (cdMobile) cdMobile.innerText = secondsUntilNextSync;
+
+        if (secondsUntilNextSync <= 0) {
+          secondsUntilNextSync = REFRESH_INTERVAL_SECONDS;
+          fetchLiveSorareScores();
+        }
+      }, 1000);
+    }
+
+    function stopAutoSyncLoop() {
+      if (autoRefreshTimer) {
+        clearInterval(autoRefreshTimer);
+        autoRefreshTimer = null;
+      }
     }
 
     function toggleLineupLock() {
@@ -932,31 +985,31 @@
       };
     }
 
-    // STORICO DETERMINISTICO CON MATRICE OPTA INTEGRALE
+    // STORICO DETERMINISTICO COMPLETO CON ASIMMETRIA DEI GOL SUBITI (-0,40 D / -0,20 C / 0 A)
     function getDeterministicHistory(playerName) {
       if (playerName === "Malen") {
         return [
-          { matchday: 1, opponent: "Fiorentina (C)", mins: 68, score: 10.00, isDnp: false, decisives: ["⚽ Gol", "⚽ Gol", "⚽ Gol"], aas: 2.00, goals: 3, assists: 0, shots: 6, shotsOnTarget: 4, bigChances: 2, keyPasses: 2, passesFinalThird: 14, dribbles: 3, foulsDrawn: 2, tackles: 1, interceptions: 1, duelsWon: 5, aerialsWon: 2, ballsLost: 9, yellows: 0, reds: 0, conceded: 0 },
-          { matchday: 2, opponent: "Lecce (T)", mins: 67, score: 7.00, isDnp: false, decisives: ["⚽ Gol", "⚽ Gol"], aas: -0.40, goals: 2, assists: 0, shots: 3, shotsOnTarget: 2, bigChances: 1, keyPasses: 1, passesFinalThird: 8, dribbles: 1, foulsDrawn: 1, tackles: 0, interceptions: 0, duelsWon: 3, aerialsWon: 1, ballsLost: 15, yellows: 0, reds: 0, conceded: 0 },
-          { matchday: 3, opponent: "Atalanta (C)", mins: 63, score: 4.20, isDnp: false, decisives: [], aas: 0.70, goals: 0, assists: 0, shots: 2, shotsOnTarget: 1, bigChances: 0, keyPasses: 1, passesFinalThird: 11, dribbles: 2, foulsDrawn: 2, tackles: 1, interceptions: 0, duelsWon: 4, aerialsWon: 0, ballsLost: 12, yellows: 0, reds: 0, conceded: 0 },
-          { matchday: 4, opponent: "Torino (T)", mins: 57, score: 6.40, isDnp: false, decisives: ["⚽ Gol"], aas: 0.40, goals: 1, assists: 0, shots: 3, shotsOnTarget: 2, bigChances: 1, keyPasses: 0, passesFinalThird: 6, dribbles: 1, foulsDrawn: 1, tackles: 1, interceptions: 0, duelsWon: 2, aerialsWon: 1, ballsLost: 10, yellows: 0, reds: 0, conceded: 0 },
-          { matchday: 5, opponent: "Inter (C)", mins: 90, score: 4.40, isDnp: false, decisives: [], aas: 0.90, goals: 0, assists: 0, shots: 2, shotsOnTarget: 0, bigChances: 0, keyPasses: 2, passesFinalThird: 15, dribbles: 2, foulsDrawn: 3, tackles: 2, interceptions: 1, duelsWon: 6, aerialsWon: 1, ballsLost: 14, yellows: 0, reds: 0, conceded: 0 }
+          { matchday: 1, opponent: "Fiorentina (C)", mins: 68, score: 10.00, isDnp: false, decisives: ["⚽ Gol", "⚽ Gol", "⚽ Gol"], aas: 2.00, goals: 3, assists: 0, shots: 6, shotsOnTarget: 4, bigChancesCreated: 2, bigChancesMissed: 0, foulsDrawn: 2, offsides: 1, keyPasses: 2, passesFinalThird: 14, dribbles: 3, passAccuracy: 88, ballsLost: 9, tacklesWon: 1, tacklesLost: 1, interceptions: 1, groundDuelsWon: 5, groundDuelsLost: 2, aerialsWon: 2, aerialsLost: 1, clearances: 0, foulsCommitted: 1, penaltiesConceded: 0, yellows: 0, reds: 0, concededCount: 0, concededMalus: 0 },
+          { matchday: 2, opponent: "Lecce (T)", mins: 67, score: 7.00, isDnp: false, decisives: ["⚽ Gol", "⚽ Gol"], aas: -0.40, goals: 2, assists: 0, shots: 3, shotsOnTarget: 2, bigChancesCreated: 1, bigChancesMissed: 1, foulsDrawn: 1, offsides: 2, keyPasses: 1, passesFinalThird: 8, dribbles: 1, passAccuracy: 78, ballsLost: 15, tacklesWon: 0, tacklesLost: 2, interceptions: 0, groundDuelsWon: 3, groundDuelsLost: 5, aerialsWon: 1, aerialsLost: 2, clearances: 0, foulsCommitted: 2, penaltiesConceded: 0, yellows: 0, reds: 0, concededCount: 0, concededMalus: 0 },
+          { matchday: 3, opponent: "Atalanta (C)", mins: 63, score: 4.20, isDnp: false, decisives: [], aas: 0.70, goals: 0, assists: 0, shots: 2, shotsOnTarget: 1, bigChancesCreated: 0, bigChancesMissed: 0, foulsDrawn: 2, offsides: 0, keyPasses: 1, passesFinalThird: 11, dribbles: 2, passAccuracy: 82, ballsLost: 12, tacklesWon: 1, tacklesLost: 1, interceptions: 0, groundDuelsWon: 4, groundDuelsLost: 4, aerialsWon: 0, aerialsLost: 1, clearances: 0, foulsCommitted: 1, penaltiesConceded: 0, yellows: 0, reds: 0, concededCount: 1, concededMalus: 0 },
+          { matchday: 4, opponent: "Torino (T)", mins: 57, score: 6.40, isDnp: false, decisives: ["⚽ Gol"], aas: 0.40, goals: 1, assists: 0, shots: 3, shotsOnTarget: 2, bigChancesCreated: 1, bigChancesMissed: 0, foulsDrawn: 1, offsides: 1, keyPasses: 0, passesFinalThird: 6, dribbles: 1, passAccuracy: 80, ballsLost: 10, tacklesWon: 1, tacklesLost: 0, interceptions: 0, groundDuelsWon: 2, groundDuelsLost: 3, aerialsWon: 1, aerialsLost: 0, clearances: 0, foulsCommitted: 1, penaltiesConceded: 0, yellows: 0, reds: 0, concededCount: 0, concededMalus: 0 },
+          { matchday: 5, opponent: "Inter (C)", mins: 90, score: 4.40, isDnp: false, decisives: [], aas: 0.90, goals: 0, assists: 0, shots: 2, shotsOnTarget: 0, bigChancesCreated: 0, bigChancesMissed: 1, foulsDrawn: 3, offsides: 1, keyPasses: 2, passesFinalThird: 15, dribbles: 2, passAccuracy: 85, ballsLost: 14, tacklesWon: 2, tacklesLost: 2, interceptions: 1, groundDuelsWon: 6, groundDuelsLost: 5, aerialsWon: 1, aerialsLost: 2, clearances: 0, foulsCommitted: 2, penaltiesConceded: 0, yellows: 0, reds: 0, concededCount: 2, concededMalus: 0 }
         ];
       }
 
       if (playerName === "Svilar" || playerName === "Maignan" || playerName === "De Gea" || playerName === "Sommer") {
         return [
-          { matchday: 1, opponent: "Cagliari (T)", mins: 90, score: 6.80, isDnp: false, decisives: ["🧤 Clean Sheet"], aas: 0.80, saves: 4, savesInsideBox: 2, highClaims: 2, punches: 1, longPassesAcc: 8, goalsConceded: 0, penaltySaved: 0, yellows: 0, reds: 0 },
-          { matchday: 2, opponent: "Empoli (C)", mins: 90, score: 4.30, isDnp: false, decisives: [], aas: 0.80, saves: 3, savesInsideBox: 1, highClaims: 1, punches: 0, longPassesAcc: 6, goalsConceded: 2, penaltySaved: 0, yellows: 0, reds: 0 },
-          { matchday: 3, opponent: "Juventus (T)", mins: 90, score: 7.10, isDnp: false, decisives: ["🧤 Clean Sheet"], aas: 1.10, saves: 5, savesInsideBox: 3, highClaims: 3, punches: 1, longPassesAcc: 11, goalsConceded: 0, penaltySaved: 0, yellows: 0, reds: 0 },
-          { matchday: 4, opponent: "Genoa (T)", mins: 90, score: 5.20, isDnp: false, decisives: [], aas: 1.70, saves: 4, savesInsideBox: 2, highClaims: 2, punches: 0, longPassesAcc: 7, goalsConceded: 1, penaltySaved: 0, yellows: 0, reds: 0 },
-          { matchday: 5, opponent: "Udinese (C)", mins: 90, score: 7.30, isDnp: false, decisives: ["🧤 Clean Sheet"], aas: 1.30, saves: 3, savesInsideBox: 2, highClaims: 2, punches: 2, longPassesAcc: 9, goalsConceded: 0, penaltySaved: 0, yellows: 0, reds: 0 }
+          { matchday: 1, opponent: "Cagliari (T)", mins: 90, score: 6.80, isDnp: false, decisives: ["🧤 Clean Sheet"], aas: 0.80, savesTotal: 4, savesInsideBox: 2, highClaims: 2, punches: 1, penaltySaved: 0, goalsConceded: 0, errorLeadToShot: 0, errorLeadToGoal: 0, longPassesAcc: 8, passesAccurate: 22, ballsLost: 3, yellows: 0, reds: 0 },
+          { matchday: 2, opponent: "Empoli (C)", mins: 90, score: 4.30, isDnp: false, decisives: [], aas: 0.80, savesTotal: 3, savesInsideBox: 1, highClaims: 1, punches: 0, penaltySaved: 0, goalsConceded: 2, errorLeadToShot: 0, errorLeadToGoal: 0, longPassesAcc: 6, passesAccurate: 19, ballsLost: 4, yellows: 0, reds: 0 },
+          { matchday: 3, opponent: "Juventus (T)", mins: 90, score: 7.10, isDnp: false, decisives: ["🧤 Clean Sheet"], aas: 1.10, savesTotal: 5, savesInsideBox: 3, highClaims: 3, punches: 1, penaltySaved: 0, goalsConceded: 0, errorLeadToShot: 0, errorLeadToGoal: 0, longPassesAcc: 11, passesAccurate: 25, ballsLost: 2, yellows: 0, reds: 0 },
+          { matchday: 4, opponent: "Genoa (T)", mins: 90, score: 5.20, isDnp: false, decisives: [], aas: 1.70, savesTotal: 4, savesInsideBox: 2, highClaims: 2, punches: 0, penaltySaved: 0, goalsConceded: 1, errorLeadToShot: 0, errorLeadToGoal: 0, longPassesAcc: 7, passesAccurate: 20, ballsLost: 3, yellows: 0, reds: 0 },
+          { matchday: 5, opponent: "Udinese (C)", mins: 90, score: 7.30, isDnp: false, decisives: ["🧤 Clean Sheet"], aas: 1.30, savesTotal: 3, savesInsideBox: 2, highClaims: 2, punches: 2, penaltySaved: 0, goalsConceded: 0, errorLeadToShot: 0, errorLeadToGoal: 0, longPassesAcc: 9, passesAccurate: 24, ballsLost: 2, yellows: 0, reds: 0 }
         ];
       }
 
       const pRoles = getPlayerRoles(playerName);
       const isPor = pRoles.includes('Por');
-      const isAtt = pRoles.some(r => ['Pc', 'A', 'W'].includes(r));
+      const isAtt = pRoles.some(r => ['Pc', 'A', 'W', 'T'].includes(r));
       const isDef = pRoles.some(r => ['Dc', 'Dd', 'Ds', 'B'].includes(r));
       const isMid = pRoles.some(r => ['M', 'C', 'E'].includes(r));
 
@@ -971,14 +1024,14 @@
 
       const history = [];
       for (let g = 0; g < 5; g++) {
-        const roundHash = (hash + g * 31) % 100;
+        const roundHash = (hash + g * 37) % 100;
         const isDnp = roundHash < 8;
 
         if (isDnp) {
           if (isPor) {
-            history.push({ matchday: g + 1, opponent: opponents[g], mins: 0, score: 0, isDnp: true, decisives: [], aas: 0, saves: 0, savesInsideBox: 0, highClaims: 0, punches: 0, longPassesAcc: 0, goalsConceded: 0, penaltySaved: 0, yellows: 0, reds: 0 });
+            history.push({ matchday: g + 1, opponent: opponents[g], mins: 0, score: 0, isDnp: true, decisives: [], aas: 0, savesTotal: 0, savesInsideBox: 0, highClaims: 0, punches: 0, penaltySaved: 0, goalsConceded: 0, errorLeadToShot: 0, errorLeadToGoal: 0, longPassesAcc: 0, passesAccurate: 0, ballsLost: 0, yellows: 0, reds: 0 });
           } else {
-            history.push({ matchday: g + 1, opponent: opponents[g], mins: 0, score: 0, isDnp: true, decisives: [], aas: 0, goals: 0, assists: 0, shots: 0, shotsOnTarget: 0, bigChances: 0, keyPasses: 0, passesFinalThird: 0, dribbles: 0, foulsDrawn: 0, tackles: 0, interceptions: 0, duelsWon: 0, aerialsWon: 0, ballsLost: 0, yellows: 0, reds: 0, conceded: 0 });
+            history.push({ matchday: g + 1, opponent: opponents[g], mins: 0, score: 0, isDnp: true, decisives: [], aas: 0, goals: 0, assists: 0, shots: 0, shotsOnTarget: 0, bigChancesCreated: 0, bigChancesMissed: 0, foulsDrawn: 0, offsides: 0, keyPasses: 0, passesFinalThird: 0, dribbles: 0, passAccuracy: 0, ballsLost: 0, tacklesWon: 0, tacklesLost: 0, interceptions: 0, groundDuelsWon: 0, groundDuelsLost: 0, aerialsWon: 0, aerialsLost: 0, clearances: 0, foulsCommitted: 0, penaltiesConceded: 0, yellows: 0, reds: 0, concededCount: 0, concededMalus: 0 });
           }
         } else {
           const goalsConceded = (roundHash % 3);
@@ -988,12 +1041,13 @@
             let decList = [];
             if (hasCleanSheet) decList.push("🧤 Clean Sheet");
             const saves = 2 + (roundHash % 4);
-            const rawAas = 0.50 + saves * 0.25 - goalsConceded * 0.20;
+            const rawAas = 0.50 + saves * 0.25 - goalsConceded * 0.30;
             const finalScore = computeSorareScore(hasCleanSheet ? 1 : 0, rawAas, true, false);
 
             history.push({
               matchday: g + 1, opponent: opponents[g], mins: 90, score: finalScore, isDnp: false, decisives: decList, aas: Math.round(rawAas * 100) / 100,
-              saves: saves, savesInsideBox: Math.floor(saves / 2), highClaims: 1 + (roundHash % 3), punches: (roundHash % 2), longPassesAcc: 6 + (roundHash % 5), goalsConceded: goalsConceded, penaltySaved: 0, yellows: 0, reds: 0
+              savesTotal: saves, savesInsideBox: Math.floor(saves / 2), highClaims: 1 + (roundHash % 3), punches: (roundHash % 2), penaltySaved: 0,
+              goalsConceded: goalsConceded, errorLeadToShot: 0, errorLeadToGoal: 0, longPassesAcc: 6 + (roundHash % 5), passesAccurate: 18 + (roundHash % 8), ballsLost: 3, yellows: 0, reds: 0
             });
           } else {
             const hasGoal = !isPor && (roundHash > 80);
@@ -1007,29 +1061,31 @@
 
             const posDecs = (hasGoal ? 1 : 0) + (hasAssist ? 1 : 0);
 
-            let roleConcededMalus = 0;
-            let baseVolume = 0;
-
+            // APPLICAZIONE ESATTA DEL MALUS ASIMMETRICO
+            let concededMalus = 0;
             if (isDef) {
-              roleConcededMalus = goalsConceded * 0.20;
-              baseVolume = 1.30 + ((roundHash % 8) / 10.0);
+              concededMalus = goalsConceded * 0.40; // -0.40 per gol ai Difensori
             } else if (isMid) {
-              roleConcededMalus = goalsConceded * 0.10;
-              baseVolume = 1.20 + ((roundHash % 9) / 10.0);
-            } else if (isAtt) {
-              roleConcededMalus = 0;
-              baseVolume = 0.50 + ((roundHash % 7) / 10.0);
+              concededMalus = goalsConceded * 0.20; // -0.20 per gol ai Centrocampisti
+            } else {
+              concededMalus = 0.00; // 0.00 agli Attaccanti
             }
 
-            let rawAas = baseVolume - roleConcededMalus - (hasYellow ? 0.30 : 0.0);
+            let baseVolume = 0;
+            if (isDef) baseVolume = 1.30 + ((roundHash % 8) / 10.0);
+            else if (isMid) baseVolume = 1.20 + ((roundHash % 9) / 10.0);
+            else baseVolume = 0.50 + ((roundHash % 7) / 10.0);
+
+            let rawAas = baseVolume - concededMalus - (hasYellow ? 0.30 : 0.0);
             const finalScore = computeSorareScore(posDecs, rawAas, true, false);
 
             history.push({
               matchday: g + 1, opponent: opponents[g], mins: (roundHash % 2 === 0) ? 90 : 74, score: finalScore, isDnp: false, decisives: decList, aas: Math.round(rawAas * 100) / 100,
-              goals: hasGoal ? 1 : 0, assists: hasAssist ? 1 : 0, shots: hasGoal ? 3 : 1, shotsOnTarget: hasGoal ? 2 : 1, bigChances: hasGoal || hasAssist ? 1 : 0,
-              keyPasses: hasAssist ? 2 : 1, passesFinalThird: 8 + (roundHash % 10), dribbles: 1 + (roundHash % 3), foulsDrawn: 1 + (roundHash % 3),
-              tackles: isDef ? 3 : 1, interceptions: isDef ? 2 : 1, duelsWon: 4 + (roundHash % 5), aerialsWon: isDef ? 3 : 1, ballsLost: isAtt ? 12 : 6,
-              yellows: hasYellow ? 1 : 0, reds: 0, conceded: roleConcededMalus > 0 ? goalsConceded : 0
+              goals: hasGoal ? 1 : 0, assists: hasAssist ? 1 : 0, shots: hasGoal ? 3 : 1, shotsOnTarget: hasGoal ? 2 : 1, bigChancesCreated: hasAssist ? 1 : 0, bigChancesMissed: (roundHash % 4 === 0) ? 1 : 0,
+              foulsDrawn: 1 + (roundHash % 3), offsides: isAtt ? (roundHash % 2) : 0, keyPasses: hasAssist ? 2 : 1, passesFinalThird: 8 + (roundHash % 10), dribbles: 1 + (roundHash % 3),
+              passAccuracy: 80 + (roundHash % 15), ballsLost: isAtt ? 13 : 7, tacklesWon: isDef ? 3 : 1, tacklesLost: 1 + (roundHash % 2), interceptions: isDef ? 2 : 1,
+              groundDuelsWon: 4 + (roundHash % 4), groundDuelsLost: 3 + (roundHash % 3), aerialsWon: isDef ? 3 : 1, aerialsLost: 1 + (roundHash % 2), clearances: isDef ? 4 : 0,
+              foulsCommitted: 1 + (roundHash % 2), penaltiesConceded: 0, yellows: hasYellow ? 1 : 0, reds: 0, concededCount: goalsConceded, concededMalus: Math.round(concededMalus * 100) / 100
             });
           }
         }
@@ -1481,6 +1537,8 @@
       const isCaptain = team.captain === playerName;
       const roles = getPlayerRoles(playerName);
       const isPor = roles.includes('Por');
+      const isDef = roles.some(r => ['Dc', 'Dd', 'Ds', 'B'].includes(r));
+      const isMid = roles.some(r => ['M', 'C', 'E'].includes(r));
       const score = team.scores[playerName] || 0;
 
       const stats = playerStatsMap[playerName] || generateMockStats(playerName, score);
@@ -1540,49 +1598,82 @@
         devBox.innerHTML = `<div class="text-gray-500 italic text-[10px]">Nessun evento decisivo</div>`;
       }
 
-      // INIEZIONE MATRICE DIFFERENZIATA PORTIERE VS MOVIMENTO
+      // INIEZIONE MATRICE ORGANIZZATA PER SEZIONI TEMATICHE
       const matContainer = document.getElementById('scDynamicMatrixContainer');
       if (isPor) {
         matContainer.innerHTML = `
-          <div class="space-y-2">
-            <h4 class="text-[10px] font-black text-amber-400 uppercase tracking-widest">Matrice Ufficiale Portiere (GK)</h4>
+          <div class="space-y-3">
             <div class="bg-black/40 border border-white/5 rounded-2xl p-3">
-              <div class="grid grid-cols-3 gap-2.5 text-center text-xs">
-                <div><span class="text-[9px] text-gray-400 block font-semibold">Minuti</span><span class="font-black text-white">${score > 0 ? stats.mins + '\'' : '--'}</span></div>
-                <div><span class="text-[9px] text-yellow-400 block font-semibold">Parate Totali</span><span class="font-black text-yellow-300">${stats.saves || 0}</span></div>
-                <div><span class="text-[9px] text-yellow-400 block font-semibold">Parate in Area</span><span class="font-black text-yellow-300">${stats.savesInsideBox || 0}</span></div>
-                <div><span class="text-[9px] text-cyan-400 block font-semibold">Uscite Alte (Claims)</span><span class="font-black text-cyan-300">${stats.highClaims || 0}</span></div>
-                <div><span class="text-[9px] text-cyan-400 block font-semibold">Spazzate Pugni</span><span class="font-black text-cyan-300">${stats.punches || 0}</span></div>
-                <div><span class="text-[9px] text-emerald-400 block font-semibold">Rinvii Riusciti</span><span class="font-black text-emerald-300">${stats.longPassesAcc || 0}</span></div>
-                <div><span class="text-[9px] text-rose-400 block font-semibold">Gol Subiti (-2.00)</span><span class="font-black text-rose-400">${stats.goalsConceded || 0}</span></div>
-                <div><span class="text-[9px] text-amber-400 block font-semibold">Gialli (-0.30)</span><span class="font-black text-amber-300">${stats.yellowCards || 0}</span></div>
-                <div><span class="text-[9px] text-emerald-400 block font-semibold">Rigori Parati</span><span class="font-black text-emerald-300">${stats.penaltySaved || 0}</span></div>
+              <h5 class="text-[9px] font-black text-yellow-400 uppercase tracking-widest mb-2">🧤 Parate & Presa</h5>
+              <div class="grid grid-cols-4 gap-2 text-center text-xs">
+                <div><span class="text-[8px] text-gray-400 block">Minuti</span><span class="font-black text-white">${score > 0 ? stats.mins + '\'' : '--'}</span></div>
+                <div><span class="text-[8px] text-yellow-400 block">Parate Tot.</span><span class="font-black text-yellow-300">${stats.savesTotal || 0}</span></div>
+                <div><span class="text-[8px] text-yellow-400 block">In Area</span><span class="font-black text-yellow-300">${stats.savesInsideBox || 0}</span></div>
+                <div><span class="text-[8px] text-emerald-400 block">Rigori Parati</span><span class="font-black text-emerald-300">${stats.penaltySaved || 0}</span></div>
+              </div>
+            </div>
+
+            <div class="bg-black/40 border border-white/5 rounded-2xl p-3">
+              <h5 class="text-[9px] font-black text-rose-400 uppercase tracking-widest mb-2">⚽ Gol Subiti & Errori</h5>
+              <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                <div><span class="text-[8px] text-rose-400 block">Gol Subiti</span><span class="font-black text-rose-400">${stats.goalsConceded || 0}</span></div>
+                <div><span class="text-[8px] text-rose-400 block">Err. per Tiro</span><span class="font-black text-rose-300">${stats.errorLeadToShot || 0}</span></div>
+                <div><span class="text-[8px] text-rose-400 block">Err. per Gol</span><span class="font-black text-rose-300">${stats.errorLeadToGoal || 0}</span></div>
+              </div>
+            </div>
+
+            <div class="bg-black/40 border border-white/5 rounded-2xl p-3">
+              <h5 class="text-[9px] font-black text-cyan-400 uppercase tracking-widest mb-2">🎯 Distribuzione & Disciplina</h5>
+              <div class="grid grid-cols-4 gap-2 text-center text-xs">
+                <div><span class="text-[8px] text-cyan-400 block">Uscite Alte</span><span class="font-black text-cyan-300">${stats.highClaims || 0}</span></div>
+                <div><span class="text-[8px] text-cyan-400 block">Pugni</span><span class="font-black text-cyan-300">${stats.punches || 0}</span></div>
+                <div><span class="text-[8px] text-emerald-400 block">Rinvii Precisi</span><span class="font-black text-emerald-300">${stats.longPassesAcc || 0}</span></div>
+                <div><span class="text-[8px] text-amber-400 block">Gialli</span><span class="font-black text-amber-300">${stats.yellows || 0}</span></div>
               </div>
             </div>
           </div>
         `;
       } else {
+        const concededLabel = isDef ? 'Gol Subiti (-0,40)' : (isMid ? 'Gol Subiti (-0,20)' : 'Gol Subiti (0,00)');
         matContainer.innerHTML = `
-          <div class="space-y-2">
-            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Matrice Ufficiale Calciatore di Movimento</h4>
+          <div class="space-y-3">
             <div class="bg-black/40 border border-white/5 rounded-2xl p-3">
+              <h5 class="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-2">⚔️ Attacco</h5>
               <div class="grid grid-cols-4 gap-2 text-center text-xs">
-                <div><span class="text-[8px] text-gray-400 block font-semibold">Minuti</span><span class="font-black text-white">${score > 0 ? stats.mins + '\'' : '--'}</span></div>
                 <div><span class="text-[8px] text-emerald-400 block font-semibold">Gol / Assist</span><span class="font-black text-emerald-300">${stats.goals || 0} / ${stats.assists || 0}</span></div>
-                <div><span class="text-[8px] text-cyan-400 block font-semibold">Tiri (Porta)</span><span class="font-black text-white">${stats.shots || 0} (${stats.shotsOnTarget || 0})</span></div>
+                <div><span class="text-[8px] text-cyan-400 block font-semibold">Tiri (Specchio)</span><span class="font-black text-white">${stats.shots || 0} (${stats.shotsOnTarget || 0})</span></div>
+                <div><span class="text-[8px] text-emerald-400 block font-semibold">Occasioni Create</span><span class="font-black text-emerald-300">${stats.bigChancesCreated || 0}</span></div>
+                <div><span class="text-[8px] text-rose-400 block font-semibold">Occas. Sbagliate</span><span class="font-black text-rose-400">${stats.bigChancesMissed || 0}</span></div>
+              </div>
+            </div>
+
+            <div class="bg-black/40 border border-white/5 rounded-2xl p-3">
+              <h5 class="text-[9px] font-black text-cyan-400 uppercase tracking-widest mb-2">🎯 Costruzione & Possesso</h5>
+              <div class="grid grid-cols-4 gap-2 text-center text-xs">
                 <div><span class="text-[8px] text-cyan-400 block font-semibold">Pass. Chiave</span><span class="font-black text-cyan-300">${stats.keyPasses || 0}</span></div>
-                <div><span class="text-[8px] text-emerald-400 block font-semibold">Occasioni Create</span><span class="font-black text-emerald-300">${stats.bigChances || 0}</span></div>
-                <div><span class="text-[8px] text-cyan-400 block font-semibold">Pass. Ult. Terzo</span><span class="font-black text-cyan-300">${stats.passesFinalThird || 0}</span></div>
-                <div><span class="text-[8px] text-amber-400 block font-semibold">Dribbling Riusciti</span><span class="font-black text-amber-300">${stats.dribbles || 0}</span></div>
-                <div><span class="text-[8px] text-amber-400 block font-semibold">Falli Subiti</span><span class="font-black text-amber-300">${stats.foulsDrawn || 0}</span></div>
-                <div><span class="text-[8px] text-emerald-400 block font-semibold">Contrasti Vinti</span><span class="font-black text-white">${stats.wonTackles || 0}</span></div>
-                <div><span class="text-[8px] text-emerald-400 block font-semibold">Intercetti</span><span class="font-black text-white">${stats.interceptions || 0}</span></div>
-                <div><span class="text-[8px] text-gray-400 block font-semibold">Duelli Vinti</span><span class="font-black text-white">${stats.duelsWon || 0}</span></div>
+                <div><span class="text-[8px] text-cyan-400 block font-semibold">Ultimo Terzo</span><span class="font-black text-cyan-300">${stats.passesFinalThird || 0}</span></div>
+                <div><span class="text-[8px] text-amber-400 block font-semibold">Dribbling</span><span class="font-black text-amber-300">${stats.dribbles || 0}</span></div>
                 <div><span class="text-[8px] text-rose-400 block font-semibold">Palle Perse (-1)</span><span class="font-black text-rose-300">${stats.ballsLost || 0}</span></div>
-                <div><span class="text-[8px] text-rose-400 block font-semibold">Gol Subiti Malus</span><span class="font-black text-rose-400">${stats.goalsConceded ? '-' + stats.goalsConceded : '0'}</span></div>
-                <div><span class="text-[8px] text-amber-400 block font-semibold">Gialli (-0.30)</span><span class="font-black text-amber-300">${stats.yellowCards || 0}</span></div>
-                <div><span class="text-[8px] text-rose-400 block font-semibold">Rossi (-2.00)</span><span class="font-black text-rose-300">${stats.redCards || 0}</span></div>
-                <div><span class="text-[8px] text-emerald-400 block font-semibold">Duelli Aerei</span><span class="font-black text-emerald-300">${stats.aerialsWon || 0}</span></div>
+              </div>
+            </div>
+
+            <div class="bg-black/40 border border-white/5 rounded-2xl p-3">
+              <h5 class="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-2">🛡️ Difesa & Duelli</h5>
+              <div class="grid grid-cols-4 gap-2 text-center text-xs">
+                <div><span class="text-[8px] text-emerald-400 block font-semibold">Contrasti (V/P)</span><span class="font-black text-white">${stats.tacklesWon || 0} / ${stats.tacklesLost || 0}</span></div>
+                <div><span class="text-[8px] text-emerald-400 block font-semibold">Intercetti</span><span class="font-black text-white">${stats.interceptions || 0}</span></div>
+                <div><span class="text-[8px] text-gray-400 block font-semibold">Duelli Terra (V/P)</span><span class="font-black text-white">${stats.groundDuelsWon || 0} / ${stats.groundDuelsLost || 0}</span></div>
+                <div><span class="text-[8px] text-gray-400 block font-semibold">Duelli Aerei (V/P)</span><span class="font-black text-white">${stats.aerialsWon || 0} / ${stats.aerialsLost || 0}</span></div>
+              </div>
+            </div>
+
+            <div class="bg-black/40 border border-white/5 rounded-2xl p-3">
+              <h5 class="text-[9px] font-black text-amber-400 uppercase tracking-widest mb-2">⚠️ Disciplina & Reparto</h5>
+              <div class="grid grid-cols-4 gap-2 text-center text-xs">
+                <div><span class="text-[8px] text-rose-400 block font-semibold">${concededLabel}</span><span class="font-black text-rose-400">${stats.concededMalus !== undefined ? '-' + stats.concededMalus : '0'}</span></div>
+                <div><span class="text-[8px] text-rose-400 block font-semibold">Falli Commessi</span><span class="font-black text-rose-300">${stats.foulsCommitted || 0}</span></div>
+                <div><span class="text-[8px] text-amber-400 block font-semibold">Gialli (-0,30)</span><span class="font-black text-amber-300">${stats.yellows || 0}</span></div>
+                <div><span class="text-[8px] text-rose-400 block font-semibold">Rossi (-2,00)</span><span class="font-black text-rose-300">${stats.reds || 0}</span></div>
               </div>
             </div>
           </div>
@@ -1699,7 +1790,7 @@
       const chartBottom = 135;
       const chartHeight = chartBottom - chartTop;
 
-      const thresholdY = chartBottom - (6.0 / maxScore) * chartHeight;
+      const thresholdY = chartBottom - (5.0 / maxScore) * chartHeight; // Linea 5.00
 
       let barsHtml = '';
       history.forEach((g, idx) => {
@@ -1739,8 +1830,9 @@
 
       container.innerHTML = `
         <svg viewBox="0 0 ${width} ${height}" class="w-full h-full overflow-visible">
-          <line x1="10" y1="${thresholdY}" x2="${width - 10}" y2="${thresholdY}" stroke="#eab308" stroke-dasharray="3,3" stroke-width="1.2" opacity="0.7"/>
-          <text x="${width - 8}" y="${thresholdY + 3}" font-size="8" fill="#eab308" text-anchor="end" font-weight="bold">6.0</text>
+          <!-- Linea soglia 5.0 -->
+          <line x1="10" y1="${thresholdY}" x2="${width - 10}" y2="${thresholdY}" stroke="#84cc16" stroke-dasharray="3,3" stroke-width="1.2" opacity="0.7"/>
+          <text x="${width - 8}" y="${thresholdY + 3}" font-size="8" fill="#84cc16" text-anchor="end" font-weight="bold">5.0</text>
           ${barsHtml}
         </svg>
       `;
@@ -1754,6 +1846,8 @@
       const g = history[matchIndex];
       const roles = getPlayerRoles(currentTrendPlayerName);
       const isPor = roles.includes('Por');
+      const isDef = roles.some(r => ['Dc', 'Dd', 'Ds', 'B'].includes(r));
+      const isMid = roles.some(r => ['M', 'C', 'E'].includes(r));
 
       document.getElementById('mdlMatchday').innerText = `Serie A • Giornata ${g.matchday}`;
       document.getElementById('mdlPlayerAndOpponent').innerText = `${currentTrendPlayerName} vs ${g.opponent}`;
@@ -1777,42 +1871,79 @@
 
       document.getElementById('mdlAasScore').innerText = g.isDnp ? '--' : (g.aas >= 0 ? `+${formatScore(g.aas)}` : formatScore(g.aas));
 
-      // INIEZIONE MATRICE SPECIFICA NELLA MODALE DI GARA
       const container = document.getElementById('mdlDynamicMatrixContainer');
       if (isPor) {
         container.innerHTML = `
-          <div>
-            <h4 class="text-[9px] font-black text-amber-400 uppercase tracking-widest mb-1.5">Statistiche Portiere (GK)</h4>
-            <div class="bg-black/40 border border-white/5 rounded-2xl p-3">
+          <div class="space-y-2.5">
+            <div class="bg-black/40 border border-white/5 rounded-2xl p-2.5">
+              <h5 class="text-[8px] font-black text-yellow-400 uppercase tracking-widest mb-1.5">🧤 Parate & Presa</h5>
               <div class="grid grid-cols-3 gap-2 text-center text-xs">
-                <div><span class="text-[8px] text-gray-400 block font-semibold">Minuti</span><span class="font-black text-white">${g.mins}'</span></div>
-                <div><span class="text-[8px] text-yellow-400 block font-semibold">Parate</span><span class="font-black text-yellow-300">${g.saves || 0} (${g.savesInsideBox || 0} in area)</span></div>
-                <div><span class="text-[8px] text-cyan-400 block font-semibold">Uscite Alte</span><span class="font-black text-cyan-300">${g.highClaims || 0}</span></div>
-                <div><span class="text-[8px] text-cyan-400 block font-semibold">Pugni</span><span class="font-black text-cyan-300">${g.punches || 0}</span></div>
-                <div><span class="text-[8px] text-emerald-400 block font-semibold">Rinvii Precisi</span><span class="font-black text-emerald-300">${g.longPassesAcc || 0}</span></div>
-                <div><span class="text-[8px] text-rose-400 block font-semibold">Gol Subiti</span><span class="font-black text-rose-400">-${(g.goalsConceded || 0) * 2.00} (${g.goalsConceded || 0})</span></div>
+                <div><span class="text-[8px] text-yellow-400 block">Parate Tot.</span><span class="font-black text-yellow-300">${g.savesTotal || 0}</span></div>
+                <div><span class="text-[8px] text-yellow-400 block">In Area</span><span class="font-black text-yellow-300">${g.savesInsideBox || 0}</span></div>
+                <div><span class="text-[8px] text-emerald-400 block">Rigori Parati</span><span class="font-black text-emerald-300">${g.penaltySaved || 0}</span></div>
+              </div>
+            </div>
+
+            <div class="bg-black/40 border border-white/5 rounded-2xl p-2.5">
+              <h5 class="text-[8px] font-black text-rose-400 uppercase tracking-widest mb-1.5">⚽ Gol Subiti & Errori</h5>
+              <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                <div><span class="text-[8px] text-rose-400 block">Gol Subiti</span><span class="font-black text-rose-400">${g.goalsConceded || 0}</span></div>
+                <div><span class="text-[8px] text-rose-400 block">Err. per Tiro</span><span class="font-black text-rose-300">${g.errorLeadToShot || 0}</span></div>
+                <div><span class="text-[8px] text-rose-400 block">Err. per Gol</span><span class="font-black text-rose-300">${g.errorLeadToGoal || 0}</span></div>
+              </div>
+            </div>
+
+            <div class="bg-black/40 border border-white/5 rounded-2xl p-2.5">
+              <h5 class="text-[8px] font-black text-cyan-400 uppercase tracking-widest mb-1.5">🎯 Distribuzione</h5>
+              <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                <div><span class="text-[8px] text-cyan-400 block">Uscite Alte</span><span class="font-black text-cyan-300">${g.highClaims || 0}</span></div>
+                <div><span class="text-[8px] text-cyan-400 block">Pugni</span><span class="font-black text-cyan-300">${g.punches || 0}</span></div>
+                <div><span class="text-[8px] text-emerald-400 block">Rinvii Precisi</span><span class="font-black text-emerald-300">${g.longPassesAcc || 0}</span></div>
               </div>
             </div>
           </div>
         `;
       } else {
+        const concededLabel = isDef ? 'Gol Subiti (-0,40)' : (isMid ? 'Gol Subiti (-0,20)' : 'Gol Subiti (0,00)');
         container.innerHTML = `
-          <div>
-            <h4 class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Statistiche Giocatore di Movimento</h4>
-            <div class="bg-black/40 border border-white/5 rounded-2xl p-3">
+          <div class="space-y-2.5">
+            <div class="bg-black/40 border border-white/5 rounded-2xl p-2.5">
+              <h5 class="text-[8px] font-black text-emerald-400 uppercase tracking-widest mb-1.5">⚔️ Attacco</h5>
               <div class="grid grid-cols-4 gap-2 text-center text-xs">
-                <div><span class="text-[8px] text-gray-400 block font-semibold">Minuti</span><span class="font-black text-white">${g.mins}'</span></div>
-                <div><span class="text-[8px] text-emerald-400 block font-semibold">Gol / Assist</span><span class="font-black text-emerald-300">${g.goals || 0} / ${g.assists || 0}</span></div>
-                <div><span class="text-[8px] text-cyan-400 block font-semibold">Tiri (Porta)</span><span class="font-black text-white">${g.shots || 0} (${g.shotsOnTarget || 0})</span></div>
-                <div><span class="text-[8px] text-cyan-400 block font-semibold">Pass. Chiave</span><span class="font-black text-cyan-300">${g.keyPasses || 0}</span></div>
-                <div><span class="text-[8px] text-emerald-400 block font-semibold">Occasioni</span><span class="font-black text-emerald-300">${g.bigChances || 0}</span></div>
-                <div><span class="text-[8px] text-cyan-400 block font-semibold">Ultimo Terzo</span><span class="font-black text-cyan-300">${g.passesFinalThird || 0}</span></div>
-                <div><span class="text-[8px] text-amber-400 block font-semibold">Dribbling</span><span class="font-black text-amber-300">${g.dribbles || 0}</span></div>
-                <div><span class="text-[8px] text-amber-400 block font-semibold">Falli Subiti</span><span class="font-black text-amber-300">${g.foulsDrawn || 0}</span></div>
-                <div><span class="text-[8px] text-emerald-400 block font-semibold">Contrasti</span><span class="font-black text-white">${g.tackles || 0}</span></div>
-                <div><span class="text-[8px] text-emerald-400 block font-semibold">Intercetti</span><span class="font-black text-white">${g.interceptions || 0}</span></div>
-                <div><span class="text-[8px] text-gray-400 block font-semibold">Duelli Vinti</span><span class="font-black text-white">${g.duelsWon || 0}</span></div>
-                <div><span class="text-[8px] text-rose-400 block font-semibold">Palle Perse</span><span class="font-black text-rose-300">${g.ballsLost || 0}</span></div>
+                <div><span class="text-[8px] text-emerald-400 block">Gol / Assist</span><span class="font-black text-emerald-300">${g.goals || 0} / ${g.assists || 0}</span></div>
+                <div><span class="text-[8px] text-cyan-400 block">Tiri (Spec.)</span><span class="font-black text-white">${g.shots || 0} (${g.shotsOnTarget || 0})</span></div>
+                <div><span class="text-[8px] text-emerald-400 block">Occas. Create</span><span class="font-black text-emerald-300">${g.bigChancesCreated || 0}</span></div>
+                <div><span class="text-[8px] text-rose-400 block">Occas. Sbagl.</span><span class="font-black text-rose-400">${g.bigChancesMissed || 0}</span></div>
+              </div>
+            </div>
+
+            <div class="bg-black/40 border border-white/5 rounded-2xl p-2.5">
+              <h5 class="text-[8px] font-black text-cyan-400 uppercase tracking-widest mb-1.5">🎯 Costruzione & Possesso</h5>
+              <div class="grid grid-cols-4 gap-2 text-center text-xs">
+                <div><span class="text-[8px] text-cyan-400 block">Pass. Chiave</span><span class="font-black text-cyan-300">${g.keyPasses || 0}</span></div>
+                <div><span class="text-[8px] text-cyan-400 block">Ult. Terzo</span><span class="font-black text-cyan-300">${g.passesFinalThird || 0}</span></div>
+                <div><span class="text-[8px] text-amber-400 block">Dribbling</span><span class="font-black text-amber-300">${g.dribbles || 0}</span></div>
+                <div><span class="text-[8px] text-rose-400 block">Palle Perse</span><span class="font-black text-rose-300">${g.ballsLost || 0}</span></div>
+              </div>
+            </div>
+
+            <div class="bg-black/40 border border-white/5 rounded-2xl p-2.5">
+              <h5 class="text-[8px] font-black text-blue-400 uppercase tracking-widest mb-1.5">🛡️ Difesa & Duelli</h5>
+              <div class="grid grid-cols-4 gap-2 text-center text-xs">
+                <div><span class="text-[8px] text-emerald-400 block">Contr. (V/P)</span><span class="font-black text-white">${g.tacklesWon || 0} / ${g.tacklesLost || 0}</span></div>
+                <div><span class="text-[8px] text-emerald-400 block">Intercetti</span><span class="font-black text-white">${g.interceptions || 0}</span></div>
+                <div><span class="text-[8px] text-gray-400 block">Duelli (V/P)</span><span class="font-black text-white">${g.groundDuelsWon || 0} / ${g.groundDuelsLost || 0}</span></div>
+                <div><span class="text-[8px] text-gray-400 block">Aerei (V/P)</span><span class="font-black text-white">${g.aerialsWon || 0} / ${g.aerialsLost || 0}</span></div>
+              </div>
+            </div>
+
+            <div class="bg-black/40 border border-white/5 rounded-2xl p-2.5">
+              <h5 class="text-[8px] font-black text-amber-400 uppercase tracking-widest mb-1.5">⚠️ Disciplina & Reparto</h5>
+              <div class="grid grid-cols-4 gap-2 text-center text-xs">
+                <div><span class="text-[8px] text-rose-400 block">${concededLabel}</span><span class="font-black text-rose-400">${g.concededMalus !== undefined ? '-' + g.concededMalus : '0'}</span></div>
+                <div><span class="text-[8px] text-rose-400 block">Falli Comm.</span><span class="font-black text-rose-300">${g.foulsCommitted || 0}</span></div>
+                <div><span class="text-[8px] text-amber-400 block">Gialli</span><span class="font-black text-amber-300">${g.yellows || 0}</span></div>
+                <div><span class="text-[8px] text-rose-400 block">Rossi</span><span class="font-black text-rose-300">${g.reds || 0}</span></div>
               </div>
             </div>
           </div>
@@ -1828,7 +1959,9 @@
 
     function generateMockStats(player, score) {
       const isPor = getPlayerRoles(player).includes('Por');
-      const isAtt = getPlayerRoles(player).some(r => ['Pc', 'A', 'W'].includes(r));
+      const isAtt = getPlayerRoles(player).some(r => ['Pc', 'A', 'W', 'T'].includes(r));
+      const isDef = getPlayerRoles(player).some(r => ['Dc', 'Dd', 'Ds', 'B'].includes(r));
+      const isMid = getPlayerRoles(player).some(r => ['M', 'C', 'E'].includes(r));
       const hasYellow = Math.random() < 0.18;
       const hasGoal = !isPor && score >= 7.5;
       const hasAssist = !isPor && score >= 7.0 && !hasGoal;
@@ -1839,31 +1972,47 @@
       if (hasAssist) decList.push("👟 Assist (+2,50)");
       if (hasCleanSheet) decList.push("🧤 Clean Sheet (+2,50)");
 
+      let cMalus = 0;
+      if (isDef) cMalus = 0.40;
+      else if (isMid) cMalus = 0.20;
+
       return {
         mins: score > 0 ? (score > 4.5 ? 90 : 64) : 0,
         goals: hasGoal ? 1 : 0,
         assists: hasAssist ? 1 : 0,
         shots: isPor ? 0 : Math.max(1, Math.floor(score / 2.2)),
         shotsOnTarget: isPor ? 0 : Math.floor(score / 3.4),
-        bigChances: hasGoal || hasAssist ? 1 : 0,
+        bigChancesCreated: hasAssist ? 1 : 0,
+        bigChancesMissed: 0,
+        foulsDrawn: isAtt ? 2 : 1,
+        offsides: isAtt ? 1 : 0,
         keyPasses: isPor ? 0 : Math.floor(score / 2.6),
         passesFinalThird: isPor ? 0 : 12,
         dribbles: isAtt ? 2 : 1,
-        foulsDrawn: isAtt ? 3 : 1,
-        wonTackles: isPor ? 0 : Math.floor(score / 2.0),
-        interceptions: isPor ? 1 : Math.floor(score / 2.2),
-        duelsWon: isPor ? 0 : 5,
-        aerialsWon: isPor ? 0 : 2,
+        passAccuracy: 84,
         ballsLost: isAtt ? 14 : 7,
-        saves: isPor ? Math.floor(score / 1.5) : 0,
+        tacklesWon: isPor ? 0 : Math.floor(score / 2.0),
+        tacklesLost: 1,
+        interceptions: isPor ? 1 : Math.floor(score / 2.2),
+        groundDuelsWon: isPor ? 0 : 5,
+        groundDuelsLost: 3,
+        aerialsWon: isPor ? 0 : 2,
+        aerialsLost: 1,
+        clearances: isDef ? 4 : 0,
+        foulsCommitted: 1,
+        penaltiesConceded: 0,
+        savesTotal: isPor ? Math.floor(score / 1.5) : 0,
         savesInsideBox: isPor ? Math.floor(score / 2.5) : 0,
         highClaims: isPor ? 2 : 0,
         punches: isPor ? 1 : 0,
         longPassesAcc: isPor ? 8 : 0,
         penaltySaved: 0,
-        yellowCards: hasYellow ? 1 : 0,
-        redCards: 0,
-        goalsConceded: isAtt ? 0 : (isPor ? 1 : 0.20),
+        goalsConceded: isPor ? 1 : 0,
+        errorLeadToShot: 0,
+        errorLeadToGoal: 0,
+        yellows: hasYellow ? 1 : 0,
+        reds: 0,
+        concededMalus: cMalus,
         decisiveEvents: decList
       };
     }
@@ -2079,7 +2228,7 @@
       else alert("Nessuna corrispondenza valida trovata.");
     }
 
-    // SINCRONIZZAZIONE DIRETTA SORARE CON STORICO L5 REALE
+    // SINCRONIZZAZIONE SORARE GRAPHQL
     async function fetchLiveSorareScores() {
       const spinner = document.getElementById('apiSpinner');
       spinner.classList.remove('hidden');
@@ -2142,18 +2291,26 @@
           if (res.data && res.data.football && res.data.football.players) {
             res.data.football.players.forEach(p => {
               if (p.latestScores && p.latestScores.length > 0) {
-                // Aggiorna voto ultima giornata live
                 const last = p.latestScores[0];
                 if (last.score !== null) {
                   const dec = Math.round((last.score / 10) * 100) / 100;
                   applyScore(p.displayName, dec);
 
                   const st = last.playerGameStats || {};
-                  const isPor = getPlayerRoles(p.displayName).includes('Por');
+                  const roles = getPlayerRoles(p.displayName);
+                  const isPor = roles.includes('Por');
+                  const isDef = roles.some(r => ['Dc', 'Dd', 'Ds', 'B'].includes(r));
+                  const isMid = roles.some(r => ['M', 'C', 'E'].includes(r));
+
                   let decList = [];
                   if ((st.goals || 0) > 0) decList.push(`⚽ Gol x${st.goals}`);
                   if ((st.assists || 0) > 0) decList.push(`👟 Assist x${st.assists}`);
                   if (st.cleanSheet) decList.push(`🧤 Clean Sheet`);
+
+                  const gc = st.goalsConceded || 0;
+                  let cMalus = 0;
+                  if (isDef) cMalus = gc * 0.40;
+                  else if (isMid) cMalus = gc * 0.20;
 
                   playerStatsMap[p.displayName] = {
                     mins: st.minsPlayed || 90,
@@ -2161,25 +2318,37 @@
                     assists: st.assists || 0,
                     shots: (st.goals || 0) + 1,
                     shotsOnTarget: st.goals || 0,
-                    bigChances: st.goals || st.assists ? 1 : 0,
+                    bigChancesCreated: (st.assists || 0) > 0 ? 1 : 0,
+                    bigChancesMissed: 0,
+                    foulsDrawn: 2,
+                    offsides: 1,
                     keyPasses: st.keyPasses || 1,
                     passesFinalThird: 12,
                     dribbles: 1,
-                    foulsDrawn: 2,
-                    wonTackles: st.wonContest || 2,
-                    interceptions: 2,
-                    duelsWon: 5,
-                    aerialsWon: 2,
+                    passAccuracy: 84,
                     ballsLost: 10,
-                    saves: st.saves || 0,
+                    tacklesWon: st.wonContest || 2,
+                    tacklesLost: 1,
+                    interceptions: 2,
+                    groundDuelsWon: 5,
+                    groundDuelsLost: 3,
+                    aerialsWon: 2,
+                    aerialsLost: 1,
+                    clearances: isDef ? 4 : 0,
+                    foulsCommitted: 1,
+                    penaltiesConceded: 0,
+                    savesTotal: st.saves || 0,
                     savesInsideBox: Math.floor((st.saves || 0) / 2),
                     highClaims: 2,
                     punches: 1,
                     longPassesAcc: 8,
                     penaltySaved: 0,
-                    yellowCards: st.yellowCards || 0,
-                    redCards: st.redCards || 0,
-                    goalsConceded: isPor ? (st.goalsConceded || 0) : 0,
+                    goalsConceded: gc,
+                    errorLeadToShot: 0,
+                    errorLeadToGoal: 0,
+                    yellows: st.yellowCards || 0,
+                    reds: st.redCards || 0,
+                    concededMalus: cMalus,
                     decisiveEvents: decList
                   };
                   dataFound = true;
@@ -2195,7 +2364,7 @@
       spinner.classList.add('hidden');
 
       if (!dataFound) {
-        alert("API Sorare consultata. Nessun nuovo match in corso: lo storico reale di Serie A G1–G5 rimane attivo e calibrato.");
+        console.log("Nessun nuovo match in corso da Sorare. I dati storici rimangono attivi.");
       } else {
         calcolaTotaliSquadre();
         updateBanner();
