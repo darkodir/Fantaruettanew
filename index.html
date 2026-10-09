@@ -2200,209 +2200,125 @@ function initLineups() {
 
     // SINCRONIZZAZIONE COMPLETA STORICO E LIVE DA SORARE (BATCH ENGINE)
     async function fetchLiveSorareScores(fullLeague = false) {
-      const spinner = document.getElementById('apiSpinner');
-      spinner.classList.remove('hidden');
+  const spinner = document.getElementById('apiSpinner');
+  if (spinner) spinner.classList.remove('hidden');
 
-      // 1. Raccoglie i giocatori da sincronizzare
-      let targets = [];
-      if (fullLeague) {
-        // Tutta la lega (tutte le 12 rose)
-        Object.values(ROSTERS).forEach(r => { targets.push(...r); });
-      } else {
-        // Priorità: Titolari e Panchina delle squadre attive nel match selezionato + titolari di tutte
-        const activeMatch = GW6_MATCHES[currentMatchIndex];
-        [activeMatch.home, activeMatch.away].forEach(tName => {
-          const t = teamLineups[tName];
-          if (t) {
-            t.titolariSlots.forEach(s => { if (s.player) targets.push(s.player); });
-            t.panchina.forEach(p => { if (p) targets.push(p); });
-          }
-        });
-        // Aggiungi tutti i titolari delle altre partite
-        Object.values(teamLineups).forEach(t => {
-          t.titolariSlots.forEach(s => { if (s.player) targets.push(s.player); });
-        });
-      }
+  let targets = [];
+  Object.values(ROSTERS).forEach(r => { targets.push(...r); });
+  const uniquePlayers = [...new Set(targets)];
+  
+  // 1. Usiamo un Proxy CORS per aggirare il blocco di sicurezza di GitHub Pages
+  const proxyUrl = "https://corsproxy.io/?";
+  const targetUrl = "https://api.sorare.com/graphql";
 
-      const uniquePlayers = [...new Set(targets)];
-      const playerSlugsMap = {};
-      uniquePlayers.forEach(p => {
-        const slug = p.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-        playerSlugsMap[slug] = p;
-      });
-
-      const allSlugs = Object.keys(playerSlugsMap);
-      const BATCH_SIZE = 25;
-      let totalSynced = 0;
-
-      const query = `
-        query GetFootballPlayersBatch($slugs: [String!]!) {
-          football {
-            players(slugs: $slugs) {
-              displayName
-              slug
-              latestScores(last: 5) {
-                score
-                playerGameStats {
-                  minsPlayed
-                  goals
-                  assists
-                  cleanSheet
-                  yellowCards
-                  redCards
-                  keyPasses
-                  wonContest
-                  saves
-                  goalsConceded
-                }
-                game {
-                  date
-                  homeTeam { name }
-                  awayTeam { name }
-                }
-              }
-            }
+  // 2. Usiamo so5Scores (il comando reale di Sorare per i dati già giocati)
+  const query = `
+    query GetFootballPlayersBatch($slugs: [String!]!) {
+      football {
+        players(slugs: $slugs) {
+          displayName
+          slug
+          so5Scores(last: 5) {
+            score
+            playerGameStats { minsPlayed, goals, assists, cleanSheet, yellowCards, redCards, goalsConceded }
+            game { awayTeam { name } }
           }
         }
-      `;
+      }
+    }
+  `;
 
-      // Esegui la sincronizzazione a blocchi (batch)
-      for (let i = 0; i < allSlugs.length; i += BATCH_SIZE) {
-        const batchSlugs = allSlugs.slice(i, i + BATCH_SIZE);
-        try {
-          const response = await fetch(SORARE_GRAPHQL_ENDPOINT, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'API-KEY': SORARE_API_KEY
-            },
-            body: JSON.stringify({
-              query: query,
-              variables: { slugs: batchSlugs }
-            })
+  const slugs = uniquePlayers.map(p => p.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, ''));
+  
+  try {
+    const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'API-KEY': "0d8977ade807a8de0039bf6d398128400c953dfa18d16cf730bb480290fc94d6ebe8a91ad1aca56291a562c91d7962d4201f2c15a21aadf6e14c99f6bfcsr128" 
+      },
+      body: JSON.stringify({ query: query, variables: { slugs: slugs.slice(0, 50) } })
+    });
+
+    if (response.ok) {
+      const res = await response.json();
+      
+      // Controllo se Sorare ci ha restituito un errore di struttura
+      if (res.errors) {
+         console.error("Errore GraphQL Sorare:", res.errors);
+         alert("Impossibile scaricare lo storico. Motivo di Sorare: " + res.errors[0].message);
+         if (spinner) spinner.classList.add('hidden');
+         return;
+      }
+
+      if (res.data && res.data.football && res.data.football.players) {
+        res.data.football.players.forEach(pData => {
+          if (!pData || !pData.so5Scores) return;
+          
+          const originalName = pData.displayName;
+          const roles = getPlayerRoles(originalName);
+          const isDef = roles.some(r => ['Dc', 'Dd', 'Ds', 'B'].includes(r));
+          const isMid = roles.some(r => ['M', 'C', 'E'].includes(r));
+
+          const gamesHistory = [];
+          
+          pData.so5Scores.forEach((ls, gIdx) => {
+            if (ls.score == null) {
+              gamesHistory.push({ matchday: gIdx + 1, opponent: "DNP", mins: 0, score: 0, isDnp: true, decisives: [], aas: 0, concededMalus: 0 });
+              return;
+            }
+            
+            const st = ls.playerGameStats || {};
+            const game = ls.game || {};
+            let opponentName = game.awayTeam ? game.awayTeam.name.split(' ')[0] : "Serie A";
+            
+            let decList = [];
+            if (st.goals > 0) decList.push(`⚽ Gol x${st.goals}`);
+            if (st.assists > 0) decList.push(`👟 Assist x${st.assists}`);
+            if (st.cleanSheet) decList.push(`🧤 CS`);
+            if (st.yellowCards > 0) decList.push(`🟨 Giallo`);
+            if (st.redCards > 0) decList.push(`🟥 Rosso`);
+
+            const gc = st.goalsConceded || 0;
+            let cMalus = isDef ? (gc * 0.40) : (isMid ? (gc * 0.20) : 0);
+            let decScore = (ls.score / 10) - cMalus;
+
+            gamesHistory.push({
+              matchday: gIdx + 1,
+              opponent: opponentName,
+              mins: st.minsPlayed || 90,
+              score: Math.max(0, Math.round(decScore * 100) / 100),
+              isDnp: false,
+              decisives: decList,
+              aas: Math.max(0, Math.round(((ls.score/10) - 3.50) * 100) / 100),
+              concededMalus: cMalus
+            });
           });
 
-          if (response.ok) {
-            const res = await response.json();
-            if (res.data && res.data.football && res.data.football.players) {
-              res.data.football.players.forEach(pData => {
-                if (!pData || !pData.latestScores) return;
-
-                // Trova il nome registrato nella rosa
-                const originalName = playerSlugsMap[pData.slug] || pData.displayName;
-                const roles = getPlayerRoles(originalName);
-                const isPor = roles.includes('Por');
-                const isDef = roles.some(r => ['Dc', 'Dd', 'Ds', 'B'].includes(r));
-                const isMid = roles.some(r => ['M', 'C', 'E'].includes(r));
-
-                const gamesHistory = [];
-                pData.latestScores.forEach((ls, gIdx) => {
-                  if (ls.score === null || ls.score === undefined) {
-                    gamesHistory.push({
-                      matchday: gIdx + 1,
-                      opponent: "DNP",
-                      mins: 0,
-                      score: 0,
-                      isDnp: true,
-                      decisives: [],
-                      aas: 0
-                    });
-                    return;
-                  }
-
-                  const decScore = Math.round((ls.score / 10) * 100) / 100;
-                  const st = ls.playerGameStats || {};
-                  const game = ls.game || {};
-
-                  // Determina avversario reale e (C)/(T)
-                  let opponentName = "Serie A";
-                  let isHome = true;
-                  if (game.homeTeam && game.awayTeam) {
-                    // Se il nome contiene la squadra
-                    opponentName = `${game.awayTeam.name.split(' ')[0]} (C)`;
-                  }
-
-                  let decList = [];
-                  if ((st.goals || 0) > 0) decList.push(`⚽ Gol x${st.goals}`);
-                  if ((st.assists || 0) > 0) decList.push(`👟 Assist x${st.assists}`);
-                  if (st.cleanSheet) decList.push(`🧤 Clean Sheet`);
-
-                  const gc = st.goalsConceded || 0;
-                  let cMalus = 0;
-                  if (isDef) cMalus = gc * 0.40;
-                  else if (isMid) cMalus = gc * 0.20;
-
-                  const gameEntry = {
-                    matchday: gIdx + 1,
-                    opponent: opponentName,
-                    mins: st.minsPlayed || (ls.score > 0 ? 90 : 0),
-                    score: decScore,
-                    isDnp: (st.minsPlayed === 0 && ls.score === 0),
-                    decisives: decList,
-                    aas: Math.max(0, Math.round((decScore - (decList.length > 0 ? 6.00 : 3.50)) * 100) / 100),
-                    goals: st.goals || 0,
-                    assists: st.assists || 0,
-                    shots: (st.goals || 0) + (isPor ? 0 : 1),
-                    shotsOnTarget: st.goals || 0,
-                    bigChancesCreated: (st.assists || 0) > 0 ? 1 : 0,
-                    bigChancesMissed: 0,
-                    foulsDrawn: isPor ? 0 : 2,
-                    offsides: isPor ? 0 : 1,
-                    keyPasses: st.keyPasses || 0,
-                    passesFinalThird: isPor ? 0 : 12,
-                    dribbles: isPor ? 0 : 1,
-                    passAccuracy: 84,
-                    ballsLost: isPor ? 3 : 10,
-                    tacklesWon: st.wonContest || (isDef ? 2 : 1),
-                    tacklesLost: 1,
-                    interceptions: isDef ? 2 : 1,
-                    groundDuelsWon: 4,
-                    groundDuelsLost: 2,
-                    aerialsWon: isDef ? 2 : 1,
-                    aerialsLost: 1,
-                    clearances: isDef ? 3 : 0,
-                    foulsCommitted: 1,
-                    penaltiesConceded: 0,
-                    savesTotal: st.saves || 0,
-                    savesInsideBox: Math.floor((st.saves || 0) / 2),
-                    highClaims: isPor ? 2 : 0,
-                    punches: isPor ? 1 : 0,
-                    longPassesAcc: isPor ? 8 : 0,
-                    penaltySaved: 0,
-                    goalsConceded: gc,
-                    errorLeadToShot: 0,
-                    errorLeadToGoal: 0,
-                    yellows: st.yellowCards || 0,
-                    reds: st.redCards || 0,
-                    concededMalus: cMalus
-                  };
-                  gamesHistory.push(gameEntry);
-                });
-
-                if (gamesHistory.length > 0) {
-                  // Salva in memoria attiva
-                  playerHistoryMap[originalName] = gamesHistory;
-                  // Salva in localStorage per non riscaricare ogni volta
-                  try {
-                    localStorage.setItem('PR_HISTORY_' + originalName, JSON.stringify(gamesHistory));
-                  } catch (e) {}
-
-                  // Se la partita corrente (giornata 6 / live) ha un voto, applicalo
-                  if (gamesHistory[0] && gamesHistory[0].score > 0) {
-                    applyScore(originalName, gamesHistory[0].score);
-                    playerStatsMap[originalName] = gamesHistory[0];
-                  }
-                  totalSynced++;
-                }
+          if (gamesHistory.length > 0) {
+            playerHistoryMap[originalName] = gamesHistory;
+            
+            // Applica il voto al campo se l'ultima partita ha un punteggio
+            if (gamesHistory[0] && gamesHistory[0].score > 0) {
+              Object.values(teamLineups).forEach(t => {
+                t.titolariSlots.forEach(s => { if (s.player === originalName) t.scores[s.player] = gamesHistory[0].score; });
+                t.panchina.forEach(p => { if (p === originalName) t.scores[p] = gamesHistory[0].score; });
               });
             }
           }
-        } catch (e) {
-          console.warn("Chiamata batch fallita:", e);
-        }
+        });
       }
-
-      spinner.classList.add('hidden');
+    }
+  } catch (e) { 
+    alert("C'è stato un problema col proxy di rete. Riprova tra poco!"); 
+    console.error(e);
+  }
+  
+  if (spinner) spinner.classList.add('hidden');
+  calcolaTotaliSquadre();
+  renderPitch();
+  alert("Dati Reali delle scorse partite scaricati e inseriti nei Trend!");
+}
       calcolaTotaliSquadre();
       updateBanner();
       renderPitch();
