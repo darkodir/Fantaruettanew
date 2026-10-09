@@ -402,18 +402,30 @@
 
   <!-- MODAL: TREND UNIFICATO GRAFICO HD CON CLICK SULLA BARRA PER MATCH DETAIL -->
   <div id="trendModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-5">
-    <div class="bg-gradient-to-b from-[#131b2c] via-[#0d131f] to-[#070a10] border border-cyan-500/40 w-full max-w-lg rounded-3xl p-5 shadow-2xl space-y-4 text-gray-200 relative overflow-hidden max-h-[92vh] overflow-y-auto">
-      <div class="flex items-start justify-between border-b border-white/10 pb-3">
-        <div>
-          <div class="flex items-center gap-2">
-            <h3 id="trendPlayerName" class="text-base sm:text-lg font-black text-white">Trend Calciatore</h3>
-            <div id="trendPlayerRoleBadge" class="flex gap-1"></div>
-          </div>
-          <p class="text-xs text-gray-400">Tocca una barra per aprire la matrice Opta dettagliata della gara</p>
-        </div>
-        <button onclick="closeTrendModal()" class="text-gray-400 hover:text-white text-xl font-bold">&times;</button>
+    <div class="bg-gradient-to-b from-[#131b2c] to-[#070a10] border border-cyan-500/40 w-full max-w-lg rounded-3xl p-5 shadow-2xl flex flex-col max-h-[90vh]">
+      <div class="flex items-start justify-between border-b border-white/10 pb-3 shrink-0">
+        <div><h3 id="trendPlayerName" class="text-lg font-black text-white">Trend e Statistiche</h3></div>
+        <button onclick="closeTrendModal()" class="text-gray-400 text-2xl leading-none">&times;</button>
       </div>
-
+      
+      <div class="overflow-y-auto space-y-4 py-4 flex-1">
+        <div class="grid grid-cols-2 gap-3 text-center">
+          <div class="bg-white/5 p-3 rounded-2xl"><span class="text-[10px] text-gray-400 block uppercase font-bold">Media L5</span><span id="trendL5Score" class="font-teko text-4xl font-black text-white">--</span></div>
+          <div class="bg-white/5 p-3 rounded-2xl"><span class="text-[10px] text-gray-400 block uppercase font-bold">Media L10</span><span id="trendL10Score" class="font-teko text-4xl font-black text-white">--</span></div>
+        </div>
+        <div class="bg-black/60 border border-white/10 p-3 rounded-2xl shrink-0">
+          <div id="trendChartSvgContainer" class="w-full flex justify-center"></div>
+        </div>
+        <!-- Contenitore Lista Partite -->
+        <div id="trendHistoryList" class="space-y-2"></div>
+      </div>
+      
+      <div class="pt-3 border-t border-white/10 text-right shrink-0">
+        <button onclick="closeTrendModal()" class="px-4 py-2 bg-white/10 text-white rounded-xl text-xs font-black">Chiudi</button>
+      </div>
+    </div>
+  </div>
+  
       <div class="grid grid-cols-2 gap-3">
         <div class="bg-white/5 border border-white/10 rounded-2xl p-3 text-center">
           <span class="text-[10px] text-gray-400 uppercase font-black block">Media L5 (Gare Giocate)</span>
@@ -1713,29 +1725,46 @@ function initLineups() {
     let currentTrendPlayerName = null;
 
     function openPlayerTrendModal(playerName) {
-      currentTrendPlayerName = playerName;
       const stats = calculatePlayerL5L10(playerName);
-      const roles = getPlayerRoles(playerName);
-
       document.getElementById('trendPlayerName').innerText = playerName;
-      const rolesBadgeBox = document.getElementById('trendPlayerRoleBadge');
-      rolesBadgeBox.innerHTML = roles.map(r => `<span class="px-1.5 py-0.5 rounded text-[9px] font-black ${getBadgeClass(r)}">${r}</span>`).join('');
+      document.getElementById('trendL5Score').innerText = formatScore(stats.l5);
+      document.getElementById('trendL10Score').innerText = formatScore(stats.l10);
+      renderUnifiedTrendChartSvg(stats.history);
 
-      const tL5 = document.getElementById('trendL5Score');
-      const tL10 = document.getElementById('trendL10Score');
-      tL5.innerText = stats.l5 ? formatScore(stats.l5) : '--';
-      tL5.style.color = getScoreHexColor(stats.l5);
-      document.getElementById('trendL5Sample').innerText = `${stats.l5Count} gare giocate (DNP esclusi)`;
-
-      tL10.innerText = stats.l10 ? formatScore(stats.l10) : '--';
-      tL10.style.color = getScoreHexColor(stats.l10);
-      document.getElementById('trendL10Sample').innerText = `${stats.l10Count} gare giocate (DNP esclusi)`;
-
-      renderUnifiedTrendChartSvg(stats.history, playerName);
-
+      // Genera i dettagli delle ultime partite
+      let historyHtml = '<h4 class="text-xs font-black text-gray-400 uppercase mt-4 mb-2">Dettaglio Partite</h4>';
+      
+      if (stats.history && stats.history.length > 0) {
+        // Ordina dalla più recente alla più vecchia
+        const reversedHistory = [...stats.history].reverse();
+        
+        historyHtml += reversedHistory.map(g => {
+          if (g.isDnp) {
+            return `<div class="bg-white/5 border border-white/10 rounded-xl p-3 flex justify-between items-center opacity-50">
+                      <div><span class="text-[11px] font-black text-amber-300 uppercase">Vs ${g.opponent}</span><div class="text-[10px] text-gray-400 mt-1">DNP (Non ha giocato)</div></div>
+                      <div class="font-teko text-3xl text-gray-500">--</div>
+                    </div>`;
+          }
+          
+          const decs = (g.decisives && g.decisives.length > 0) ? g.decisives.join(' • ') : 'Nessuna Decisive';
+          const malusHtml = g.concededMalus > 0 ? `<span class="text-rose-400 ml-1">Malus: -${formatScore(g.concededMalus)}</span>` : '';
+          
+          return `<div class="bg-white/5 border border-white/10 rounded-xl p-3 flex justify-between items-center">
+                    <div class="flex-1">
+                      <span class="text-[11px] font-black text-cyan-300 uppercase">Vs ${g.opponent}</span>
+                      <div class="text-[10px] text-gray-200 mt-1 font-bold">${decs}</div>
+                      <div class="text-[9px] text-gray-400 mt-1">AAS: +${formatScore(g.aas)} | Min: ${g.mins}' ${malusHtml}</div>
+                    </div>
+                    <div class="font-teko text-4xl font-black pl-3" style="color: ${getScoreHexColor(g.score)}">${formatScore(g.score)}</div>
+                  </div>`;
+        }).join('');
+      } else {
+        historyHtml += '<div class="text-[11px] text-gray-500 text-center py-4">Nessun dato storico disponibile</div>';
+      }
+      
+      document.getElementById('trendHistoryList').innerHTML = historyHtml;
       document.getElementById('trendModal').classList.remove('hidden');
     }
-
     function closeTrendModal() {
       document.getElementById('trendModal').classList.add('hidden');
     }
