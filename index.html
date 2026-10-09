@@ -2467,11 +2467,8 @@ function initLineups() {
       });
     }
 
-  document.getElementById('excelInput').addEventListener('change', function(e) {
-  if (isLineupLocked) {
-    alert("Formazioni bloccate!");
-    return;
-  }
+document.getElementById('excelInput').addEventListener('change', function(e) {
+  if (isLineupLocked) { alert("Formazioni bloccate!"); return; }
   const file = e.target.files[0];
   if (!file) return;
 
@@ -2480,8 +2477,6 @@ function initLineups() {
     try {
       const data = new Uint8Array(evt.target.result);
       const workbook = XLSX.read(data, {type: 'array'});
-      
-      // Prende il primo foglio dell'Excel e lo converte in righe di testo
       const primaPagina = workbook.Sheets[workbook.SheetNames[0]];
       const righeExcel = XLSX.utils.sheet_to_json(primaPagina, {header: 1});
       
@@ -2493,27 +2488,37 @@ function initLineups() {
         const rigaTesto = rigaArray.join(" ").trim();
         if (!rigaTesto) return;
 
-        // 1. Trova se nella riga c'è il nome di una delle 12 squadre
+        // 1. Trova Squadra
         const squadraTrovata = Object.keys(ROSTERS).find(team => rigaTesto.toLowerCase().includes(team.toLowerCase()));
         if (squadraTrovata) {
           squadraAttuale = squadraTrovata;
           giocatoriInseriti = 0;
           panchinariInseriti = 0;
-          // Svuota la rosa per fare spazio ai nuovi importati
           teamLineups[squadraAttuale].titolariSlots.forEach(s => s.player = null);
           teamLineups[squadraAttuale].panchina = new Array(12).fill(null);
         }
 
         if (squadraAttuale) {
-          // 2. Trova il modulo (es. 4-3-3)
+          // 2. Trova Modulo (anche se scritto dopo alcuni giocatori)
           const moduloTrovato = rigaTesto.match(/\b([345]-[12345](-[12345])?)\b/);
           if (moduloTrovato) {
-            teamLineups[squadraAttuale].module = moduloTrovato[0];
-            // Ristruttura gli slot in base al modulo trovato nell'Excel
-            teamLineups[squadraAttuale].titolariSlots = buildSlotsForModule(moduloTrovato[0], ROSTERS[squadraAttuale]);
+            const nuovoModulo = moduloTrovato[0];
+            if (teamLineups[squadraAttuale].module !== nuovoModulo) {
+              teamLineups[squadraAttuale].module = nuovoModulo;
+              
+              // Salva i giocatori già inseriti e ricrea il modulo corretto
+              const vecchi = teamLineups[squadraAttuale].titolariSlots.map(s => s.player);
+              teamLineups[squadraAttuale].titolariSlots = buildSlotsForModule(nuovoModulo, ROSTERS[squadraAttuale]);
+              
+              vecchi.forEach((g, idx) => {
+                if (g && teamLineups[squadraAttuale].titolariSlots[idx]) {
+                  teamLineups[squadraAttuale].titolariSlots[idx].player = g;
+                }
+              });
+            }
           }
 
-          // 3. Trova i giocatori e li assegna (i primi 11 titolari, gli altri in panchina)
+          // 3. Trova Giocatori
           const giocatoreTrovato = ROSTERS[squadraAttuale].find(p => rigaTesto.toLowerCase().includes(p.toLowerCase()));
           if (giocatoreTrovato) {
             const giaTitolare = teamLineups[squadraAttuale].titolariSlots.some(s => s.player === giocatoreTrovato);
@@ -2532,7 +2537,14 @@ function initLineups() {
         }
       });
 
-      alert("Formazioni importate! Moduli Mantra e giocatori applicati correttamente.");
+      // FORZA l'aggiornamento visivo del menu a tendina
+      const match = GW6_MATCHES[currentMatchIndex];
+      const teamView = currentView === 'home' ? match.home : match.away;
+      if(document.getElementById('moduleSelect')) {
+        document.getElementById('moduleSelect').value = teamLineups[teamView].module;
+      }
+
+      alert("Formazioni importate! Moduli e giocatori applicati correttamente.");
       calcolaTotaliSquadre();
       renderPitch();
     } catch (err) {
@@ -2540,7 +2552,7 @@ function initLineups() {
     }
   };
   reader.readAsArrayBuffer(file);
-  e.target.value = ''; // Resetta per permettere di ricaricare lo stesso file
+  e.target.value = ''; 
 });
 
     initStandings();
