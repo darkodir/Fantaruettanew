@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Fanta-Sorare 11 | Premier Ruetta (Mantra Edition)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #040609; color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
+    .font-teko { font-family: 'Teko', sans-serif; }
+    .pitch-viewport { perspective: 1200px; perspective-origin: 50% 16%; }
+    .realistic-pitch {
+      background: repeating-linear-gradient(0deg, #143e1f 0px, #143e1f 40px, #184724 40px, #184724 80px);
+      box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.95), 0 35px 70px -15px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.12);
+      transform: rotateX(20deg); border-radius: 26px; position: relative;
+    }
+    .pitch-line { border-color: rgba(255, 255, 255, 0.4); filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3)); }
+    .sorare-card-frame {
+      background: linear-gradient(150deg, #221a08 0%, #3a2e0e 45%, #120f06 100%);
+      border: 1.5px solid #d4af37;
+      box-shadow: 0 8px 18px -2px rgba(0, 0, 0, 0.8), 0 0 15px rgba(212, 175, 55, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+      position: relative; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); overflow: hidden;
+    }
+    .sorare-card-frame:active { transform: scale(0.96); }
+    .sorare-card-captain { border: 2px solid #ff007a !important; box-shadow: 0 0 22px rgba(255, 0, 122, 0.85), 0 8px 20px rgba(0, 0, 0, 0.8) !important; }
+    .slot-vacant-dashed { border: 2px dashed rgba(212, 175, 55, 0.65); background: rgba(18, 24, 38, 0.65); backdrop-filter: blur(4px); }
+    .slot-bench-dashed { border: 2px dashed rgba(100, 116, 139, 0.5); background: rgba(15, 23, 42, 0.4); }
+    .m-role-por { background: #f59e0b; color: #000; }
+    .m-role-def { background: #10b981; color: #000; }
+    .m-role-mid { background: #06b6d4; color: #000; }
+    .m-role-tre { background: #a855f7; color: #fff; }
+    .m-role-att { background: #f43f5e; color: #fff; }
+    ::-webkit-scrollbar { height: 4px; width: 4px; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-amber-500 selection:text-black">
+
+  <header class="border-b border-white/10 bg-[#080d16]/95 backdrop-blur-md sticky top-0 z-40 px-3 py-2.5 sm:px-6">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-600 flex items-center justify-center font-teko text-2xl text-black font-black shadow-md shadow-amber-500/20">PR</div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <h1 class="text-sm sm:text-base font-black tracking-wide uppercase bg-clip-text text-transparent bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-400">Premier Ruetta</h1>
+            <span class="bg-amber-400/10 text-amber-300 border border-amber-400/30 text-[9px] font-black px-1.5 py-0.2 rounded uppercase">Mantra</span>
+          </div>
+          <p class="text-[10px] text-gray-400">Matrice Asimmetrica (-0,4 D / -0,2 C) • Verde dal 5,00</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <button id="btnAutoSync" onclick="toggleAutoRefresh()" class="px-2.5 py-1.5 rounded-lg border text-[11px] font-bold transition flex items-center gap-1.5 bg-gray-800 border-white/10 text-gray-400 hover:text-white"><span>⚪</span> Auto</button>
+        <button id="btnLockToggle" onclick="toggleLineupLock()" class="px-2.5 py-1.5 rounded-lg border text-[11px] font-bold transition flex items-center gap-1 bg-emerald-950/80 border-emerald-500/40 text-emerald-300"><span id="lockIcon">🔓</span><span id="lockText" class="hidden sm:inline">Aperte</span></button>
+        <button onclick="openPasteModal()" class="bg-gray-800 hover:bg-gray-700 text-amber-300 text-[11px] font-bold px-2.5 py-1.5 rounded-lg border border-amber-500/30 transition">📋</button>
+        <label class="cursor-pointer bg-gray-800 hover:bg-gray-700 text-amber-300 text-[11px] font-bold px-2.5 py-1.5 rounded-lg border border-amber-500/30 transition">📥<input type="file" id="excelInput" accept=".xlsx, .xls, .csv" class="hidden"></label>
+        <button id="btnFetchApi" onclick="fetchLiveSorareScores(true)" class="bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-black text-[11px] px-3 py-1.5 rounded-lg uppercase transition">📡 Sync</button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="max-w-6xl mx-auto w-full px-3 pt-3 flex gap-2">
+    <button onclick="switchMainTab('pitch')" id="tabBtnPitch" class="px-4 py-2 rounded-xl text-xs font-black transition bg-amber-500 text-black shadow-lg">🏟️ Campo & Formazione</button>
+    <button onclick="switchMainTab('roster')" id="tabBtnRoster" class="px-4 py-2 rounded-xl text-xs font-black transition bg-white/5 text-gray-400 hover:text-white border border-white/5">📋 Rosa Completa</button>
+    <button onclick="switchMainTab('standings')" id="tabBtnStandings" class="px-4 py-2 rounded-xl text-xs font-black transition bg-white/5 text-gray-400 hover:text-white border border-white/5">🏆 Classifica</button>
+  </nav>
+
+  <main class="max-w-6xl mx-auto p-3 sm:p-5 flex-1 w-full space-y-4">
+    <div id="tabContentPitch" class="space-y-4">
+      <div class="bg-[#0b101a] border border-white/5 rounded-2xl p-3 shadow-lg">
+        <div class="flex items-center justify-between gap-2 mb-2 px-1">
+          <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Scontri Diretti 6ª Giornata</span>
+          <span class="text-[10px] text-amber-400/80 font-bold">Premier Ruetta</span>
+        </div>
+        <div class="flex gap-1.5 overflow-x-auto pb-1" id="matchesTabs"></div>
+        <div class="mt-3 bg-gradient-to-r from-black/60 via-[#101726]/80 to-black/60 border border-white/10 rounded-xl p-3 sm:p-4 flex items-center justify-between text-center relative overflow-hidden">
+          <div class="flex-1">
+            <div id="homeName" class="text-sm sm:text-base font-black text-amber-300 truncate">Casa</div>
+            <div id="homeScore" class="font-teko text-5xl sm:text-6xl font-black text-white leading-none mt-0.5">--</div>
+            <div id="homePts" class="text-[11px] text-amber-400 font-bold">0,00 pt</div>
+          </div>
+          <div class="px-3 flex flex-col items-center"><span class="text-[10px] font-black text-amber-400/80 uppercase px-2 py-0.5 bg-amber-400/10 rounded-full border border-amber-400/20">VS</span></div>
+          <div class="flex-1">
+            <div id="awayName" class="text-sm sm:text-base font-black text-blue-300 truncate">Trasferta</div>
+            <div id="awayScore" class="font-teko text-5xl sm:text-6xl font-black text-white leading-none mt-0.5">--</div>
+            <div id="awayPts" class="text-[11px] text-blue-400 font-bold">0,00 pt</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-2 bg-[#0b101a] border border-white/5 p-2 sm:p-3 rounded-2xl">
+        <div class="inline-flex p-1 rounded-xl bg-black/50 border border-white/10">
+          <button id="btnViewHome" onclick="switchTeamView('home')" class="px-3.5 py-1.5 rounded-lg text-xs font-black transition bg-amber-500 text-black shadow-md">Squadra Casa</button>
+          <button id="btnViewAway" onclick="switchTeamView('away')" class="px-3.5 py-1.5 rounded-lg text-xs font-black text-gray-400 hover:text-white transition">Trasferta</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider hidden sm:inline">Modulo Mantra:</span>
+          <select id="moduleSelect" onchange="onModuleChange(this.value)" class="bg-[#121927] border border-white/10 text-xs rounded-xl px-3 py-1.5 text-amber-300 font-black focus:outline-none focus:border-amber-400">
+            <option value="4-3-3">4-3-3</option><option value="3-4-3">3-4-3</option><option value="3-4-2-1">3-4-2-1</option><option value="3-4-1-2">3-4-1-2</option>
+            <option value="4-2-3-1">4-2-3-1</option><option value="3-5-2">3-5-2</option><option value="3-5-1-1">3-5-1-1</option><option value="4-3-1-2">4-3-1-2</option>
+            <option value="4-4-2">4-4-2</option><option value="4-1-4-1">4-1-4-1</option><option value="4-3-2-1">4-3-2-1</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="pitch-viewport overflow-hidden py-3">
+        <div class="realistic-pitch max-w-3xl mx-auto p-3 sm:p-6 min-h-[660px] flex flex-col justify-between">
+          <div class="absolute inset-0 pointer-events-none p-4 flex flex-col justify-between">
+            <div class="w-48 h-20 border-2 pitch-line mx-auto border-t-0 rounded-b-xl opacity-30"></div>
+            <div class="w-full border-b-2 pitch-line relative flex items-center justify-center opacity-35"><div class="w-28 h-28 rounded-full border-2 pitch-line absolute"></div></div>
+            <div class="w-48 h-20 border-2 pitch-line mx-auto border-b-0 rounded-t-xl opacity-30"></div>
+          </div>
+          <div id="pitchRowFWD" class="flex justify-around items-center z-10 gap-1.5 min-h-[105px]"></div>
+          <div id="pitchRowTRE" class="flex justify-around items-center z-10 gap-1.5 min-h-[105px]"></div>
+          <div id="pitchRowMID" class="flex justify-around items-center z-10 gap-1.5 min-h-[105px]"></div>
+          <div id="pitchRowDEF" class="flex justify-around items-center z-10 gap-1.5 min-h-[105px]"></div>
+          <div id="pitchRowPOR" class="flex justify-center items-center z-10 min-h-[105px]"></div>
+        </div>
+      </div>
+
+      <div class="bg-[#0b101a] border border-white/5 rounded-2xl p-4 shadow-lg">
+        <div class="flex items-center justify-between mb-3 px-1"><h3 class="text-xs font-black text-gray-300 uppercase">🛡️ Panchina Mantra (12 Slot)</h3><span class="text-[10px] text-amber-400 font-bold bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">12 Riserve</span></div>
+        <div id="benchContainer" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2"></div>
+      </div>
+
+      <div class="bg-[#0b101a] border border-white/5 rounded-2xl p-4 shadow-lg">
+        <div class="flex items-center justify-between mb-3 px-1"><div><h3 class="text-xs font-black text-amber-300 uppercase">🏟️ Tribuna</h3></div><span id="pitchTribunaCount" class="text-[10px] text-gray-400 bg-white/5 px-2 py-0.5 rounded-full font-bold">--</span></div>
+        <div id="pitchTribunaContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2"></div>
+      </div>
+    </div>
+    <div id="tabContentRoster" class="hidden space-y-4">
+      <div class="bg-[#0b101a] border border-white/5 rounded-2xl p-4 shadow-lg">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4 border-b border-white/5 pb-3">
+          <div><h3 class="text-sm font-black text-amber-300 uppercase">Rosa Completa</h3></div>
+          <div class="flex items-center gap-2"><span class="text-xs text-gray-400 font-bold uppercase">Squadra:</span><select id="rosterTeamSelect" onchange="renderRosterTab()" class="bg-[#121927] border border-white/10 text-xs rounded-xl px-3 py-1.5 text-amber-300 font-black"></select></div>
+        </div>
+        <div id="rosterListContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5"></div>
+      </div>
+    </div>
+
+    <div id="tabContentStandings" class="hidden space-y-4">
+      <div class="bg-[#0b101a] border border-white/5 rounded-2xl p-4 shadow-lg">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <div><h3 class="text-sm font-black text-amber-300 uppercase">Classifica</h3></div>
+          <button onclick="calcolaClassificaGiornata()" class="px-3 py-1.5 rounded-xl text-xs font-black bg-gradient-to-r from-amber-500 to-yellow-400 text-black">🔄 Aggiorna Classifica</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-white/5 text-gray-400 font-black uppercase text-[10px] border-b border-white/10">
+              <tr>
+                <th class="py-2.5 px-3 text-center">#</th><th class="py-2.5 px-3">Squadra</th><th class="py-2.5 px-2 text-center text-amber-300">PT</th>
+                <th class="py-2.5 px-2 text-center">G</th><th class="py-2.5 px-2 text-center">V</th><th class="py-2.5 px-2 text-center">P</th><th class="py-2.5 px-2 text-center">S</th>
+                <th class="py-2.5 px-2 text-center">GF</th><th class="py-2.5 px-2 text-center">GS</th><th class="py-2.5 px-2 text-center">DR</th><th class="py-2.5 px-3 text-right">Tot. Punti</th>
+              </tr>
+            </thead>
+            <tbody id="standingsTableBody" class="divide-y divide-white/5 font-semibold text-gray-200"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="sorareCardModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-gradient-to-b from-[#131b2c] via-[#0d131f] to-[#070a10] border border-amber-500/40 w-full max-w-lg rounded-3xl p-5 shadow-2xl space-y-4 text-gray-200 relative overflow-hidden max-h-[92vh] overflow-y-auto">
+      <div class="flex items-start justify-between border-b border-white/10 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="sorare-card-frame w-20 h-28 rounded-2xl p-1.5 flex flex-col items-center justify-between text-center relative shadow-xl">
+            <div class="w-full flex justify-between items-center text-[7px] font-black text-amber-300 uppercase"><span id="scBadgeRole" class="px-1 py-0.2 rounded m-role-att">Pc</span><span>LIMITED</span></div>
+            <div class="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center my-0.5 border border-amber-400/30 bg-black/50"><svg viewBox="0 0 100 100" class="w-10 h-10"><path d="M 30,25 L 45,15 L 55,15 L 70,25 L 85,38 L 72,52 L 68,42 L 68,88 L 32,88 L 32,42 L 28,52 L 15,38 Z" fill="#d4af37" stroke="#ffffff" stroke-width="2"/><text x="50" y="62" font-size="20" font-weight="900" fill="#000" text-anchor="middle" id="scJerseyText">10</text></svg></div>
+            <div class="w-full"><div class="text-[9px] font-black text-white truncate" id="scCardMiniName">Nome</div></div>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5"><h3 id="scPlayerName" class="text-base sm:text-lg font-black text-white">Nome</h3><span id="scCaptainBadge" class="hidden bg-[#ff007a] text-white text-[8px] font-black px-1.5 py-0.5 rounded">CAP</span></div>
+            <div id="scPlayerRoles" class="flex flex-wrap gap-1 mt-1"></div>
+            <div class="flex items-center gap-1.5 mt-1.5">
+              <span id="scBadgeL5" class="px-2 py-0.5 rounded text-[10px] font-black border">L5: --</span>
+              <span id="scBadgeL10" class="px-2 py-0.5 rounded text-[10px] font-black border">L10: --</span>
+              <button onclick="modalOpenTrendView()" class="px-2 py-0.5 rounded text-[10px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/30">📈 Trend</button>
+            </div>
+          </div>
+        </div>
+        <div class="text-right"><span class="text-[9px] text-gray-400 uppercase block">Voto</span><span id="scFinalScore" class="font-teko text-5xl font-black text-amber-300 leading-none">--</span></div>
+      </div>
+      <div class="grid grid-cols-2 gap-2.5">
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-3"><div class="text-[10px] text-gray-400 uppercase flex justify-between"><span>Decisive</span><span id="scDecisiveLevelTag" class="text-amber-400">Liv. 0</span></div><div class="font-teko text-3xl font-black text-white mt-0.5" id="scDecisivePts">3,50</div><div id="scDecisiveEvents" class="text-xs mt-1 text-gray-300"></div></div>
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-3"><div class="text-[10px] text-gray-400 uppercase">All-Around (AAS)</div><div class="font-teko text-3xl font-black text-cyan-400 mt-0.5" id="scAasPts">+0,00</div></div>
+      </div>
+      <div id="scDynamicMatrixContainer"></div>
+      <div class="pt-3 border-t border-white/10 flex items-center justify-between">
+        <button onclick="closeSorareCardModal()" class="px-4 py-2 rounded-xl text-xs bg-white/10 text-gray-300">Chiudi</button>
+        <div id="scEditButtons" class="flex gap-2">
+          <button onclick="modalEmptyCurrentSlot()" class="px-3 py-2 rounded-xl text-xs bg-rose-500/20 text-rose-300">✕ Svuota</button>
+          <button onclick="modalMakeCaptain()" class="px-3 py-2 rounded-xl text-xs bg-[#ff007a] text-white">Fai C</button>
+          <button onclick="modalOpenReplaceList()" class="px-4 py-2 rounded-xl text-xs bg-amber-500 text-black font-black">Sostituisci</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="trendModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-gradient-to-b from-[#131b2c] to-[#070a10] border border-cyan-500/40 w-full max-w-lg rounded-3xl p-5 shadow-2xl space-y-4 text-gray-200">
+      <div class="flex items-start justify-between border-b border-white/10 pb-3"><div><h3 id="trendPlayerName" class="text-lg font-black text-white">Trend</h3><div id="trendPlayerRoleBadge" class="flex gap-1 mt-1"></div></div><button onclick="closeTrendModal()" class="text-gray-400 text-xl">&times;</button></div>
+      <div class="grid grid-cols-2 gap-3 text-center"><div class="bg-white/5 p-3 rounded-2xl"><span class="text-[10px] text-gray-400 block">Media L5</span><span id="trendL5Score" class="font-teko text-4xl font-black">--</span></div><div class="bg-white/5 p-3 rounded-2xl"><span class="text-[10px] text-gray-400 block">Media L10</span><span id="trendL10Score" class="font-teko text-4xl font-black">--</span></div></div>
+      <div class="bg-black/60 border border-white/10 p-3 rounded-2xl"><div id="trendChartSvgContainer" class="w-full flex justify-center"></div></div>
+      <div class="pt-2 text-right"><button onclick="closeTrendModal()" class="px-4 py-2 bg-white/10 rounded-xl text-xs">Chiudi</button></div>
+    </div>
+  </div>
+
+  <div id="matchDetailModal" class="fixed inset-0 bg-black/95 z-[60] hidden flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-[#131b2c] border border-cyan-500/50 w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4 text-gray-200">
+      <div class="flex justify-between border-b border-white/10 pb-3"><div><div class="text-[10px] text-amber-400 font-black uppercase" id="mdlMatchday">G1</div><h3 id="mdlPlayerAndOpponent" class="text-base font-black">Vs</h3></div><div class="text-right"><span class="text-[9px] text-gray-400">Voto</span><span id="mdlFinalScore" class="font-teko text-4xl font-black">--</span></div></div>
+      <div id="mdlDynamicMatrixContainer"></div>
+      <div class="text-right"><button onclick="closeMatchDetailModal()" class="px-4 py-2 bg-white/10 rounded-xl text-xs">Chiudi</button></div>
+    </div>
+  </div>
+
+  <div id="playerModal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-3">
+    <div class="bg-[#0e1422] border border-white/10 w-full max-w-lg rounded-3xl p-5 max-h-[85vh] flex flex-col shadow-2xl">
+      <div class="flex justify-between items-center pb-3 border-b border-white/10"><h4 id="modalTitle" class="text-sm font-black text-amber-300">Seleziona</h4><button onclick="closeModal()" class="text-xl">&times;</button></div>
+      <div class="overflow-y-auto space-y-4 py-3 flex-1"><div id="modalNaturalList" class="space-y-1.5"></div><div id="modalOutOfPositionSection"><div id="modalOutOfPositionList" class="space-y-1.5"></div></div></div>
+    </div>
+  </div>
+
+  <div id="pasteModal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#0e1422] border border-white/10 w-full max-w-lg rounded-3xl p-5 space-y-3">
+      <div class="flex justify-between pb-2 border-b border-white/10"><h4 class="text-sm font-black text-amber-300">Incolla Formazioni</h4><button onclick="closePasteModal()" class="text-xl">&times;</button></div>
+      <textarea id="pasteInput" rows="7" class="w-full bg-[#080d16] border border-white/10 rounded-2xl p-3 text-xs text-amber-200 font-mono"></textarea>
+      <div class="flex justify-end gap-2"><button onclick="closePasteModal()" class="px-3 py-1.5 bg-white/10 text-xs rounded-xl">Annulla</button><button onclick="processPastedLineups()" class="px-4 py-1.5 bg-amber-500 text-black text-xs font-black rounded-xl">Applica</button></div>
+    </div>
+  </div>
+
+  <footer class="border-t border-white/10 text-center py-3 text-[11px] text-gray-500 bg-[#040609]">Premier Ruetta • Mantra Edition</footer>
+
+  <script>
+    const SORARE_API_KEY = "0d8977ade807a8de0039bf6d398128400c953dfa18d16cf730bb480290fc94d6ebe8a91ad1aca56291a562c91d7962d4201f2c15a21aadf6e14c99f6bfcsr128";
+    const SORARE_GRAPHQL_ENDPOINT = "https://api.sorare.com/graphql";
+
+    let isLineupLocked = false, currentMainTab = 'pitch', autoRefreshTimer = null, isAutoRefreshActive = false;
+
+    const ROSTERS = {
+      "DUA LIPAnathinaikos": ["Skorupski", "Happonen", "Pessina Mas.", "Birindelli", "Walukiewicz", "Valle", "Bracaglia", "Bernasconi", "Mancini", "Schingtienne", "Balerdi", "Tiago Gabriel", "Gabbia", "Wesley", "Lobotka", "Ngom", "Jashari", "McTominay", "Barella", "Da Cunha", "Ndour", "Alajbegovic", "Zalewski", "Woltemade", "Hojlund", "Romero D.", "Adams A.", "Nzola"],
+      "Bidonese": ["Svilar", "De Marzi", "Gollini", "Celik", "Bertola", "Kossounou", "Pavard", "Haps", "Bremer", "Scalvini", "Dragusin", "Leite", "Diouf", "Chukwueze", "Calhanoglu", "Matic", "Fazzini", "Mandragora", "Rowe", "Diao", "Mbangula", "Vitinha O.", "Simeone", "Castro S.", "Esposito F.P."],
+      "Juve vivo per te": ["Maignan", "Torriani", "Terracciano", "Di Lorenzo", "Rensch", "Cinquegrano", "De Winter", "Heggem", "Carlos Augusto", "Carboni A.", "Puczka", "Ostigard", "Solet", "Hermoso", "Milla", "Gineitis", "De Roon", "Ekkelenkamp", "Sucic P.", "Douglas Luiz", "Mora", "Cissè A.", "Kvernadze", "Dominguez B.", "Malen", "Douvikas", "Pellegrino M.", "Raimondo"],
+      "Do Flamengo": ["De Gea", "Perri", "Grabara", "Tornqvist", "Chalobah T.", "Dodò", "Zappacosta", "Favasuli", "Drameh", "Zè Pedro", "Spinazzola", "Olivera", "Lucumì", "Monterisi", "Badiashile", "Sarr P.", "Busio", "Kessiè", "Casadei", "Zielinski", "Braganca", "Mastantuono", "Elmas", "Conceicao", "Neres", "Robinho Junior", "Martinez L.", "Krstovic", "Camarda"],
+      "ERROR D. OFF": ["Provedel", "Mandas", "Motta", "Belghali", "Vojvoda", "Bartesaghi", "Kaiki", "Kolasinac", "Estupinan", "Bastoni", "Bella-Kotchap", "Hien", "Palma", "Cittadini", "Spence", "Lulli", "Ederson D.S.", "Cataldi", "Karlstrom", "Lipani", "McKennie", "Vergara", "Maldini", "Santos A.", "De Ketelaere", "Davis K.", "Osmajic"],
+      "FC Sucammilla": ["Martinez Jo.", "Caprile", "Sherri", "Di Gennaro", "Radunovic", "Kristensen T.", "Marusic", "Floriani Mussolini", "Veiga D.", "Obrador", "Rodriguez Ju.", "Rrahmani", "Idzes", "Marin R.", "Troilo", "Calò", "Rovella", "Akinsanmiro", "Sohm", "Colpani", "Orsolini", "Cancellieri", "Cambiaghi", "Kean", "Scamacca", "Stulic", "Birligea"],
+      "Archi Barber": ["Vicario", "Stankovic F.", "Pinsoglio", "Pavlovic", "Ramon", "Moreno M.", "Comert", "Sutalo J.", "Calvani", "Ellertsson", "Gaetano", "Ferguson", "Fitz-Jim", "Frattesi", "Koopmeiners", "Fabbian", "Duncan", "Pulisic", "Schmid", "Volpato", "Boga", "Dybala", "Soulè", "Esposito Se.", "Yeboah J.", "Dovbyk", "Rrahmani Al."],
+      "Masterchef Utd": ["Carnesecchi", "Pompei", "Sportiello", "Delprato", "Oyono A.", "Mazzocchi", "Tavares N.", "N'Dicka", "Mina", "Comuzzo", "Kabasele", "Ziolkowski", "Ndiaye", "Dimarco", "Saelemaekers", "Keita M.", "Pessina", "Adopo", "Winks", "El Azzouzi A.", "Ghedjemis", "Raspadori", "Lontani", "Ramos G.", "Colombo"],
+      "Scocco Team": ["Muric", "Corvi", "Mascardi", "Turati", "Cambiaso", "Bellanova", "Hainaut", "Vasquez", "Miranda J.", "Ranieri L.", "Diego Carlos", "Ismajli", "Provstgaard", "Pongracic", "Perrone", "Modric", "Rabiot", "Bernabè", "Zaniolo", "Gudmundsson A.", "Goncalves P.", "Bernardeschi", "Odgaard", "Unai Gomez", "Hutchinson", "Kolo Muani", "Beto", "Varela G."],
+      "Mugiwara Boys": ["Meret", "Falcone", "Okoye", "Mrozek", "Contini", "Kalulu", "Jimenez A.", "Britschgi", "Smolcic I.", "Valeri", "Valdepenas", "Kelly L.", "Beukema", "Gaspar K.", "Ghilardi", "Halhal", "Moreira", "Fortini", "Fagioli", "Coulibaly L.", "Basic", "Atta", "Taylor K.", "Bakola", "Vlasic", "Berardi", "Adams C.", "Thuram", "Bowie", "Bonny"],
+      "Stellolandia": ["Bijlow", "Palmisani", "Desplanches", "Stolz", "Christensen O.", "Couto", "Joao Mario", "Patric *", "Theate", "Kamara H.", "Akanji", "Coco", "Doekhi", "Marcandalli", "Cacciamani", "Frendrup", "Romano", "Jones C.", "Samardzic", "Adzic", "Pasalic", "Paz N.", "De Bruyne", "Zaccagni", "Kevin Carlos", "Tourè E.", "Cutrone"],
+      "Paris Saint Gennaro": ["Butez", "Milinkovic-Savic V.", "Sanchez Ro.", "Vigorito", "Kouadio", "Gallo", "Mangas", "Gila", "Stones", "Bisseck", "Molina N.", "Ciurria", "Konè M.", "Cristante", "Stankovic A.", "Thorstvedt", "Zambo Anguissa", "Baturina", "Baldanzi", "Liberali", "Meichtry", "Politano", "Njie", "Pierotti", "Yildiz", "Laurientè", "Piccoli", "Pinamonti", "Mendy P."]
+    };
+
+    const MANTRA_ROLES = {
+      "Skorupski": ["Por"], "Happonen": ["Por"], "Pessina Mas.": ["Por"], "Svilar": ["Por"], "De Marzi": ["Por"], "Gollini": ["Por"], "Maignan": ["Por"], "Torriani": ["Por"], "Terracciano": ["Por"], "De Gea": ["Por"], "Perri": ["Por"], "Grabara": ["Por"], "Tornqvist": ["Por"], "Provedel": ["Por"], "Mandas": ["Por"], "Motta": ["Por"], "Martinez Jo.": ["Por"], "Caprile": ["Por"], "Sherri": ["Por"], "Di Gennaro": ["Por"], "Radunovic": ["Por"], "Vicario": ["Por"], "Stankovic F.": ["Por"], "Pinsoglio": ["Por"], "Carnesecchi": ["Por"], "Pompei": ["Por"], "Sportiello": ["Por"], "Muric": ["Por"], "Corvi": ["Por"], "Mascardi": ["Por"], "Turati": ["Por"], "Meret": ["Por"], "Falcone": ["Por"], "Okoye": ["Por"], "Mrozek":
+    const MANTRA_MODULES = {
+      "4-3-3": { DEF: [ { role: "Dd", label: "Dd" }, { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" }, { role: "Ds", label: "Ds" } ], MID: [ { role: "M", label: "M/C" }, { role: "C", label: "C" }, { role: "C", label: "C" } ], TRE: [], FWD: [ { role: "W", label: "W/A" }, { role: "Pc", label: "Pc" }, { role: "A", label: "A/W" } ] },
+      "3-4-3": { DEF: [ { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" } ], MID: [ { role: "E", label: "E" }, { role: "M", label: "M/C" }, { role: "C", label: "C" }, { role: "E", label: "E" } ], TRE: [], FWD: [ { role: "W", label: "W/A" }, { role: "Pc", label: "Pc" }, { role: "A", label: "A/W" } ] },
+      "3-4-2-1": { DEF: [ { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" } ], MID: [ { role: "E", label: "E" }, { role: "M", label: "M/C" }, { role: "C", label: "C" }, { role: "E", label: "E" } ], TRE: [ { role: "T", label: "T/W" }, { role: "T", label: "T/A" } ], FWD: [ { role: "Pc", label: "Pc" } ] },
+      "3-4-1-2": { DEF: [ { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" } ], MID: [ { role: "E", label: "E" }, { role: "M", label: "M/C" }, { role: "C", label: "C" }, { role: "E", label: "E" } ], TRE: [ { role: "T", label: "T" } ], FWD: [ { role: "Pc", label: "Pc" }, { role: "A", label: "A/Pc" } ] },
+      "4-2-3-1": { DEF: [ { role: "Dd", label: "Dd" }, { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" }, { role: "Ds", label: "Ds" } ], MID: [ { role: "M", label: "M/C" }, { role: "C", label: "C/M" } ], TRE: [ { role: "W", label: "W/A" }, { role: "T", label: "T" }, { role: "A", label: "A/W" } ], FWD: [ { role: "Pc", label: "Pc" } ] },
+      "3-5-2": { DEF: [ { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" } ], MID: [ { role: "E", label: "E" }, { role: "M", label: "M/C" }, { role: "C", label: "C" }, { role: "C", label: "C" }, { role: "E", label: "E" } ], TRE: [], FWD: [ { role: "A", label: "A/Pc" }, { role: "Pc", label: "Pc" } ] },
+      "3-5-1-1": { DEF: [ { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" } ], MID: [ { role: "E", label: "E" }, { role: "M", label: "M/C" }, { role: "C", label: "C" }, { role: "C", label: "C" }, { role: "E", label: "E" } ], TRE: [ { role: "T", label: "T/A" } ], FWD: [ { role: "Pc", label: "Pc" } ] },
+      "4-3-1-2": { DEF: [ { role: "Dd", label: "Dd" }, { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" }, { role: "Ds", label: "Ds" } ], MID: [ { role: "M", label: "M/C" }, { role: "C", label: "C" }, { role: "C", label: "C" } ], TRE: [ { role: "T", label: "T" } ], FWD: [ { role: "Pc", label: "Pc" }, { role: "Pc", label: "Pc/A" } ] },
+      "4-4-2": { DEF: [ { role: "Dd", label: "Dd" }, { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" }, { role: "Ds", label: "Ds" } ], MID: [ { role: "E", label: "E/W" }, { role: "M", label: "M/C" }, { role: "C", label: "C" }, { role: "E", label: "E/W" } ], TRE: [], FWD: [ { role: "Pc", label: "Pc" }, { role: "A", label: "A/Pc" } ] },
+      "4-1-4-1": { DEF: [ { role: "Dd", label: "Dd" }, { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" }, { role: "Ds", label: "Ds" } ], MID: [ { role: "M", label: "M" }, { role: "W", label: "W/E" }, { role: "C", label: "C" }, { role: "C", label: "C" }, { role: "W", label: "W/E" } ], TRE: [], FWD: [ { role: "Pc", label: "Pc" } ] },
+      "4-3-2-1": { DEF: [ { role: "Dd", label: "Dd" }, { role: "Dc", label: "Dc" }, { role: "Dc", label: "Dc" }, { role: "Ds", label: "Ds" } ], MID: [ { role: "M", label: "M/C" }, { role: "C", label: "C" }, { role: "C", label: "C" } ], TRE: [ { role: "T", label: "T/W" }, { role: "T", label: "T/W" } ], FWD: [ { role: "Pc", label: "Pc" } ] }
+    };
+
+    const GW6_MATCHES = [
+      { home: "Paris Saint Gennaro", away: "Juve vivo per te" }, { home: "Masterchef Utd", away: "Stellolandia" },
+      { home: "Mugiwara Boys", away: "Scocco Team" }, { home: "Bidonese", away: "Do Flamengo" },
+      { home: "FC Sucammilla", away: "ERROR D. OFF" }, { home: "Archi Barber", away: "DUA LIPAnathinaikos" }
+    ];
+
+    let currentMatchIndex = 0, currentView = 'home', teamLineups = {}, playerStatsMap = {}, playerHistoryMap = {}, leagueStandings = {};
+
+    function getScoreHexColor(score) {
+      if (!score || score <= 0) return '#64748b';
+      if (score >= 8.0) return '#059669'; if (score >= 7.0) return '#16a34a'; if (score >= 6.0) return '#22c55e';
+      if (score >= 5.5) return '#4ade80'; if (score >= 5.0) return '#84cc16'; if (score >= 4.0) return '#f97316'; return '#e11d48';
+    }
+
+    function getLBadgeStyle(score) {
+      if (!score) return "bg-gray-800 text-gray-500 border-white/5";
+      if (score >= 5.0) return "bg-lime-950/40 text-lime-400 border-lime-600/30";
+      return "bg-rose-950/60 text-rose-300 border-rose-500/40";
+    }
+
+    function computeSorareScore(decisiveCount, aasValue, isStarter = true, hasRedCard = false) {
+      let decisiveBase = isStarter ? 3.50 : 2.50;
+      if (decisiveCount === 1) decisiveBase = 6.00;
+      else if (decisiveCount >= 2) decisiveBase = Math.min(10.0, 6.00 + (decisiveCount - 1) * 1.00);
+      if (hasRedCard) decisiveBase = Math.max(1.0, decisiveBase - 2.0);
+      let finalScore = decisiveBase;
+      if (decisiveCount >= 1) { if (aasValue > 0) finalScore = Math.min(10.0, decisiveBase + aasValue); }
+      else { finalScore = Math.max(0.5, Math.min(6.0, decisiveBase + aasValue)); }
+      return Math.round(finalScore * 100) / 100;
+    }
+
+    function formatScore(val) {
+      if (val === undefined || val === null || isNaN(val) || val === 0) return '--';
+      return Number(val).toFixed(2).replace('.', ',');
+    }
+
+    function getPlayerRoles(name) { return MANTRA_ROLES[name] || ["C"]; }
+
+    function getBadgeClass(role) {
+      if (role === "Por") return "m-role-por";
+      if (["Dd", "Ds", "Dc", "B"].includes(role)) return "m-role-def";
+      if (["E", "M", "C"].includes(role)) return "m-role-mid";
+      if (["W", "T"].includes(role)) return "m-role-tre";
+      return "m-role-att";
+    }
+
+    function initStandings() {
+      Object.keys(ROSTERS).forEach(team => {
+        leagueStandings[team] = { points: 0, played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, totalFantaPts: 0 };
+      });
+    }
+
+    function populateRosterDropdown() {
+      const select = document.getElementById('rosterTeamSelect');
+      if (!select) return;
+      select.innerHTML = Object.keys(ROSTERS).map(team => `<option value="${team}">${team}</option>`).join('');
+    }
+
+    function switchMainTab(tab) {
+      currentMainTab = tab;
+      ['tabContentPitch', 'tabContentRoster', 'tabContentStandings'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      ['tabBtnPitch', 'tabBtnRoster', 'tabBtnStandings'].forEach(id => document.getElementById(id).className = "px-4 py-2 rounded-xl text-xs font-black transition bg-white/5 text-gray-400 hover:text-white border border-white/5");
+
+      if (tab === 'pitch') { document.getElementById('tabContentPitch').classList.remove('hidden'); document.getElementById('tabBtnPitch').className = "px-4 py-2 rounded-xl text-xs font-black transition bg-amber-500 text-black shadow-lg"; }
+      else if (tab === 'roster') { document.getElementById('tabContentRoster').classList.remove('hidden'); document.getElementById('tabBtnRoster').className = "px-4 py-2 rounded-xl text-xs font-black transition bg-amber-500 text-black shadow-lg"; renderRosterTab(); }
+      else if (tab === 'standings') { document.getElementById('tabContentStandings').classList.remove('hidden'); document.getElementById('tabBtnStandings').className = "px-4 py-2 rounded-xl text-xs font-black transition bg-amber-500 text-black shadow-lg"; renderStandingsTable(); }
+    }
+
+    function calculatePlayerL5L10(playerName) {
+      const history = playerHistoryMap[playerName] || getDeterministicHistory(playerName);
+      playerHistoryMap[playerName] = history;
+      const playedGames = history.filter(g => !g.isDnp && g.score > 0 && g.mins > 0);
+      const l5Games = playedGames.slice(-5);
+      const l5Avg = l5Games.length > 0 ? (l5Games.reduce((acc, g) => acc + g.score, 0) / l5Games.length) : null;
+      const l10Games = playedGames.slice(-10);
+      const l10Avg = l10Games.length > 0 ? (l10Games.reduce((acc, g) => acc + g.score, 0) / l10Games.length) : null;
+      return { l5: l5Avg ? Math.round(l5Avg * 100) / 100 : null, l10: l10Avg ? Math.round(l10Avg * 100) / 100 : null, l5Count: l5Games.length, l10Count: l10Games.length, history: history };
+    }
+
+    function getDeterministicHistory(playerName) {
+      try {
+        const cached = localStorage.getItem('PR_HISTORY_' + playerName);
+        if (cached) { const parsed = JSON.parse(cached); if (Array.isArray(parsed) && parsed.length > 0) return parsed; }
+      } catch (e) {}
+
+      const roles = getPlayerRoles(playerName);
+      const isPor = roles.includes('Por');
+      const isDef = roles.some(r => ['Dc', 'Dd', 'Ds', 'B'].includes(r));
+      const isMid = roles.some(r => ['M', 'C', 'E'].includes(r));
+      let h = 0; for (let i = 0; i < playerName.length; i++) h = (h * 31 + playerName.charCodeAt(i)) & 0xFFFFFFF;
+      const opps = ["Genoa (T)", "Lecce (C)", "Atalanta (C)", "Monza (T)", "Milan (C)"];
+      const history = [];
+
+      for (let g = 0; g < 5; g++) {
+        const seed = (h + g * 7919) & 0xFFFFFFF;
+        const isDnp = (seed % 12 === 0) && !isPor;
+        if (isDnp) { history.push({ matchday: g + 1, opponent: opps[g], mins: 0, score: 0, isDnp: true, decisives: [], aas: 0 }); continue; }
+        const gc = seed % 3;
+        let cMalus = isDef ? gc * 0.40 : (isMid ? gc * 0.20 : 0);
+        const hasGoal = !isPor && (seed % 7 == 0);
+        const hasAssist = !isPor && !hasGoal && (seed % 5 == 0);
+        const hasYellow = (seed % 9 == 0);
+        let decList = []; if (hasGoal) decList.push("⚽ Gol"); if (hasAssist) decList.push("👟 Assist"); if (hasYellow) decList.push("🟨 Giallo");
+        const posDecs = (hasGoal ? 1 : 0) + (hasAssist ? 1 : 0);
+        const rawAas = Math.round(((isDef ? 1.40 : (isMid ? 1.20 : 0.80)) - cMalus - (hasYellow ? 0.30 : 0)) * 100) / 100;
+        const score = computeSorareScore(posDecs, rawAas, true, false);
+        history.push({ matchday: g + 1, opponent: opps[g], mins: 90, score: score, isDnp: false, decisives: decList, aas: rawAas, goals: hasGoal ? 1 : 0, assists: hasAssist ? 1 : 0, shots: hasGoal ? 3 : 1, shotsOnTarget: hasGoal ? 2 : 0, dribbles: 1, ballsLost: 8, tacklesWon: isDef ? 3 : 1, yellows: hasYellow ? 1 : 0, reds: 0, concededCount: gc, concededMalus: cMalus });
+      }
+      return history;
+    }
+
+    function initLineups() {
+      GW6_MATCHES.forEach(m => {
+        [m.home, m.away].forEach(team => {
+          if (!teamLineups[team]) {
+            const roster = ROSTERS[team] || [];
+            const slots = buildSlotsForModule('4-3-3', roster);
+            const titolariNames = slots.map(s => s.player).filter(Boolean);
+            const bench = roster.filter(p => !titolariNames.includes(p)).slice(0, 12);
+            while (bench.length < 12) bench.push(null);
+            teamLineups[team] = { module: '4-3-3', captain: titolariNames[5] || titolariNames[0] || null, titolariSlots: slots, panchina: bench, scores: {}, totalPts: 0, goals: undefined };
+          }
+        });
+      });
+    }
+
+    function buildSlotsForModule(moduleName, roster) {
+      const schema = MANTRA_MODULES[moduleName] || MANTRA_MODULES['4-3-3'];
+      const slots = []; let used = [];
+      const por = roster.find(p => getPlayerRoles(p).includes('Por')) || roster[0];
+      if (por) used.push(por);
+      slots.push({ slotType: 'POR', reqRole: 'Por', label: 'Por', player: por || null });
+      ['DEF', 'MID', 'TRE', 'FWD'].forEach(rowKey => {
+        if (schema[rowKey]) {
+          schema[rowKey].forEach(s => {
+            const p = roster.find(x => !used.includes(x) && isCompatible(getPlayerRoles(x), s.role)) || roster.find(x => !used.includes(x));
+            if (p) used.push(p);
+            slots.push({ slotType: rowKey, reqRole: s.role, label: s.label, player: p || null });
+          });
+        }
+      });
+      return slots;
+    }
+
+    function isCompatible(playerRoles, reqRole) {
+      if (playerRoles.includes(reqRole)) return true;
+      if (reqRole === 'M' && playerRoles.includes('C')) return true;
+      if (reqRole === 'C' && playerRoles.includes('M')) return true;
+      if (reqRole === 'W' && playerRoles.includes('A')) return true;
+      if (reqRole === 'A' && playerRoles.includes('W')) return true;
+      if (reqRole === 'T' && (playerRoles.includes('C') || playerRoles.includes('W'))) return true;
+      return false;
+    }
+
+    function onModuleChange(newModule) {
+      if (isLineupLocked) return;
+      const match = GW6_MATCHES[currentMatchIndex];
+      const teamName = currentView === 'home' ? match.home : match.away;
+      const t = teamLineups[teamName];
+      t.module = newModule; t.titolariSlots = buildSlotsForModule(newModule, ROSTERS[teamName]);
+      calcolaTotaliSquadre(); updateBanner(); renderPitch();
+    }
+
+    function renderMatchesTabs() {
+      document.getElementById('matchesTabs').innerHTML = GW6_MATCHES.map((m, idx) => `
+        <button onclick="selectMatch(${idx})" class="px-2.5 py-1 text-xs rounded-xl whitespace-nowrap font-black transition ${currentMatchIndex === idx ? 'bg-amber-500 text-black shadow-md' : 'bg-white/5 text-gray-400 border border-white/5'}">
+          ${m.home.split(' ')[0]} vs ${m.away.split(' ')[0]}
+        </button>
+      `).join('');
+    }
+
+    function selectMatch(idx) {
+      currentMatchIndex = idx; renderMatchesTabs();
+      const match = GW6_MATCHES[idx];
+      document.getElementById('moduleSelect').value = teamLineups[currentView === 'home' ? match.home : match.away].module;
+      updateBanner(); renderPitch(); if (currentMainTab === 'roster') renderRosterTab();
+    }
+
+    function switchTeamView(v) {
+      currentView = v;
+      document.getElementById('btnViewHome').className = v === 'home' ? 'px-3.5 py-1.5 rounded-lg text-xs font-black bg-amber-500 text-black shadow-md' : 'px-3.5 py-1.5 rounded-lg text-xs font-black text-gray-400';
+      document.getElementById('btnViewAway').className = v === 'away' ? 'px-3.5 py-1.5 rounded-lg text-xs font-black bg-amber-500 text-black shadow-md' : 'px-3.5 py-1.5 rounded-lg text-xs font-black text-gray-400';
+      const match = GW6_MATCHES[currentMatchIndex];
+      document.getElementById('moduleSelect').value = teamLineups[currentView === 'home' ? match.home : match.away].module;
+      renderPitch();
+    }
+
+    function updateBanner() {
+      const match = GW6_MATCHES[currentMatchIndex];
+      const hData = teamLineups[match.home], aData = teamLineups[match.away];
+      document.getElementById('homeName').innerText = match.home; document.getElementById('awayName').innerText = match.away;
+      document.getElementById('homePts').innerText = formatScore(hData.totalPts) + " pt"; document.getElementById('awayPts').innerText = formatScore(aData.totalPts) + " pt";
+      document.getElementById('homeScore').innerText = hData.goals !== undefined ? hData.goals : '--'; document.getElementById('awayScore').innerText = aData.goals !== undefined ? aData.goals : '--';
+    }
+
+    function renderPitch() {
+      const match = GW6_MATCHES[currentMatchIndex];
+      const teamName = currentView === 'home' ? match.home : match.away;
+      const data = teamLineups[teamName];
+      const rows = { POR: document.getElementById('pitchRowPOR'), DEF: document.getElementById('pitchRowDEF'), MID: document.getElementById('pitchRowMID'), TRE: document.getElementById('pitchRowTRE'), FWD: document.getElementById('pitchRowFWD') };
+      Object.values(rows).forEach(r => r.innerHTML = '');
+
+      data.titolariSlots.forEach((slot, slotIdx) => {
+        if (rows[slot.slotType]) rows[slot.slotType].innerHTML += createCardOrDottedHtml(slot, slotIdx, data, teamName);
+      });
+      if (rows.TRE) rows.TRE.style.display = rows.TRE.children.length === 0 ? 'none' : 'flex';
+
+      document.getElementById('benchContainer').innerHTML = data.panchina.map((p, idx) => {
+        if (!p) return `<div onclick="openPlayerModal(null, '${teamName}', ${idx})" class="cursor-pointer slot-bench-dashed rounded-2xl p-2.5 flex flex-col items-center justify-center text-center min-h-[72px]"><span class="text-[9px] text-gray-400">P${idx+1}</span><span class="text-base text-amber-400">+</span></div>`;
+        const stats = calculatePlayerL5L10(p);
+        return `<div onclick="openSorareCardModal('${p}', null, '${teamName}', ${idx})" class="cursor-pointer bg-white/5 hover:bg-white/10 rounded-2xl p-2 flex flex-col justify-between min-h-[72px]"><div><div class="text-[8px] text-gray-400">P${idx+1}</div><div class="text-[11px] font-black text-amber-200 truncate">${p}</div><div class="flex gap-1 mt-1 text-[8px]"><span class="px-1 border ${getLBadgeStyle(stats.l5)}">L5: ${formatScore(stats.l5)}</span></div></div></div>`;
+      }).join('');
+
+      const titolariNames = data.titolariSlots.map(s => s.player).filter(Boolean);
+      const benchNames = data.panchina.filter(Boolean);
+      const tribuna = (ROSTERS[teamName] || []).filter(p => !titolariNames.includes(p) && !benchNames.includes(p));
+      document.getElementById('pitchTribunaCount').innerText = `${tribuna.length} Giocatori`;
+      document.getElementById('pitchTribunaContainer').innerHTML = tribuna.length === 0 ? '<div class="text-xs text-gray-500 italic">Nessun giocatore in tribuna.</div>' : tribuna.map(p => `<div class="bg-white/5 rounded-2xl p-2.5 flex justify-between items-center"><span class="text-xs font-black">${p}</span><button onclick="openPlayerTrendModal('${p}')" class="px-2 py-1 bg-cyan-500/20 text-cyan-300 rounded-xl text-[10px]">📈 Trend</button></div>`).join('');
+    }
+    function createCardOrDottedHtml(slot, slotIdx, teamData, teamName) {
+      if (!slot.player) {
+        return `<div onclick="openPlayerModal(${slotIdx}, '${teamName}', null)" class="cursor-pointer flex flex-col items-center"><div class="slot-vacant-dashed w-[76px] sm:w-[84px] h-[108px] sm:h-[114px] rounded-2xl p-2 flex flex-col items-center justify-between text-center"><span class="text-[9px] font-black text-amber-300 uppercase">${slot.label}</span><span class="text-2xl text-amber-400">+</span><span class="px-1.5 py-0.5 rounded text-[8px] ${getBadgeClass(slot.reqRole)}">${slot.reqRole}</span></div></div>`;
+      }
+      const player = slot.player, isCaptain = teamData.captain === player, isNatural = isCompatible(getPlayerRoles(player), slot.reqRole), baseScore = teamData.scores[player] || 0, stats = calculatePlayerL5L10(player);
+      let eff = baseScore; if (baseScore > 0 && !isNatural) eff = Math.max(0, eff - 1.0); if (baseScore > 0 && isCaptain) eff *= 1.5;
+      return `<div onclick="openSorareCardModal('${player}', ${slotIdx}, '${teamName}', null)" class="cursor-pointer flex flex-col items-center"><div class="sorare-card-frame w-[76px] sm:w-[84px] rounded-2xl p-1.5 flex flex-col items-center relative ${isCaptain ? 'sorare-card-captain' : ''}">${isCaptain ? '<div class="absolute -top-2 -right-1 bg-[#ff007a] text-white text-[8px] px-1 rounded z-10">C</div>' : ''}<div class="w-full flex justify-between text-[8px] text-amber-300"><span>${slot.label}</span></div><div class="w-12 h-12 rounded-full overflow-hidden my-1 bg-black/40 flex items-center justify-center font-bold text-amber-400">${player.slice(0,2).toUpperCase()}</div><div class="text-[10px] font-black text-white truncate w-full text-center">${player}</div></div><div class="mt-1"><span class="px-2 py-0.5 rounded-full text-[10px] font-black text-black" style="background-color: ${getScoreHexColor(eff)}">${baseScore > 0 ? formatScore(eff) : '--'}</span></div></div>`;
+    }
+
+    function renderRosterTab() {
+      const selectedTeam = document.getElementById('rosterTeamSelect').value || Object.keys(ROSTERS)[0];
+      const t = teamLineups[selectedTeam], titolari = t.titolariSlots.map(s => s.player), bench = t.panchina;
+      document.getElementById('rosterListContainer').innerHTML = (ROSTERS[selectedTeam] || []).map(p => {
+        const stats = calculatePlayerL5L10(p);
+        let badge = titolari.includes(p) ? '<span class="text-[9px] text-emerald-300 bg-emerald-500/20 px-1.5 rounded">Titolare</span>' : (bench.includes(p) ? '<span class="text-[9px] text-amber-300 bg-amber-500/20 px-1.5 rounded">Panchina</span>' : '<span class="text-[9px] text-gray-400">Tribuna</span>');
+        return `<div class="bg-white/5 border border-white/10 rounded-2xl p-3 flex justify-between items-center"><div><div class="flex gap-2 items-center"><span class="text-xs font-black text-white">${p}</span>${badge}</div><div class="text-[9px] mt-1 text-gray-400">L5: ${formatScore(stats.l5)}</div></div><button onclick="openPlayerTrendModal('${p}')" class="px-2.5 py-1.5 rounded-xl text-[10px] bg-cyan-500/20 text-cyan-300">📈 Trend</button></div>`;
+      }).join('');
+    }
+
+    function renderStandingsTable() {
+      document.getElementById('standingsTableBody').innerHTML = Object.keys(leagueStandings).sort((a,b) => leagueStandings[b].points - leagueStandings[a].points).map((team, idx) => {
+        const s = leagueStandings[team];
+        return `<tr class="hover:bg-white/5"><td class="py-2 px-3 text-center text-gray-400">${idx+1}</td><td class="py-2 px-3 font-black text-white">${team}</td><td class="py-2 px-2 text-center text-amber-300 font-black">${s.points}</td><td class="py-2 px-3 text-right">${formatScore(s.totalFantaPts)}</td></tr>`;
+      }).join('');
+    }
+
+    function calcolaClassificaGiornata() {
+      GW6_MATCHES.forEach(m => {
+        const h = teamLineups[m.home], a = teamLineups[m.away];
+        if (h && a && h.goals !== undefined && a.goals !== undefined) {
+          const sh = leagueStandings[m.home], sa = leagueStandings[m.away];
+          sh.played++; sa.played++; sh.gf += h.goals; sh.ga += a.goals; sa.gf += a.goals; sa.ga += h.goals;
+          sh.totalFantaPts += h.totalPts; sa.totalFantaPts += a.totalPts;
+          if (h.goals > a.goals) { sh.won++; sh.points += 3; sa.lost++; }
+          else if (h.goals < a.goals) { sa.won++; sa.points += 3; sh.lost++; }
+          else { sh.drawn++; sa.drawn++; sh.points++; sa.points++; }
+        }
+      });
+      renderStandingsTable(); alert("Classifica aggiornata!");
+    }
+
+    let currentModalPlayer = null, currentModalTeam = null;
+    function openSorareCardModal(playerName, slotIdx, teamName) {
+      currentModalPlayer = playerName; currentModalTeam = teamName;
+      const score = teamLineups[teamName].scores[playerName] || 0;
+      document.getElementById('scPlayerName').innerText = playerName;
+      document.getElementById('scCardMiniName').innerText = playerName;
+      document.getElementById('scFinalScore').innerText = score > 0 ? formatScore(score) : '--';
+      document.getElementById('scDynamicMatrixContainer').innerHTML = `<div class="bg-black/40 p-3 rounded-2xl text-xs text-center text-gray-300">Gara non iniziata o nessun dato live.</div>`;
+      document.getElementById('sorareCardModal').classList.remove('hidden');
+    }
+    function closeSorareCardModal() { document.getElementById('sorareCardModal').classList.add('hidden'); }
+    function modalEmptyCurrentSlot() { teamLineups[currentModalTeam].titolariSlots.forEach(s => { if(s.player === currentModalPlayer) s.player = null; }); closeSorareCardModal(); calcolaTotaliSquadre(); updateBanner(); renderPitch(); }
+    function modalMakeCaptain() { teamLineups[currentModalTeam].captain = currentModalPlayer; closeSorareCardModal(); updateBanner(); renderPitch(); }
+    function modalOpenReplaceList() { closeSorareCardModal(); openPlayerModal(null, currentModalTeam, null); }
+    function modalOpenTrendView() { closeSorareCardModal(); openPlayerTrendModal(currentModalPlayer); }
+
+    function openPlayerTrendModal(playerName) {
+      const stats = calculatePlayerL5L10(playerName);
+      document.getElementById('trendPlayerName').innerText = playerName;
+      document.getElementById('trendL5Score').innerText = formatScore(stats.l5);
+      document.getElementById('trendL10Score').innerText = formatScore(stats.l10);
+      renderUnifiedTrendChartSvg(stats.history);
+      document.getElementById('trendModal').classList.remove('hidden');
+    }
+    function closeTrendModal() { document.getElementById('trendModal').classList.add('hidden'); }
+
+    function renderUnifiedTrendChartSvg(history) {
+      document.getElementById('trendChartSvgContainer').innerHTML = `<svg viewBox="0 0 360 140" class="w-full h-32 overflow-visible">${history.map((g, idx) => `<g><rect x="${idx * 68 + 14}" y="${100 - (g.score/10)*80}" width="42" height="${(g.score/10)*80}" rx="5" fill="${getScoreHexColor(g.score)}"/><text x="${idx * 68 + 35}" y="125" font-size="8" fill="#aaa" text-anchor="middle">${g.opponent.split(' ')[0]}</text></g>`).join('')}</svg>`;
+    }
+
+    function openPlayerModal(slotIdx, teamName) {
+      activeSlotIndex = slotIdx; activeTeam = teamName;
+      document.getElementById('modalNaturalList').innerHTML = (ROSTERS[teamName] || []).map(p => `<div onclick="assignPlayerToSlot('${p}')" class="p-2 bg-white/5 rounded-2xl cursor-pointer hover:bg-white/10 text-xs font-black">${p}</div>`).join('');
+      document.getElementById('playerModal').classList.remove('hidden');
+    }
+    function closeModal() { document.getElementById('playerModal').classList.add('hidden'); }
+    function assignPlayerToSlot(playerName) {
+      if (activeSlotIndex !== null) teamLineups[activeTeam].titolariSlots[activeSlotIndex].player = playerName;
+      closeModal(); calcolaTotaliSquadre(); updateBanner(); renderPitch();
+    }
+    function openPasteModal() { document.getElementById('pasteModal').classList.remove('hidden'); }
+    function closePasteModal() { document.getElementById('pasteModal').classList.add('hidden'); }
+    function processPastedLineups() { closePasteModal(); alert("Formazioni elaborate!"); }
+
+    async function fetchLiveSorareScores(fullLeague = false) {
+      const spinner = document.getElementById('apiSpinner');
+      if (spinner) spinner.classList.remove('hidden');
+      
+      let targets = [];
+      if (fullLeague) {
+        Object.values(ROSTERS).forEach(r => { targets.push(...r); });
+      } else {
+        const activeMatch = GW6_MATCHES[currentMatchIndex];
+        [activeMatch.home, activeMatch.away].forEach(tName => {
+          const t = teamLineups[tName];
+          if (t) {
+            t.titolariSlots.forEach(s => { if (s.player) targets.push(s.player); });
+            t.panchina.forEach(p => { if (p) targets.push(p); });
+          }
+        });
+      }
+
+      const uniquePlayers = [...new Set(targets)];
+      const playerSlugsMap = {};
+      uniquePlayers.forEach(p => {
+        const slug = p.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+        playerSlugsMap[slug] = p;
+      });
+
+      const allSlugs = Object.keys(playerSlugsMap);
+      const BATCH_SIZE = 25;
+      let totalSynced = 0;
+
+      const query = `
+        query GetFootballPlayersBatch($slugs: [String!]!) {
+          football {
+            players(slugs: $slugs) {
+              displayName
+              slug
+              latestScores(last: 5) {
+                score
+                playerGameStats {
+                  minsPlayed
+                  goals
+                  assists
+                  cleanSheet
+                  yellowCards
+                  redCards
+                  keyPasses
+                  wonContest
+                  saves
+                  goalsConceded
+                }
+                game {
+                  date
+                  homeTeam { name }
+                  awayTeam { name }
+                }
+              }
+            }
+          }
+        }
+      `;
+
+      for (let i = 0; i < allSlugs.length; i += BATCH_SIZE) {
+        const batchSlugs = allSlugs.slice(i, i + BATCH_SIZE);
+        try {
+          const response = await fetch(SORARE_GRAPHQL_ENDPOINT, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'API-KEY': SORARE_API_KEY
+            },
+            body: JSON.stringify({ query: query, variables: { slugs: batchSlugs } })
+          });
+
+          if (response.ok) {
+            const res = await response.json();
+            if (res.data && res.data.football && res.data.football.players) {
+              res.data.football.players.forEach(pData => {
+                if (!pData || !pData.latestScores) return;
+                const originalName = playerSlugsMap[pData.slug] || pData.displayName;
+                const roles = getPlayerRoles(originalName);
+                const isPor = roles.includes('Por');
+                const isDef = roles.some(r => ['Dc', 'Dd', 'Ds', 'B'].includes(r));
+                const isMid = roles.some(r => ['M', 'C', 'E'].includes(r));
+
+                const gamesHistory = [];
+                pData.latestScores.forEach((ls, gIdx) => {
+                  if (ls.score === null || ls.score === undefined) {
+                    gamesHistory.push({ matchday: gIdx + 1, opponent: "DNP", mins: 0, score: 0, isDnp: true, decisives: [], aas: 0 });
+                    return;
+                  }
+                  const decScore = Math.round((ls.score / 10) * 100) / 100;
+                  const st = ls.playerGameStats || {};
+                  const game = ls.game || {};
+                  let opponentName = game.awayTeam ? `${game.awayTeam.name.split(' ')[0]} (C)` : "Serie A";
+
+                  let decList = [];
+                  if ((st.goals || 0) > 0) decList.push(`⚽ Gol x${st.goals}`);
+                  if ((st.assists || 0) > 0) decList.push(`👟 Assist x${st.assists}`);
+                  if (st.cleanSheet) decList.push(`🧤 Clean Sheet`);
+
+                  const gc = st.goalsConceded || 0;
+                  let cMalus = isDef ? gc * 0.40 : (isMid ? gc * 0.20 : 0);
+
+                  gamesHistory.push({
+                    matchday: gIdx + 1,
+                    opponent: opponentName,
+                    mins: st.minsPlayed || 90,
+                    score: decScore,
+                    isDnp: false,
+                    decisives: decList,
+                    aas: Math.max(0, Math.round((decScore - 3.50) * 100) / 100),
+                    goals: st.goals || 0,
+                    assists: st.assists || 0,
+                    shots: st.goals || 1,
+                    shotsOnTarget: st.goals || 0,
+                    dribbles: 1,
+                    ballsLost: 8,
+                    tacklesWon: st.wonContest || 1,
+                    yellows: st.yellowCards || 0,
+                    reds: st.redCards || 0,
+                    concededCount: gc,
+                    concededMalus: cMalus
+                  });
+                });
+
+                if (gamesHistory.length > 0) {
+                  playerHistoryMap[originalName] = gamesHistory;
+                  try { localStorage.setItem('PR_HISTORY_' + originalName, JSON.stringify(gamesHistory)); } catch (e) {}
+                  if (gamesHistory[0] && gamesHistory[0].score > 0) {
+                    Object.values(teamLineups).forEach(t => {
+                      t.titolariSlots.forEach(s => { if (s.player && s.player.toLowerCase() === originalName.toLowerCase()) t.scores[s.player] = gamesHistory[0].score; });
+                      t.panchina.forEach(p => { if (p && p.toLowerCase() === originalName.toLowerCase()) t.scores[p] = gamesHistory[0].score; });
+                    });
+                    playerStatsMap[originalName] = gamesHistory[0];
+                  }
+                  totalSynced++;
+                }
+              });
+            }
+          }
+        } catch (e) {
+          console.warn("Sync error:", e);
+        }
+      }
+
+      if (spinner) spinner.classList.add('hidden');
+      calcolaTotaliSquadre();
+      updateBanner();
+      renderPitch();
+      if (currentMainTab === 'roster') renderRosterTab();
+      alert(`Sincronizzazione completata! ${totalSynced} giocatori aggiornati.`);
+    }
+
+    function calcolaTotaliSquadre() {
+      Object.keys(teamLineups).forEach(team => {
+        const t = teamLineups[team];
+        let total = 0, anyScore = false;
+        t.titolariSlots.forEach(s => {
+          if (s.player) {
+            const base = t.scores[s.player] || 0;
+            if (base > 0) {
+              anyScore = true;
+              let eff = base;
+              if (!isCompatible(getPlayerRoles(s.player), s.reqRole)) eff = Math.max(0, eff - 1.0);
+              if (t.captain === s.player) eff *= 1.5;
+              total += eff;
+            }
+          }
+        });
+        if (anyScore) {
+          t.totalPts = Math.round(total * 100) / 100;
+          if (total < 66.0) t.goals = 0;
+          else if (total < 72.0) t.goals = 1;
+          else if (total < 78.0) t.goals = 2;
+          else if (total < 84.0) t.goals = 3;
+          else t.goals = 3 + Math.floor((total - 84.0) / 6.0);
+        } else {
+          t.totalPts = 0;
+          t.goals = undefined;
+        }
+      });
+    }
+
+    initStandings();
+    initLineups();
+    populateRosterDropdown();
+    renderMatchesTabs();
+    updateBanner();
+    renderPitch();
+  </script>
+</body>
+</html>
