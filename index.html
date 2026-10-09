@@ -120,6 +120,7 @@
           <span>📥</span><span class="hidden md:inline">Excel</span>
           <input type="file" id="excelInput" accept=".xlsx, .xls, .csv" class="hidden">
         </label>
+        <button onclick="salvaFormazioniInMemoria()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg border border-emerald-400/50 transition">💾 Salva</button>
 
         <button id="btnFetchApi" onclick="fetchLiveSorareScores()" class="bg-gradient-to-r from-amber-500 to-yellow-400 active:scale-95 text-black font-black text-[11px] px-3 py-1.5 rounded-lg shadow-lg shadow-amber-500/20 uppercase tracking-wider transition flex items-center gap-1">
           <span id="apiSpinner" class="hidden animate-spin">⏳</span>
@@ -2466,30 +2467,85 @@ function initLineups() {
       });
     }
 
-    document.getElementById('excelInput').addEventListener('change', function(e) {
-      if (isLineupLocked) {
-        alert("Formazioni bloccate!");
-        return;
-      }
-      const file = e.target.files[0];
-      if (!file) return;
+  document.getElementById('excelInput').addEventListener('change', function(e) {
+  if (isLineupLocked) {
+    alert("Formazioni bloccate!");
+    return;
+  }
+  const file = e.target.files[0];
+  if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        try {
-          const data = new Uint8Array(evt.target.result);
-          const workbook = XLSX.read(data, {type: 'array'});
-          alert("File formazioni caricato con successo!");
-          renderPitch();
-        } catch (err) {
-          alert("Errore nella lettura del file: " + err.message);
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    try {
+      const data = new Uint8Array(evt.target.result);
+      const workbook = XLSX.read(data, {type: 'array'});
+      
+      // Prende il primo foglio dell'Excel e lo converte in righe di testo
+      const primaPagina = workbook.Sheets[workbook.SheetNames[0]];
+      const righeExcel = XLSX.utils.sheet_to_json(primaPagina, {header: 1});
+      
+      let squadraAttuale = null;
+      let giocatoriInseriti = 0;
+      let panchinariInseriti = 0;
+
+      righeExcel.forEach(rigaArray => {
+        const rigaTesto = rigaArray.join(" ").trim();
+        if (!rigaTesto) return;
+
+        // 1. Trova se nella riga c'è il nome di una delle 12 squadre
+        const squadraTrovata = Object.keys(ROSTERS).find(team => rigaTesto.toLowerCase().includes(team.toLowerCase()));
+        if (squadraTrovata) {
+          squadraAttuale = squadraTrovata;
+          giocatoriInseriti = 0;
+          panchinariInseriti = 0;
+          // Svuota la rosa per fare spazio ai nuovi importati
+          teamLineups[squadraAttuale].titolariSlots.forEach(s => s.player = null);
+          teamLineups[squadraAttuale].panchina = new Array(12).fill(null);
         }
-      };
-      reader.readAsArrayBuffer(file);
-    });
+
+        if (squadraAttuale) {
+          // 2. Trova il modulo (es. 4-3-3)
+          const moduloTrovato = rigaTesto.match(/\b([345]-[12345](-[12345])?)\b/);
+          if (moduloTrovato) {
+            teamLineups[squadraAttuale].module = moduloTrovato[0];
+            // Ristruttura gli slot in base al modulo trovato nell'Excel
+            teamLineups[squadraAttuale].titolariSlots = buildSlotsForModule(moduloTrovato[0], ROSTERS[squadraAttuale]);
+          }
+
+          // 3. Trova i giocatori e li assegna (i primi 11 titolari, gli altri in panchina)
+          const giocatoreTrovato = ROSTERS[squadraAttuale].find(p => rigaTesto.toLowerCase().includes(p.toLowerCase()));
+          if (giocatoreTrovato) {
+            const giaTitolare = teamLineups[squadraAttuale].titolariSlots.some(s => s.player === giocatoreTrovato);
+            const giaPanchina = teamLineups[squadraAttuale].panchina.includes(giocatoreTrovato);
+            
+            if (!giaTitolare && !giaPanchina) {
+              if (giocatoriInseriti < 11) {
+                teamLineups[squadraAttuale].titolariSlots[giocatoriInseriti].player = giocatoreTrovato;
+                giocatoriInseriti++;
+              } else if (panchinariInseriti < 12) {
+                teamLineups[squadraAttuale].panchina[panchinariInseriti] = giocatoreTrovato;
+                panchinariInseriti++;
+              }
+            }
+          }
+        }
+      });
+
+      alert("Formazioni importate! Moduli Mantra e giocatori applicati correttamente.");
+      calcolaTotaliSquadre();
+      renderPitch();
+    } catch (err) {
+      alert("Errore nella lettura del file: " + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  e.target.value = ''; // Resetta per permettere di ricaricare lo stesso file
+});
 
     initStandings();
     initLineups();
+    caricaFormazioniSalvate();
     populateRosterDropdown();
     renderMatchesTabs();
     updateBanner();
@@ -2585,6 +2641,39 @@ function initLineups() {
     }
   });
   updateBanner();
+}
+    function salvaFormazioniInMemoria() {
+  const datiDaSalvare = {};
+  Object.keys(teamLineups).forEach(team => {
+    datiDaSalvare[team] = {
+      module: teamLineups[team].module,
+      titolari: teamLineups[team].titolariSlots.map(s => s.player),
+      panchina: teamLineups[team].panchina,
+      captain: teamLineups[team].captain
+    };
+  });
+  localStorage.setItem('FantaSorare_Save', JSON.stringify(datiDaSalvare));
+  alert("✅ Formazioni e moduli salvati correttamente in memoria!");
+}
+
+function caricaFormazioniSalvate() {
+  const salvataggio = localStorage.getItem('FantaSorare_Save');
+  if (salvataggio) {
+    const dati = JSON.parse(salvataggio);
+    Object.keys(dati).forEach(team => {
+      if (teamLineups[team] && dati[team]) {
+        teamLineups[team].module = dati[team].module;
+        teamLineups[team].captain = dati[team].captain;
+        // Ricrea la struttura col modulo salvato (es. 4-3-3)
+        teamLineups[team].titolariSlots = buildSlotsForModule(dati[team].module, ROSTERS[team]);
+        
+        dati[team].titolari.forEach((player, idx) => {
+          if (teamLineups[team].titolariSlots[idx]) teamLineups[team].titolariSlots[idx].player = player;
+        });
+        teamLineups[team].panchina = dati[team].panchina || [];
+      }
+    });
+  }
 }
   </script>
 </body>
