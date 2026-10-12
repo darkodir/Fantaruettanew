@@ -2135,8 +2135,7 @@ const MANTRA_MODULES = {
       else alert("Nessuna corrispondenza valida trovata.");
     }
 
-    // SINCRONIZZAZIONE COMPLETA STORICO E LIVE DA SORARE (BATCH ENGINE MIGLIORATO CON CORS E STORICO so5Scores)
-// SINCRONIZZAZIONE COMPLETA STORICO E LIVE DA SORARE (BATCH ENGINE MIGLIORATO)
+// SINCRONIZZAZIONE DIRETTA DA SORARE (NO PROXY)
     async function fetchLiveSorareScores(fullLeague = false) {
       const spinner = document.getElementById('apiSpinner');
       if (spinner) spinner.classList.remove('hidden');
@@ -2166,13 +2165,9 @@ const MANTRA_MODULES = {
       });
 
       const allSlugs = Object.keys(playerSlugsMap);
-      const BATCH_SIZE = 25;
+      const BATCH_SIZE = 40; 
       let totalSynced = 0;
 
-      const proxyUrl = "https://corsproxy.io/?";
-      const targetUrl = "https://api.sorare.com/graphql";
-
-      // TORNATO A latestScores (fondamentale per vedere le partite LIVE in corso)
       const query = `
         query GetFootballPlayersBatch($slugs: [String!]!) {
           football {
@@ -2182,19 +2177,9 @@ const MANTRA_MODULES = {
               latestScores(last: 5) {
                 score
                 playerGameStats {
-                  minsPlayed
-                  goals
-                  assists
-                  cleanSheet
-                  yellowCards
-                  redCards
-                  keyPasses
-                  wonContest
-                  saves
-                  goalsConceded
+                  minsPlayed, goals, assists, cleanSheet, yellowCards, redCards, keyPasses, wonContest, saves, goalsConceded
                 }
                 game {
-                  date
                   homeTeam { name }
                   awayTeam { name }
                 }
@@ -2207,7 +2192,8 @@ const MANTRA_MODULES = {
       for (let i = 0; i < allSlugs.length; i += BATCH_SIZE) {
         const batchSlugs = allSlugs.slice(i, i + BATCH_SIZE);
         try {
-          const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
+          // Connessione DIRETTA a Sorare, senza intermediari!
+          const response = await fetch("https://api.sorare.com/graphql", {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -2223,10 +2209,8 @@ const MANTRA_MODULES = {
             const res = await response.json();
             
             if (res.errors) {
-               console.error("Errore GraphQL Sorare:", res.errors);
-               alert("Impossibile scaricare lo storico. Motivo di Sorare: " + res.errors[0].message);
-               if (spinner) spinner.classList.add('hidden');
-               return;
+               console.error("Errore GraphQL:", res.errors);
+               continue; 
             }
 
             if (res.data && res.data.football && res.data.football.players) {
@@ -2315,14 +2299,10 @@ const MANTRA_MODULES = {
 
                 if (gamesHistory.length > 0) {
                   playerHistoryMap[originalName] = gamesHistory;
-                  try {
-                    localStorage.setItem('PR_HISTORY_' + originalName, JSON.stringify(gamesHistory));
-                  } catch (e) {}
+                  try { localStorage.setItem('PR_HISTORY_' + originalName, JSON.stringify(gamesHistory)); } catch (e) {}
 
-                  // LOGICA LIVE AGGIORNATA: Pesca sempre l'ultimo voto disponibile (in fondo all'array)
+                  // Cerca a ritroso l'ultimo voto valido della giornata corrente
                   let liveGame = gamesHistory[gamesHistory.length - 1];
-                  
-                  // Sicurezza extra: Se l'ultima gara è DNP/Posticipata, cerchiamo a ritroso la più recente giocata
                   if (!liveGame || liveGame.score === 0) {
                      for (let j = gamesHistory.length - 1; j >= 0; j--) {
                         if (gamesHistory[j].score > 0) {
@@ -2332,7 +2312,6 @@ const MANTRA_MODULES = {
                      }
                   }
 
-                  // Applica il voto finale
                   if (liveGame && liveGame.score > 0) {
                     applyScore(originalName, liveGame.score);
                     playerStatsMap[originalName] = liveGame;
@@ -2343,7 +2322,8 @@ const MANTRA_MODULES = {
             }
           }
         } catch (e) {
-          console.warn("Chiamata batch fallita:", e);
+          console.warn("Chiamata fallita:", e);
+          alert("Attenzione: Problema di connessione diretta con Sorare. Controlla la rete e riprova.");
         }
       }
 
@@ -2354,12 +2334,11 @@ const MANTRA_MODULES = {
       if (currentMainTab === 'roster') renderRosterTab();
 
       if (totalSynced > 0) {
-        alert(`Sincronizzazione completata! ${totalSynced} calciatori aggiornati con i voti LIVE.`);
+        alert("Sincronizzazione LIVE completata! " + totalSynced + " calciatori aggiornati con successo.");
       } else {
-        alert("Nessun nuovo dato recuperato dai server Sorare.");
+        alert("Nessun dato recuperato. Potrebbe essere in corso la manutenzione dei server Sorare.");
       }
     }
-
     function applyScore(name, score) {
       Object.values(teamLineups).forEach(t => {
         t.titolariSlots.forEach(s => {
