@@ -2163,7 +2163,7 @@ const MANTRA_MODULES = {
       "Butez": "jean-butez", "Milinkovic-Savic V.": "vanja-milinkovic-savic", "Sanchez Ro.": "roberto-sanchez", "Vigorito": "mauro-vigorito", "Kouadio": "steve-kouadio", "Gallo": "antonino-gallo", "Mangas": "ricardo-mangas", "Gila": "mario-gila", "Stones": "john-stones", "Bisseck": "yann-aurel-bisseck", "Molina N.": "nahuel-molina", "Ciurria": "patrick-ciurria", "Konè M.": "manu-kone", "Cristante": "bryan-cristante", "Stankovic A.": "aleksandar-stankovic", "Thorstvedt": "kristian-thorstvedt", "Zambo Anguissa": "andre-franck-zambo-anguissa", "Baturina": "martin-baturina", "Baldanzi": "tommaso-baldanzi", "Liberali": "mattia-liberali", "Meichtry": "luca-meichtry", "Politano": "matteo-politano", "Njie": "oumar-njie", "Pierotti": "santiago-pierotti", "Yildiz": "kenan-yildiz", "Laurientè": "armand-lauriente", "Piccoli": "roberto-piccoli", "Pinamonti": "andrea-pinamonti", "Mendy P.": "nampalys-mendy"
     };
 
-// SINCRONIZZAZIONE BLINDATA CON TIMEOUT ASSOLUTO E RIMOZIONE API-KEY
+// SINCRONIZZAZIONE DEFINITIVA: PROXY ANTI-ADBLOCK E DIAGNOSTICA
     async function fetchLiveSorareScores(fullLeague = false) {
       const spinner = document.getElementById('apiSpinner');
       if (spinner) spinner.classList.remove('hidden');
@@ -2214,7 +2214,6 @@ const MANTRA_MODULES = {
 
         const query = `query GetFootballPlayersBatch($slugs: [String!]!) { football { players(slugs: $slugs) { displayName slug so5Scores(last: 5) { score playerGameStats { minsPlayed goals assists cleanSheet yellowCards redCards keyPasses wonContest saves goalsConceded } game { homeTeam { name } awayTeam { name } } } } } }`;
 
-        // FUNZIONE KILLER: Esegue la chiamata ma la distrugge se supera i 5 secondi
         const fetchWithTimeout = async (url, options, timeoutMs = 5000) => {
           const controller = new AbortController();
           const id = setTimeout(() => controller.abort(), timeoutMs);
@@ -2232,21 +2231,20 @@ const MANTRA_MODULES = {
           const batchSlugs = allSlugs.slice(i, i + BATCH_SIZE);
           let success = false;
           
-          // Proviamo prima la connessione diretta (spesso bloccata), poi un solo proxy
+          // API Codetabs è molto meno bloccata dagli AdBlock rispetto a corsproxy
           const urlsToTry = [
-            "https://api.sorare.com/graphql",
-            "https://corsproxy.io/?https://api.sorare.com/graphql"
+            "https://api.codetabs.com/v1/proxy?quest=https://api.sorare.com/graphql",
+            "https://api.sorare.com/graphql"
           ];
 
           for (let url of urlsToTry) {
             if (success) break;
             try {
-              // CHIAMATA SENZA API-KEY PER BYPASSARE IL BLOCCO DEL BROWSER
               const response = await fetchWithTimeout(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ query: query, variables: { slugs: batchSlugs } })
-              }, 5000); // 5 secondi massimi di attesa
+              }, 5000);
 
               if (response.ok) {
                 const resData = await response.json();
@@ -2357,9 +2355,9 @@ const MANTRA_MODULES = {
               }
             } catch (e) {
               if (e.name === 'AbortError') {
-                 lastError = "Timeout: Il server non ha risposto entro 5 secondi.";
+                 lastError = "Timeout: Il proxy non ha risposto.";
               } else {
-                 lastError = e.message;
+                 lastError = "Blocco Browser (AdBlock/Privacy).";
               }
             }
           }
@@ -2369,11 +2367,10 @@ const MANTRA_MODULES = {
         if (totalSynced > 0) {
           alert(`Sincronizzazione completata! ${totalSynced} giocatori aggiornati.`);
         } else {
-          alert(`Impossibile ricevere i dati. Motivo esatto: ${lastError}`);
+          alert(`Impossibile ricevere i dati.\n\nMotivo: ${lastError}\n\nSOLUZIONE: Disattiva l'AdBlock per questa pagina o prova ad aprire il sito in modalità Incognito (Google Chrome).`);
         }
 
       } finally {
-        // QUESTA RIGA SPEGNE SEMPRE LA ROTELLINA, QUALSIASI COSA SUCCEDA
         if (spinner) spinner.classList.add('hidden');
         calcolaTotaliSquadre();
         updateBanner();
