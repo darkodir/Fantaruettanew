@@ -2318,10 +2318,11 @@ const MANTRA_MODULES = {
                     localStorage.setItem('PR_HISTORY_' + originalName, JSON.stringify(gamesHistory));
                   } catch (e) {}
 
-                  if (gamesHistory[0] && gamesHistory[0].score > 0) {
-                    applyScore(originalName, gamesHistory[0].score);
-                    playerStatsMap[originalName] = gamesHistory[0];
-                  }
+                  const latestGame = gamesHistory[gamesHistory.length - 1];
+if (latestGame && latestGame.score > 0) {
+  applyScore(originalName, latestGame.score);
+  playerStatsMap[originalName] = latestGame;
+}
                   totalSynced++;
                 }
               });
