@@ -2136,6 +2136,7 @@ const MANTRA_MODULES = {
     }
 
     // SINCRONIZZAZIONE COMPLETA STORICO E LIVE DA SORARE (BATCH ENGINE MIGLIORATO CON CORS E STORICO so5Scores)
+// SINCRONIZZAZIONE COMPLETA STORICO E LIVE DA SORARE (BATCH ENGINE MIGLIORATO)
     async function fetchLiveSorareScores(fullLeague = false) {
       const spinner = document.getElementById('apiSpinner');
       if (spinner) spinner.classList.remove('hidden');
@@ -2168,17 +2169,17 @@ const MANTRA_MODULES = {
       const BATCH_SIZE = 25;
       let totalSynced = 0;
 
-      // PROXY CORS E NUOVA QUERY STORICO (so5Scores)
       const proxyUrl = "https://corsproxy.io/?";
       const targetUrl = "https://api.sorare.com/graphql";
 
+      // TORNATO A latestScores (fondamentale per vedere le partite LIVE in corso)
       const query = `
         query GetFootballPlayersBatch($slugs: [String!]!) {
           football {
             players(slugs: $slugs) {
               displayName
               slug
-              so5Scores(last: 5) {
+              latestScores(last: 5) {
                 score
                 playerGameStats {
                   minsPlayed
@@ -2230,7 +2231,7 @@ const MANTRA_MODULES = {
 
             if (res.data && res.data.football && res.data.football.players) {
               res.data.football.players.forEach(pData => {
-                if (!pData || !pData.so5Scores) return;
+                if (!pData || !pData.latestScores) return;
 
                 const originalName = playerSlugsMap[pData.slug] || pData.displayName;
                 const roles = getPlayerRoles(originalName);
@@ -2239,7 +2240,7 @@ const MANTRA_MODULES = {
                 const isMid = roles.some(r => ['M', 'C', 'E'].includes(r));
 
                 const gamesHistory = [];
-                pData.so5Scores.forEach((ls, gIdx) => {
+                pData.latestScores.forEach((ls, gIdx) => {
                   if (ls.score == null) {
                     gamesHistory.push({ matchday: gIdx + 1, opponent: "DNP", mins: 0, score: 0, isDnp: true, decisives: [], aas: 0, concededMalus: 0 });
                     return;
@@ -2318,11 +2319,24 @@ const MANTRA_MODULES = {
                     localStorage.setItem('PR_HISTORY_' + originalName, JSON.stringify(gamesHistory));
                   } catch (e) {}
 
-                  const latestGame = gamesHistory[gamesHistory.length - 1];
-if (latestGame && latestGame.score > 0) {
-  applyScore(originalName, latestGame.score);
-  playerStatsMap[originalName] = latestGame;
-}
+                  // LOGICA LIVE AGGIORNATA: Pesca sempre l'ultimo voto disponibile (in fondo all'array)
+                  let liveGame = gamesHistory[gamesHistory.length - 1];
+                  
+                  // Sicurezza extra: Se l'ultima gara è DNP/Posticipata, cerchiamo a ritroso la più recente giocata
+                  if (!liveGame || liveGame.score === 0) {
+                     for (let j = gamesHistory.length - 1; j >= 0; j--) {
+                        if (gamesHistory[j].score > 0) {
+                           liveGame = gamesHistory[j];
+                           break;
+                        }
+                     }
+                  }
+
+                  // Applica il voto finale
+                  if (liveGame && liveGame.score > 0) {
+                    applyScore(originalName, liveGame.score);
+                    playerStatsMap[originalName] = liveGame;
+                  }
                   totalSynced++;
                 }
               });
@@ -2340,9 +2354,9 @@ if (latestGame && latestGame.score > 0) {
       if (currentMainTab === 'roster') renderRosterTab();
 
       if (totalSynced > 0) {
-        alert(`Sincronizzazione completata! ${totalSynced} calciatori aggiornati con le ultime 5 gare ufficiali da Sorare.`);
+        alert(`Sincronizzazione completata! ${totalSynced} calciatori aggiornati con i voti LIVE.`);
       } else {
-        alert("Nessun nuovo dato recuperato dai server Sorare. I dati in memoria restano attivi.");
+        alert("Nessun nuovo dato recuperato dai server Sorare.");
       }
     }
 
