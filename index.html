@@ -2163,7 +2163,7 @@ const MANTRA_MODULES = {
       "Butez": "jean-butez", "Milinkovic-Savic V.": "vanja-milinkovic-savic", "Sanchez Ro.": "roberto-sanchez", "Vigorito": "mauro-vigorito", "Kouadio": "steve-kouadio", "Gallo": "antonino-gallo", "Mangas": "ricardo-mangas", "Gila": "mario-gila", "Stones": "john-stones", "Bisseck": "yann-aurel-bisseck", "Molina N.": "nahuel-molina", "Ciurria": "patrick-ciurria", "Konè M.": "manu-kone", "Cristante": "bryan-cristante", "Stankovic A.": "aleksandar-stankovic", "Thorstvedt": "kristian-thorstvedt", "Zambo Anguissa": "andre-franck-zambo-anguissa", "Baturina": "martin-baturina", "Baldanzi": "tommaso-baldanzi", "Liberali": "mattia-liberali", "Meichtry": "luca-meichtry", "Politano": "matteo-politano", "Njie": "oumar-njie", "Pierotti": "santiago-pierotti", "Yildiz": "kenan-yildiz", "Laurientè": "armand-lauriente", "Piccoli": "roberto-piccoli", "Pinamonti": "andrea-pinamonti", "Mendy P.": "nampalys-mendy"
     };
 
-  // SINCRONIZZAZIONE DEFINITIVA (CORS BYPASS CON ALLORIGINS GET)
+ // SINCRONIZZAZIONE DEFINITIVA: BATCH CORTO (No NetworkError) + DOPPIO PROXY
     async function fetchLiveSorareScores(fullLeague = false) {
       const spinner = document.getElementById('apiSpinner');
       if (spinner) spinner.classList.remove('hidden');
@@ -2207,7 +2207,9 @@ const MANTRA_MODULES = {
       });
 
       const allSlugs = Object.keys(playerSlugsMap);
-      const BATCH_SIZE = 30; 
+      
+      // IL SEGRETO: Chiediamo solo 5 giocatori per volta! URL cortissimo = Nessun "NetworkError".
+      const BATCH_SIZE = 5; 
       let totalSynced = 0;
       let lastErrorMessage = "";
 
@@ -2216,9 +2218,10 @@ const MANTRA_MODULES = {
       for (let i = 0; i < allSlugs.length; i += BATCH_SIZE) {
         const batchSlugs = allSlugs.slice(i, i + BATCH_SIZE);
         let resData = null;
+        let success = false;
         
         try {
-          // IL TRUCCO FINALE: Passiamo da AllOrigins con una chiamata GET sicura
+          // PROXY 1: AllOrigins (Infallibile e non fa scattare protezioni browser)
           const targetUrl = `https://api.sorare.com/graphql?query=${encodeURIComponent(query)}&variables=${encodeURIComponent(JSON.stringify({slugs: batchSlugs}))}`;
           const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
           
@@ -2232,19 +2235,33 @@ const MANTRA_MODULES = {
                  lastErrorMessage = sorareRes.errors[0].message;
               } else {
                  resData = sorareRes;
+                 success = true;
               }
-            } else {
-               lastErrorMessage = "Il proxy ha risposto, ma il contenuto era vuoto.";
             }
-          } else {
-             lastErrorMessage = `Errore HTTP Proxy: ${response.status}`;
           }
         } catch (fetchErr) {
           lastErrorMessage = fetchErr.message;
         }
 
-        // Se abbiamo i dati, li processiamo e assegniamo i voti
-        if (resData && resData.data && resData.data.football && resData.data.football.players) {
+        // PROXY 2: Fallback su CodeTabs se AllOrigins è troppo lento
+        if (!success) {
+           try {
+              const response = await fetch("https://api.codetabs.com/v1/proxy?quest=https://api.sorare.com/graphql", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: query, variables: { slugs: batchSlugs } })
+              });
+              if (response.ok) {
+                 const sorareRes = await response.json();
+                 if (!sorareRes.errors) { resData = sorareRes; success = true; }
+              }
+           } catch (e) {
+              lastErrorMessage = "Entrambi i Proxy di rete sono stati bloccati dal browser.";
+           }
+        }
+
+        // Processiamo i voti salvati!
+        if (success && resData && resData.data && resData.data.football && resData.data.football.players) {
           resData.data.football.players.forEach(pData => {
             if (!pData || !pData.so5Scores) return;
 
@@ -2328,7 +2345,7 @@ const MANTRA_MODULES = {
               playerHistoryMap[originalName] = gamesHistory;
               try { localStorage.setItem('PR_HISTORY_' + originalName, JSON.stringify(gamesHistory)); } catch (e) {}
 
-              // Applica il voto live (pescato a ritroso)
+              // Applica il voto dell'ultima partita giocata
               let liveGame = gamesHistory[gamesHistory.length - 1];
               if (!liveGame || liveGame.score === 0) {
                  for (let j = gamesHistory.length - 1; j >= 0; j--) {
@@ -2347,6 +2364,9 @@ const MANTRA_MODULES = {
             }
           });
         }
+        
+        // Pausa vitale di 300 millisecondi tra i blocchi piccoli per non farsi bannare l'IP
+        await new Promise(r => setTimeout(r, 300));
       }
 
       if (spinner) spinner.classList.add('hidden');
@@ -2358,7 +2378,7 @@ const MANTRA_MODULES = {
       if (totalSynced > 0) {
         alert("Sincronizzazione LIVE completata! " + totalSynced + " calciatori aggiornati con successo.");
       } else {
-        alert("Ops, la connessione è passata ma i dati non ci sono:\\n" + (lastErrorMessage || "Il proxy non ha restituito i dati richiesti."));
+        alert("Nessun dato recuperato.\n" + (lastErrorMessage || "Il browser ha bloccato i Proxy gratuiti. Se hai un AdBlock, disattivalo un secondo!"));
       }
     }
     
