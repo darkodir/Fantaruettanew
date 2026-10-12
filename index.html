@@ -2163,7 +2163,7 @@ const MANTRA_MODULES = {
       "Butez": "jean-butez", "Milinkovic-Savic V.": "vanja-milinkovic-savic", "Sanchez Ro.": "roberto-sanchez", "Vigorito": "mauro-vigorito", "Kouadio": "steve-kouadio", "Gallo": "antonino-gallo", "Mangas": "ricardo-mangas", "Gila": "mario-gila", "Stones": "john-stones", "Bisseck": "yann-aurel-bisseck", "Molina N.": "nahuel-molina", "Ciurria": "patrick-ciurria", "Konè M.": "manu-kone", "Cristante": "bryan-cristante", "Stankovic A.": "aleksandar-stankovic", "Thorstvedt": "kristian-thorstvedt", "Zambo Anguissa": "andre-franck-zambo-anguissa", "Baturina": "martin-baturina", "Baldanzi": "tommaso-baldanzi", "Liberali": "mattia-liberali", "Meichtry": "luca-meichtry", "Politano": "matteo-politano", "Njie": "oumar-njie", "Pierotti": "santiago-pierotti", "Yildiz": "kenan-yildiz", "Laurientè": "armand-lauriente", "Piccoli": "roberto-piccoli", "Pinamonti": "andrea-pinamonti", "Mendy P.": "nampalys-mendy"
     };
 
-   // SINCRONIZZAZIONE DEFINITIVA (CORREZIONE GRAPHQL E DIAGNOSTICA ERRORI)
+  // SINCRONIZZAZIONE DEFINITIVA (CORS BYPASS CON ALLORIGINS GET)
     async function fetchLiveSorareScores(fullLeague = false) {
       const spinner = document.getElementById('apiSpinner');
       if (spinner) spinner.classList.remove('hidden');
@@ -2211,148 +2211,141 @@ const MANTRA_MODULES = {
       let totalSynced = 0;
       let lastErrorMessage = "";
 
-      // CORREZIONE CRITICA: Sostituito 'latestScores' con 'so5Scores'
       const query = `query GetFootballPlayersBatch($slugs: [String!]!) { football { players(slugs: $slugs) { displayName slug so5Scores(last: 5) { score playerGameStats { minsPlayed goals assists cleanSheet yellowCards redCards keyPasses wonContest saves goalsConceded } game { homeTeam { name } awayTeam { name } } } } } }`;
 
       for (let i = 0; i < allSlugs.length; i += BATCH_SIZE) {
         const batchSlugs = allSlugs.slice(i, i + BATCH_SIZE);
+        let resData = null;
         
         try {
-          let response;
-          try {
-            // Tentativo 1: Diretto senza Proxy
-            response = await fetch("https://api.sorare.com/graphql", {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'API-KEY': SORARE_API_KEY },
-              body: JSON.stringify({ query: query, variables: { slugs: batchSlugs } })
-            });
-          } catch (corsErr) {
-            // Tentativo 2: Fallback con Proxy in caso di blocco del browser
-            response = await fetch("https://corsproxy.io/?https://api.sorare.com/graphql", {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'API-KEY': SORARE_API_KEY },
-              body: JSON.stringify({ query: query, variables: { slugs: batchSlugs } })
-            });
-          }
-
+          // IL TRUCCO FINALE: Passiamo da AllOrigins con una chiamata GET sicura
+          const targetUrl = `https://api.sorare.com/graphql?query=${encodeURIComponent(query)}&variables=${encodeURIComponent(JSON.stringify({slugs: batchSlugs}))}`;
+          const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+          
+          const response = await fetch(proxyUrl);
+          
           if (response.ok) {
-            const res = await response.json();
-            
-            // SE SORARE RESTITUISCE UN ERRORE, ORA LO VEDIAMO
-            if (res.errors) {
-               lastErrorMessage = res.errors[0].message;
-               console.error("Sorare API Error:", res.errors);
-               continue;
-            }
-
-            if (res.data && res.data.football && res.data.football.players) {
-              res.data.football.players.forEach(pData => {
-                if (!pData || !pData.so5Scores) return;
-
-                const originalName = playerSlugsMap[pData.slug] || pData.displayName;
-                const roles = getPlayerRoles(originalName);
-                const isPor = roles.includes('Por');
-                const isDef = roles.some(r => ['Dc', 'Dd', 'Ds', 'B'].includes(r));
-                const isMid = roles.some(r => ['M', 'C', 'E'].includes(r));
-
-                const gamesHistory = [];
-                pData.so5Scores.forEach((ls, gIdx) => {
-                  if (ls.score == null) {
-                    gamesHistory.push({ matchday: gIdx + 1, opponent: "DNP", mins: 0, score: 0, isDnp: true, decisives: [], aas: 0, concededMalus: 0 });
-                    return;
-                  }
-
-                  const decScore = Math.round((ls.score / 10) * 100) / 100;
-                  const st = ls.playerGameStats || {};
-                  const game = ls.game || {};
-
-                  let opponentName = "Serie A";
-                  if (game.homeTeam && game.awayTeam) opponentName = `${game.awayTeam.name.split(' ')[0]} (C)`;
-
-                  let decList = [];
-                  if ((st.goals || 0) > 0) decList.push(`⚽ Gol x${st.goals}`);
-                  if ((st.assists || 0) > 0) decList.push(`👟 Assist x${st.assists}`);
-                  if (st.cleanSheet) decList.push(`🧤 Clean Sheet`);
-                  if ((st.yellowCards || 0) > 0) decList.push(`🟨 Giallo`);
-                  if ((st.redCards || 0) > 0) decList.push(`🟥 Rosso`);
-
-                  const gc = st.goalsConceded || 0;
-                  let cMalus = isDef ? (gc * 0.40) : (isMid ? (gc * 0.20) : 0);
-
-                  gamesHistory.push({
-                    matchday: gIdx + 1,
-                    opponent: opponentName,
-                    mins: st.minsPlayed || (ls.score > 0 ? 90 : 0),
-                    score: decScore,
-                    isDnp: false,
-                    decisives: decList,
-                    aas: Math.max(0, Math.round((decScore - (decList.length > 0 ? 6.00 : 3.50)) * 100) / 100),
-                    goals: st.goals || 0,
-                    assists: st.assists || 0,
-                    shots: (st.goals || 0) + (isPor ? 0 : 1),
-                    shotsOnTarget: st.goals || 0,
-                    bigChancesCreated: (st.assists || 0) > 0 ? 1 : 0,
-                    bigChancesMissed: 0,
-                    foulsDrawn: isPor ? 0 : 2,
-                    offsides: isPor ? 0 : 1,
-                    keyPasses: st.keyPasses || 0,
-                    passesFinalThird: isPor ? 0 : 12,
-                    dribbles: isPor ? 0 : 1,
-                    passAccuracy: 84,
-                    ballsLost: isPor ? 3 : 10,
-                    tacklesWon: st.wonContest || (isDef ? 2 : 1),
-                    tacklesLost: 1,
-                    interceptions: isDef ? 2 : 1,
-                    groundDuelsWon: 4,
-                    groundDuelsLost: 2,
-                    aerialsWon: isDef ? 2 : 1,
-                    aerialsLost: 1,
-                    clearances: isDef ? 3 : 0,
-                    foulsCommitted: 1,
-                    penaltiesConceded: 0,
-                    savesTotal: st.saves || 0,
-                    savesInsideBox: Math.floor((st.saves || 0) / 2),
-                    highClaims: isPor ? 2 : 0,
-                    punches: isPor ? 1 : 0,
-                    longPassesAcc: isPor ? 8 : 0,
-                    penaltySaved: 0,
-                    goalsConceded: gc,
-                    errorLeadToShot: 0,
-                    errorLeadToGoal: 0,
-                    yellows: st.yellowCards || 0,
-                    reds: st.redCards || 0,
-                    concededMalus: cMalus
-                  });
-                });
-
-                if (gamesHistory.length > 0) {
-                  playerHistoryMap[originalName] = gamesHistory;
-                  try { localStorage.setItem('PR_HISTORY_' + originalName, JSON.stringify(gamesHistory)); } catch (e) {}
-
-                  // Applica il voto dell'ultima partita giocata (Live in corso)
-                  let liveGame = gamesHistory[gamesHistory.length - 1];
-                  if (!liveGame || liveGame.score === 0) {
-                     for (let j = gamesHistory.length - 1; j >= 0; j--) {
-                        if (gamesHistory[j].score > 0) {
-                           liveGame = gamesHistory[j];
-                           break;
-                        }
-                     }
-                  }
-
-                  if (liveGame && liveGame.score > 0) {
-                    applyScore(originalName, liveGame.score);
-                    playerStatsMap[originalName] = liveGame;
-                  }
-                  totalSynced++;
-                }
-              });
+            const proxyJson = await response.json();
+            if (proxyJson.contents) {
+              const sorareRes = JSON.parse(proxyJson.contents);
+              if (sorareRes.errors) {
+                 lastErrorMessage = sorareRes.errors[0].message;
+              } else {
+                 resData = sorareRes;
+              }
+            } else {
+               lastErrorMessage = "Il proxy ha risposto, ma il contenuto era vuoto.";
             }
           } else {
-            lastErrorMessage = `Errore HTTP Server: ${response.status} ${response.statusText}`;
+             lastErrorMessage = `Errore HTTP Proxy: ${response.status}`;
           }
         } catch (fetchErr) {
           lastErrorMessage = fetchErr.message;
+        }
+
+        // Se abbiamo i dati, li processiamo e assegniamo i voti
+        if (resData && resData.data && resData.data.football && resData.data.football.players) {
+          resData.data.football.players.forEach(pData => {
+            if (!pData || !pData.so5Scores) return;
+
+            const originalName = playerSlugsMap[pData.slug] || pData.displayName;
+            const roles = getPlayerRoles(originalName);
+            const isPor = roles.includes('Por');
+            const isDef = roles.some(r => ['Dc', 'Dd', 'Ds', 'B'].includes(r));
+            const isMid = roles.some(r => ['M', 'C', 'E'].includes(r));
+
+            const gamesHistory = [];
+            pData.so5Scores.forEach((ls, gIdx) => {
+              if (ls.score == null) {
+                gamesHistory.push({ matchday: gIdx + 1, opponent: "DNP", mins: 0, score: 0, isDnp: true, decisives: [], aas: 0, concededMalus: 0 });
+                return;
+              }
+
+              const decScore = Math.round((ls.score / 10) * 100) / 100;
+              const st = ls.playerGameStats || {};
+              const game = ls.game || {};
+
+              let opponentName = "Serie A";
+              if (game.homeTeam && game.awayTeam) opponentName = `${game.awayTeam.name.split(' ')[0]} (C)`;
+
+              let decList = [];
+              if ((st.goals || 0) > 0) decList.push(`⚽ Gol x${st.goals}`);
+              if ((st.assists || 0) > 0) decList.push(`👟 Assist x${st.assists}`);
+              if (st.cleanSheet) decList.push(`🧤 Clean Sheet`);
+              if ((st.yellowCards || 0) > 0) decList.push(`🟨 Giallo`);
+              if ((st.redCards || 0) > 0) decList.push(`🟥 Rosso`);
+
+              const gc = st.goalsConceded || 0;
+              let cMalus = isDef ? (gc * 0.40) : (isMid ? (gc * 0.20) : 0);
+
+              gamesHistory.push({
+                matchday: gIdx + 1,
+                opponent: opponentName,
+                mins: st.minsPlayed || (ls.score > 0 ? 90 : 0),
+                score: decScore,
+                isDnp: false,
+                decisives: decList,
+                aas: Math.max(0, Math.round((decScore - (decList.length > 0 ? 6.00 : 3.50)) * 100) / 100),
+                goals: st.goals || 0,
+                assists: st.assists || 0,
+                shots: (st.goals || 0) + (isPor ? 0 : 1),
+                shotsOnTarget: st.goals || 0,
+                bigChancesCreated: (st.assists || 0) > 0 ? 1 : 0,
+                bigChancesMissed: 0,
+                foulsDrawn: isPor ? 0 : 2,
+                offsides: isPor ? 0 : 1,
+                keyPasses: st.keyPasses || 0,
+                passesFinalThird: isPor ? 0 : 12,
+                dribbles: isPor ? 0 : 1,
+                passAccuracy: 84,
+                ballsLost: isPor ? 3 : 10,
+                tacklesWon: st.wonContest || (isDef ? 2 : 1),
+                tacklesLost: 1,
+                interceptions: isDef ? 2 : 1,
+                groundDuelsWon: 4,
+                groundDuelsLost: 2,
+                aerialsWon: isDef ? 2 : 1,
+                aerialsLost: 1,
+                clearances: isDef ? 3 : 0,
+                foulsCommitted: 1,
+                penaltiesConceded: 0,
+                savesTotal: st.saves || 0,
+                savesInsideBox: Math.floor((st.saves || 0) / 2),
+                highClaims: isPor ? 2 : 0,
+                punches: isPor ? 1 : 0,
+                longPassesAcc: isPor ? 8 : 0,
+                penaltySaved: 0,
+                goalsConceded: gc,
+                errorLeadToShot: 0,
+                errorLeadToGoal: 0,
+                yellows: st.yellowCards || 0,
+                reds: st.redCards || 0,
+                concededMalus: cMalus
+              });
+            });
+
+            if (gamesHistory.length > 0) {
+              playerHistoryMap[originalName] = gamesHistory;
+              try { localStorage.setItem('PR_HISTORY_' + originalName, JSON.stringify(gamesHistory)); } catch (e) {}
+
+              // Applica il voto live (pescato a ritroso)
+              let liveGame = gamesHistory[gamesHistory.length - 1];
+              if (!liveGame || liveGame.score === 0) {
+                 for (let j = gamesHistory.length - 1; j >= 0; j--) {
+                    if (gamesHistory[j].score > 0) {
+                       liveGame = gamesHistory[j];
+                       break;
+                    }
+                 }
+              }
+
+              if (liveGame && liveGame.score > 0) {
+                applyScore(originalName, liveGame.score);
+                playerStatsMap[originalName] = liveGame;
+              }
+              totalSynced++;
+            }
+          });
         }
       }
 
@@ -2365,7 +2358,7 @@ const MANTRA_MODULES = {
       if (totalSynced > 0) {
         alert("Sincronizzazione LIVE completata! " + totalSynced + " calciatori aggiornati con successo.");
       } else {
-        alert("ERRORE SORARE:\n" + (lastErrorMessage || "Nessuna risposta valida.") + "\n\nSe l'errore persiste, mandami questo messaggio per analizzarlo.");
+        alert("Ops, la connessione è passata ma i dati non ci sono:\\n" + (lastErrorMessage || "Il proxy non ha restituito i dati richiesti."));
       }
     }
     
