@@ -2163,7 +2163,7 @@ const MANTRA_MODULES = {
       "Butez": "jean-butez", "Milinkovic-Savic V.": "vanja-milinkovic-savic", "Sanchez Ro.": "roberto-sanchez", "Vigorito": "mauro-vigorito", "Kouadio": "steve-kouadio", "Gallo": "antonino-gallo", "Mangas": "ricardo-mangas", "Gila": "mario-gila", "Stones": "john-stones", "Bisseck": "yann-aurel-bisseck", "Molina N.": "nahuel-molina", "Ciurria": "patrick-ciurria", "Konè M.": "manu-kone", "Cristante": "bryan-cristante", "Stankovic A.": "aleksandar-stankovic", "Thorstvedt": "kristian-thorstvedt", "Zambo Anguissa": "andre-franck-zambo-anguissa", "Baturina": "martin-baturina", "Baldanzi": "tommaso-baldanzi", "Liberali": "mattia-liberali", "Meichtry": "luca-meichtry", "Politano": "matteo-politano", "Njie": "oumar-njie", "Pierotti": "santiago-pierotti", "Yildiz": "kenan-yildiz", "Laurientè": "armand-lauriente", "Piccoli": "roberto-piccoli", "Pinamonti": "andrea-pinamonti", "Mendy P.": "nampalys-mendy"
     };
 
-// SINCRONIZZAZIONE DEFINITIVA (VOCABOLARIO STATISTICHE CORRETTO)
+// SINCRONIZZAZIONE DEFINITIVA (CHIAVE APIKEY CORRETTA E LIMITE A 30.000)
     async function fetchLiveSorareScores(fullLeague = false) {
       const spinner = document.getElementById('apiSpinner');
       if (spinner) spinner.classList.remove('hidden');
@@ -2213,7 +2213,6 @@ const MANTRA_MODULES = {
 
       const workerUrl = "https://sorare-proxy-live.gianmarco-dirosa.workers.dev/"; 
 
-      // INSERIAMO ESATTAMENTE LE STATISTICHE TROVATE DALLO SCANNER
       const query = `query GetFootballPlayersBatch($slugs: [String!]!) {
         players(slugs: $slugs) {
           ... on Player {
@@ -2236,7 +2235,8 @@ const MANTRA_MODULES = {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
-              'API-KEY': typeof SORARE_API_KEY !== 'undefined' ? SORARE_API_KEY : '' 
+              // RIMOSSO IL TRATTINO: Ora Sorare ci riconosce e sblocca 30.000 punti di complessità!
+              'apikey': typeof SORARE_API_KEY !== 'undefined' ? SORARE_API_KEY : '' 
             },
             body: JSON.stringify({ 
               query: query,
@@ -2295,7 +2295,7 @@ const MANTRA_MODULES = {
                     decisives: decList,
                     aas: Math.max(0, Math.round((decScore - (decList.length > 0 ? 6.00 : 3.50)) * 100) / 100),
                     goals: st.goals || 0,
-                    assists: 0, // Lasciato temporaneamente a 0 per evitare crash
+                    assists: 0,
                     shots: (st.goals || 0) + (isPor ? 0 : 1),
                     shotsOnTarget: st.goals || 0,
                     bigChancesCreated: 0,
