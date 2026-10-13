@@ -2163,7 +2163,7 @@ const MANTRA_MODULES = {
       "Butez": "jean-butez", "Milinkovic-Savic V.": "vanja-milinkovic-savic", "Sanchez Ro.": "roberto-sanchez", "Vigorito": "mauro-vigorito", "Kouadio": "steve-kouadio", "Gallo": "antonino-gallo", "Mangas": "ricardo-mangas", "Gila": "mario-gila", "Stones": "john-stones", "Bisseck": "yann-aurel-bisseck", "Molina N.": "nahuel-molina", "Ciurria": "patrick-ciurria", "Konè M.": "manu-kone", "Cristante": "bryan-cristante", "Stankovic A.": "aleksandar-stankovic", "Thorstvedt": "kristian-thorstvedt", "Zambo Anguissa": "andre-franck-zambo-anguissa", "Baturina": "martin-baturina", "Baldanzi": "tommaso-baldanzi", "Liberali": "mattia-liberali", "Meichtry": "luca-meichtry", "Politano": "matteo-politano", "Njie": "oumar-njie", "Pierotti": "santiago-pierotti", "Yildiz": "kenan-yildiz", "Laurientè": "armand-lauriente", "Piccoli": "roberto-piccoli", "Pinamonti": "andrea-pinamonti", "Mendy P.": "nampalys-mendy"
     };
 
-// SINCRONIZZAZIONE DEFINITIVA (CON DIAGNOSTICA INIZIALE E FINALE)
+// SINCRONIZZAZIONE DEFINITIVA (CON PAUSA ANTI-SPAM E FIX DNP)
     async function fetchLiveSorareScores(fullLeague = false) {
       const spinner = document.getElementById('apiSpinner');
       if (spinner) spinner.classList.remove('hidden');
@@ -2186,9 +2186,6 @@ const MANTRA_MODULES = {
       }
 
       const uniquePlayers = [...new Set(targets)];
-      
-      // NUOVO ALERT DIAGNOSTICO PRIMA DI PARTIRE
-      alert("L'app sta per cercare questi " + uniquePlayers.length + " giocatori:\n" + uniquePlayers.join(', '));
 
       const SORARE_SLUG_MAP = {
         "Butez": "jean-butez", "Bisseck": "yann-aurel-bisseck", "Kouadio": "christian-kouame",
@@ -2290,8 +2287,7 @@ const MANTRA_MODULES = {
             const res = await response.json();
 
             if (res.errors) {
-               lastErrorMessage = res.errors[0].message;
-               continue;
+               lastErrorMessage += res.errors[0].message + " | ";
             }
 
             if (res.data && res.data.players) {
@@ -2384,17 +2380,18 @@ const MANTRA_MODULES = {
                   playerHistoryMap[originalName] = gamesHistory;
                   try { localStorage.setItem('PR_HISTORY_' + originalName, JSON.stringify(gamesHistory)); } catch (e) {}
 
+                  // Trova l'ultima partita valida dove NON risulta DNP
                   let liveGame = gamesHistory[gamesHistory.length - 1];
-                  if (!liveGame || liveGame.score === 0) {
+                  if (!liveGame || liveGame.isDnp) {
                      for (let j = gamesHistory.length - 1; j >= 0; j--) {
-                        if (gamesHistory[j].score > 0) {
+                        if (!gamesHistory[j].isDnp) {
                            liveGame = gamesHistory[j];
                            break;
                         }
                      }
                   }
 
-                  if (liveGame && liveGame.score > 0) {
+                  if (liveGame && !liveGame.isDnp) {
                     applyScore(originalName, liveGame.score);
                     playerStatsMap[originalName] = liveGame;
                   }
@@ -2403,11 +2400,14 @@ const MANTRA_MODULES = {
               });
             }
           } else {
-            lastErrorMessage = `Errore dal Worker: ${response.status}`;
+            lastErrorMessage += `Errore Worker (${response.status}) | `;
           }
         } catch (fetchErr) {
-          lastErrorMessage = fetchErr.message;
+          lastErrorMessage += fetchErr.message + " | ";
         }
+        
+        // IL SEGRETO È QUI: 1 secondo di pausa anti-spam tra un pacchetto e l'altro
+        await new Promise(r => setTimeout(r, 1000));
       }
 
       if (spinner) spinner.classList.add('hidden');
@@ -2418,7 +2418,10 @@ const MANTRA_MODULES = {
 
       let finalMessage = "Sincronizzazione completata! " + totalSynced + " calciatori aggiornati.";
       if (notFoundNames.length > 0) {
-        finalMessage += "\n\nATTENZIONE - Questi giocatori non sono stati trovati su Sorare e vanno aggiunti al dizionario (SORARE_SLUG_MAP):\n\n" + notFoundNames.join(', ');
+        finalMessage += "\n\nATTENZIONE - Questi giocatori non sono stati trovati su Sorare:\n\n" + notFoundNames.join(', ');
+      }
+      if (lastErrorMessage !== "") {
+        finalMessage += "\n\n(Ci sono stati dei micro-errori durante il download: " + lastErrorMessage + ")";
       }
       alert(finalMessage);
     }
