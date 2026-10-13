@@ -2163,7 +2163,7 @@ const MANTRA_MODULES = {
       "Butez": "jean-butez", "Milinkovic-Savic V.": "vanja-milinkovic-savic", "Sanchez Ro.": "roberto-sanchez", "Vigorito": "mauro-vigorito", "Kouadio": "steve-kouadio", "Gallo": "antonino-gallo", "Mangas": "ricardo-mangas", "Gila": "mario-gila", "Stones": "john-stones", "Bisseck": "yann-aurel-bisseck", "Molina N.": "nahuel-molina", "Ciurria": "patrick-ciurria", "Konè M.": "manu-kone", "Cristante": "bryan-cristante", "Stankovic A.": "aleksandar-stankovic", "Thorstvedt": "kristian-thorstvedt", "Zambo Anguissa": "andre-franck-zambo-anguissa", "Baturina": "martin-baturina", "Baldanzi": "tommaso-baldanzi", "Liberali": "mattia-liberali", "Meichtry": "luca-meichtry", "Politano": "matteo-politano", "Njie": "oumar-njie", "Pierotti": "santiago-pierotti", "Yildiz": "kenan-yildiz", "Laurientè": "armand-lauriente", "Piccoli": "roberto-piccoli", "Pinamonti": "andrea-pinamonti", "Mendy P.": "nampalys-mendy"
     };
 
-// SINCRONIZZAZIONE DEFINITIVA TRAMITE WORKER (SCHEMA GRAPHQL CORRETTO)
+// SINCRONIZZAZIONE DEFINITIVA TRAMITE WORKER (SINTASSI GRAPHQL PERFETTA)
     async function fetchLiveSorareScores(fullLeague = false) {
       const spinner = document.getElementById('apiSpinner');
       if (spinner) spinner.classList.remove('hidden');
@@ -2211,28 +2211,26 @@ const MANTRA_MODULES = {
       let totalSynced = 0;
       let lastErrorMessage = "";
 
-      // IMPORTANTE: Assicurati che questo url sia quello esatto che ti restituisce "Worker Attivo e Funzionante!"
+      // IL TUO NUOVO WORKER CHE FUNZIONA PERFETTAMENTE
       const workerUrl = "https://sorare-proxy-live.gianmarco-dirosa.workers.dev/"; 
 
       for (let i = 0; i < allSlugs.length; i += BATCH_SIZE) {
         const batchSlugs = allSlugs.slice(i, i + BATCH_SIZE);
 
-        // LA CORREZIONE: Chiediamo i giocatori alla radice e diciamo a Sorare che sono "FootballPlayer"
+        // LA CHIAVE DEL SUCCESSO: player (singolare) DENTRO a football
         const aliasQueries = batchSlugs.map((slug, idx) => `
           p${idx}: player(slug: "${slug}") {
-            ... on FootballPlayer {
-              displayName
-              slug
-              so5Scores(last: 5) {
-                score
-                playerGameStats { minsPlayed goals assists cleanSheet yellowCards redCards keyPasses wonContest saves goalsConceded }
-                game { homeTeam { name } awayTeam { name } }
-              }
+            displayName
+            slug
+            so5Scores(last: 5) {
+              score
+              playerGameStats { minsPlayed goals assists cleanSheet yellowCards redCards keyPasses wonContest saves goalsConceded }
+              game { homeTeam { name } awayTeam { name } }
             }
           }
         `).join('\n');
 
-        const query = `query GetBatch { ${aliasQueries} }`;
+        const query = `query GetBatch { football { ${aliasQueries} } }`;
 
         try {
           const response = await fetch(workerUrl, {
@@ -2249,9 +2247,8 @@ const MANTRA_MODULES = {
                continue;
             }
 
-            // LEGGERE I DATI DALLA ROOT
-            if (res.data) {
-              const fetchedPlayers = Object.values(res.data).filter(p => p !== null && p.so5Scores);
+            if (res.data && res.data.football) {
+              const fetchedPlayers = Object.values(res.data.football).filter(p => p !== null && p.so5Scores);
 
               fetchedPlayers.forEach(pData => {
                 const originalName = playerSlugsMap[pData.slug] || pData.displayName;
