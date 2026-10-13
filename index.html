@@ -2214,7 +2214,7 @@ const MANTRA_MODULES = {
       const query = `query GetFootballPlayersBatch($slugs: [String!]!) { football { players(slugs: $slugs) { displayName slug so5Scores(last: 5) { score playerGameStats { minsPlayed goals assists cleanSheet yellowCards redCards keyPasses wonContest saves goalsConceded } game { homeTeam { name } awayTeam { name } } } } } }`;
 
       // IL TUO WORKER PRIVATO NEL CLOUD
-      const workerUrl = "https://fantaruettanew.75811cc70252a1c973bed29536966713.workers.dev";
+      const workerUrl = "https://fantaruettanew.gianmarco-dirosa.workers.dev/";
 
       for (let i = 0; i < allSlugs.length; i += BATCH_SIZE) {
         const batchSlugs = allSlugs.slice(i, i + BATCH_SIZE);
