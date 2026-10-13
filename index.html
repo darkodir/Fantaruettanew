@@ -2163,41 +2163,73 @@ const MANTRA_MODULES = {
       "Butez": "jean-butez", "Milinkovic-Savic V.": "vanja-milinkovic-savic", "Sanchez Ro.": "roberto-sanchez", "Vigorito": "mauro-vigorito", "Kouadio": "steve-kouadio", "Gallo": "antonino-gallo", "Mangas": "ricardo-mangas", "Gila": "mario-gila", "Stones": "john-stones", "Bisseck": "yann-aurel-bisseck", "Molina N.": "nahuel-molina", "Ciurria": "patrick-ciurria", "Konè M.": "manu-kone", "Cristante": "bryan-cristante", "Stankovic A.": "aleksandar-stankovic", "Thorstvedt": "kristian-thorstvedt", "Zambo Anguissa": "andre-franck-zambo-anguissa", "Baturina": "martin-baturina", "Baldanzi": "tommaso-baldanzi", "Liberali": "mattia-liberali", "Meichtry": "luca-meichtry", "Politano": "matteo-politano", "Njie": "oumar-njie", "Pierotti": "santiago-pierotti", "Yildiz": "kenan-yildiz", "Laurientè": "armand-lauriente", "Piccoli": "roberto-piccoli", "Pinamonti": "andrea-pinamonti", "Mendy P.": "nampalys-mendy"
     };
 
-// SCANNER VOCABOLARIO STATISTICHE
+// SCANNER STATISTICHE A FORZA BRUTA
     async function fetchLiveSorareScores(fullLeague = false) {
       const workerUrl = "https://sorare-proxy-live.gianmarco-dirosa.workers.dev/"; 
       
-      // Chiediamo a Sorare l'elenco esatto delle parole che usa per "PlayerGameStats"
-      const query = `query {
-        __type(name: "PlayerGameStats") {
-          fields {
-            name
-          }
-        }
-      }`;
+      // La lista di tutti i sinonimi possibili per le statistiche che ci servono
+      const fieldsToTest = [
+        "goals", "goal",
+        "goalAssists", "assist", "assists",
+        "minutesPlayed", "minutes", "minsPlayed",
+        "yellowCard", "yellowCards",
+        "redCard", "redCards",
+        "saves", "savesTotal", 
+        "goalsConceded", "concededGoals",
+        "cleanSheet", "cleanSheets",
+        "keyPasses", "wonContest", "duelsWon"
+      ];
 
-      try {
-        const response = await fetch(workerUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: query })
-        });
-        
-        const res = await response.json();
-        
-        if (res.data && res.data.__type && res.data.__type.fields) {
-          const fieldNames = res.data.__type.fields.map(f => f.name).join(', ');
-          // Stampiamo il risultato a tutto schermo per copiarlo facilmente
-          document.body.innerHTML = `<div style="padding:30px; font-family:sans-serif; background:white; color:black; height:100vh;">
-            <h2>Mappa Statistiche Sorare:</h2>
-            <textarea style="width:100%; height:60vh; font-family:monospace; padding:10px;">${fieldNames}</textarea>
-          </div>`;
-        } else {
-          alert("Errore imprevisto:\n" + JSON.stringify(res, null, 2));
+      // Creiamo una schermata bianca per stampare i risultati in diretta
+      document.body.innerHTML = `<div style="padding:20px; font-family:sans-serif; background:white; color:black; height:100vh; overflow-y:auto;">
+        <h2>Decodifica Nomi Statistiche Sorare in corso...</h2>
+        <ul id="logList" style="list-style-type: none; padding: 0;"></ul>
+      </div>`;
+      
+      const logList = document.getElementById('logList');
+      let foundFields = [];
+
+      for (let field of fieldsToTest) {
+        let li = document.createElement('li');
+        li.innerText = `Testando: ${field}...`;
+        li.style.marginBottom = "5px";
+        logList.appendChild(li);
+
+        // Chiediamo SOLO quel singolo campo per Barella
+        const query = `query { players(slugs: ["nicolo-barella"]) { ... on Player { so5Scores(last: 1) { playerGameStats { ${field} } } } } }`;
+
+        try {
+          const response = await fetch(workerUrl, {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json' },
+             body: JSON.stringify({ query: query })
+          });
+          const res = await response.json();
+          
+          if (res.errors) {
+            li.innerText = `❌ ${field}: NON ESISTE`;
+            li.style.color = "red";
+          } else {
+            li.innerText = `✅ ${field}: TROVATO!`;
+            li.style.color = "green";
+            li.style.fontWeight = "bold";
+            foundFields.push(field);
+          }
+        } catch(e) {
+            li.innerText = `⚠️ ${field}: Errore di connessione`;
+            li.style.color = "orange";
         }
-      } catch (err) {
-        alert("ERRORE:\n" + err.message);
+        
+        // Pausa per non far scattare l'allarme anti-spam di Sorare
+        await new Promise(r => setTimeout(r, 200));
       }
+
+      let finalLi = document.createElement('li');
+      finalLi.innerHTML = `<div style="margin-top: 20px; padding: 15px; background: #e8f5e9; border: 2px solid green; border-radius: 5px;">
+        <h3>TEST COMPLETATO! Copia questo elenco e mandamelo:</h3>
+        <p style="font-family: monospace; font-size: 16px;"><b>${foundFields.join(', ')}</b></p>
+      </div>`;
+      logList.appendChild(finalLi);
     }
     
     function applyScore(name, score) {
