@@ -2168,7 +2168,6 @@ const MANTRA_MODULES = {
       const spinner = document.getElementById('apiSpinner');
       if (spinner) spinner.classList.remove('hidden');
 
-      // Nel vostro fanta, la Giornata 6 corrisponde alla GW 21 di Sorare
       const TARGET_SORARE_GW = 21; 
 
       let targets = [];
@@ -2231,7 +2230,6 @@ const MANTRA_MODULES = {
       };
 
       const playerSlugsMap = {};
-      uniquePlayers.expanded = true; // safe flag
       uniquePlayers.forEach(p => {
         const mappedName = SORARE_SLUG_MAP[p] || p;
         const slug = mappedName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
@@ -2243,7 +2241,6 @@ const MANTRA_MODULES = {
       let totalSynced = 0;
       const workerUrl = "https://sorare-proxy-live.gianmarco-dirosa.workers.dev/"; 
 
-      // Chiediamo un numero maggiore di score (es. 15) per assicurarci di includere la GW 21 nello storico recente del giocatore
       const query = `query GetFootballPlayersBatch($slugs: [String!]!) {
         players(slugs: $slugs) {
           ... on Player {
@@ -2286,12 +2283,10 @@ const MANTRA_MODULES = {
 
                 if (!pData || !pData.so5Scores) return;
 
-                // Cerchiamo la partita che corrisponde ESATTAMENTE alla GW di Sorare della sesta giornata (GW 21)
                 const targetMatchScore = pData.so5Scores.find(ls => {
                   return ls.so5Fixture && ls.so5Fixture.so5GlobaloscopicGameWeek === TARGET_SORARE_GW;
                 });
 
-                // Se il giocatore non ha giocato in questa GW o la partita non è ancora censita, saltiamo
                 if (!targetMatchScore || targetMatchScore.score == null) {
                   return;
                 }
@@ -2354,7 +2349,7 @@ const MANTRA_MODULES = {
                   punches: isPor ? 1 : 0,
                   longPassesAcc: isPor ? 8 : 0,
                   penaltySaved: 0,
-5                  goalsConceded: gc,
+                  goalsConceded: gc,
                   errorLeadToShot: 0,
                   errorLeadToGoal: 0,
                   yellows: st.yellowCard || 0,
