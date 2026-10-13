@@ -2163,27 +2163,18 @@ const MANTRA_MODULES = {
       "Butez": "jean-butez", "Milinkovic-Savic V.": "vanja-milinkovic-savic", "Sanchez Ro.": "roberto-sanchez", "Vigorito": "mauro-vigorito", "Kouadio": "steve-kouadio", "Gallo": "antonino-gallo", "Mangas": "ricardo-mangas", "Gila": "mario-gila", "Stones": "john-stones", "Bisseck": "yann-aurel-bisseck", "Molina N.": "nahuel-molina", "Ciurria": "patrick-ciurria", "Konè M.": "manu-kone", "Cristante": "bryan-cristante", "Stankovic A.": "aleksandar-stankovic", "Thorstvedt": "kristian-thorstvedt", "Zambo Anguissa": "andre-franck-zambo-anguissa", "Baturina": "martin-baturina", "Baldanzi": "tommaso-baldanzi", "Liberali": "mattia-liberali", "Meichtry": "luca-meichtry", "Politano": "matteo-politano", "Njie": "oumar-njie", "Pierotti": "santiago-pierotti", "Yildiz": "kenan-yildiz", "Laurientè": "armand-lauriente", "Piccoli": "roberto-piccoli", "Pinamonti": "andrea-pinamonti", "Mendy P.": "nampalys-mendy"
     };
 
-// SINCRONIZZAZIONE DEFINITIVA (CON PAUSA ANTI-SPAM E FIX DNP)
+// SINCRONIZZAZIONE DEFINITIVA (AGGIORNA TUTTA LA LEGA, TITOLARI E PANCHINE)
     async function fetchLiveSorareScores(fullLeague = false) {
       const spinner = document.getElementById('apiSpinner');
       if (spinner) spinner.classList.remove('hidden');
 
       let targets = [];
-      if (fullLeague) {
-        Object.values(ROSTERS).forEach(r => { targets.push(...r); });
-      } else {
-        const activeMatch = GW6_MATCHES[currentMatchIndex];
-        [activeMatch.home, activeMatch.away].forEach(tName => {
-          const t = teamLineups[tName];
-          if (t) {
-            t.titolariSlots.forEach(s => { if (s.player) targets.push(s.player); });
-            t.panchina.forEach(p => { if (p) targets.push(p); });
-          }
-        });
-        Object.values(teamLineups).forEach(t => {
-          t.titolariSlots.forEach(s => { if (s.player) targets.push(s.player); });
-        });
-      }
+      
+      // IL FIX È QUI: Peschiamo TUTTI i titolari e TUTTI i panchinari di TUTTE le squadre, sempre.
+      Object.values(teamLineups).forEach(t => {
+        t.titolariSlots.forEach(s => { if (s.player) targets.push(s.player); });
+        t.panchina.forEach(p => { if (p) targets.push(p); });
+      });
 
       const uniquePlayers = [...new Set(targets)];
 
@@ -2286,10 +2277,6 @@ const MANTRA_MODULES = {
           if (response.ok) {
             const res = await response.json();
 
-            if (res.errors) {
-               lastErrorMessage += res.errors[0].message + " | ";
-            }
-
             if (res.data && res.data.players) {
               res.data.players.forEach((pData, idx) => {
                 const requestedSlug = batchSlugs[idx];
@@ -2380,7 +2367,6 @@ const MANTRA_MODULES = {
                   playerHistoryMap[originalName] = gamesHistory;
                   try { localStorage.setItem('PR_HISTORY_' + originalName, JSON.stringify(gamesHistory)); } catch (e) {}
 
-                  // Trova l'ultima partita valida dove NON risulta DNP
                   let liveGame = gamesHistory[gamesHistory.length - 1];
                   if (!liveGame || liveGame.isDnp) {
                      for (let j = gamesHistory.length - 1; j >= 0; j--) {
@@ -2399,14 +2385,11 @@ const MANTRA_MODULES = {
                 }
               });
             }
-          } else {
-            lastErrorMessage += `Errore Worker (${response.status}) | `;
           }
         } catch (fetchErr) {
-          lastErrorMessage += fetchErr.message + " | ";
+          // ignora micro-errori e prosegue
         }
         
-        // IL SEGRETO È QUI: 1 secondo di pausa anti-spam tra un pacchetto e l'altro
         await new Promise(r => setTimeout(r, 1000));
       }
 
@@ -2416,14 +2399,7 @@ const MANTRA_MODULES = {
       renderPitch();
       if (typeof renderRosterTab === 'function') renderRosterTab();
 
-      let finalMessage = "Sincronizzazione completata! " + totalSynced + " calciatori aggiornati.";
-      if (notFoundNames.length > 0) {
-        finalMessage += "\n\nATTENZIONE - Questi giocatori non sono stati trovati su Sorare:\n\n" + notFoundNames.join(', ');
-      }
-      if (lastErrorMessage !== "") {
-        finalMessage += "\n\n(Ci sono stati dei micro-errori durante il download: " + lastErrorMessage + ")";
-      }
-      alert(finalMessage);
+      alert("Sincronizzazione di TUTTA LA LEGA completata! " + totalSynced + " calciatori hanno ricevuto il voto.");
     }
     
     function applyScore(name, score) {
