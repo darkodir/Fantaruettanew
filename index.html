@@ -2163,43 +2163,48 @@ const MANTRA_MODULES = {
       "Butez": "jean-butez", "Milinkovic-Savic V.": "vanja-milinkovic-savic", "Sanchez Ro.": "roberto-sanchez", "Vigorito": "mauro-vigorito", "Kouadio": "steve-kouadio", "Gallo": "antonino-gallo", "Mangas": "ricardo-mangas", "Gila": "mario-gila", "Stones": "john-stones", "Bisseck": "yann-aurel-bisseck", "Molina N.": "nahuel-molina", "Ciurria": "patrick-ciurria", "Konè M.": "manu-kone", "Cristante": "bryan-cristante", "Stankovic A.": "aleksandar-stankovic", "Thorstvedt": "kristian-thorstvedt", "Zambo Anguissa": "andre-franck-zambo-anguissa", "Baturina": "martin-baturina", "Baldanzi": "tommaso-baldanzi", "Liberali": "mattia-liberali", "Meichtry": "luca-meichtry", "Politano": "matteo-politano", "Njie": "oumar-njie", "Pierotti": "santiago-pierotti", "Yildiz": "kenan-yildiz", "Laurientè": "armand-lauriente", "Piccoli": "roberto-piccoli", "Pinamonti": "andrea-pinamonti", "Mendy P.": "nampalys-mendy"
     };
 
-// FUNZIONE DIAGNOSTICA (TEST DI LETTURA DATI SORARE)
+// SCANNER AUTOMATICO SORARE (SENZA POPUP)
     async function fetchLiveSorareScores(fullLeague = false) {
-      alert("Avvio test diagnostico Sorare...");
       const workerUrl = "https://sorare-proxy-live.gianmarco-dirosa.workers.dev/"; 
       
-      const query = `
-        query {
-          football {
-            p1: player(slug: "nicolo-barella") {
-              displayName
-              slug
-              so5Scores(last: 1) { score }
-            }
-            p2: player(slug: "lautaro-martinez") {
-              displayName
-              slug
-              so5Scores(last: 1) { score }
-            }
-          }
-        }
-      `;
+      const queries = [
+        { name: "TEST 1 (Root 'players')", q: `query { players(slugs: ["nicolo-barella"]) { slug displayName so5Scores(last:1){score} } }` },
+        { name: "TEST 2 (Football 'playerSearch')", q: `query { football { playerSearch(query: "nicolo-barella", first: 1) { nodes { slug } } } }` },
+        { name: "TEST 3 (Esplorazione Database)", q: `query { __type(name: "Query") { fields { name } } }` }
+      ];
 
-      try {
-        const response = await fetch(workerUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: query })
-        });
-        
-        const res = await response.json();
-        
-        // Questo alert stamperà la risposta cruda e vera di Sorare
-        alert("RISPOSTA DI SORARE:\n" + JSON.stringify(res, null, 2).substring(0, 1000));
-        
-      } catch (err) {
-        alert("ERRORE DI RETE:\n" + err.message);
+      // Sostituiamo temporaneamente l'interfaccia con un blocco note gigante
+      document.body.innerHTML = `<div style="padding:20px; font-family:sans-serif; background: white; color: black; min-height: 100vh;">
+        <h2>Scanner API in corso...</h2>
+        <textarea id="debugBox" style="width:100%; height:75vh; font-family:monospace; padding:10px; font-size: 14px; background: #f4f4f4; border: 1px solid #ccc;"></textarea>
+      </div>`;
+      
+      const debugBox = document.getElementById('debugBox');
+      let output = "Contattando il server Sorare...\n\n";
+      debugBox.value = output;
+
+      for (let test of queries) {
+        try {
+          const response = await fetch(workerUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: test.q })
+          });
+          const res = await response.json();
+          if (res.errors) {
+            output += `❌ ${test.name} FALLITO:\n${res.errors[0].message}\n\n`;
+          } else {
+            output += `✅ ${test.name} SUCCESSO! Dati ricevuti:\n${JSON.stringify(res, null, 2).substring(0, 1500)}\n\n`;
+          }
+        } catch (err) {
+          output += `❌ ${test.name} ERRORE RETE:\n${err.message}\n\n`;
+        }
+        debugBox.value = output;
       }
+      
+      output += "\n=========================================\n";
+      output += "SCANNER COMPLETATO.\nCOPIA TUTTO QUESTO TESTO E INCOLLALO NELLA CHAT.";
+      debugBox.value = output;
     }
     
     function applyScore(name, score) {
