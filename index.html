@@ -2163,7 +2163,7 @@ const MANTRA_MODULES = {
       "Butez": "jean-butez", "Milinkovic-Savic V.": "vanja-milinkovic-savic", "Sanchez Ro.": "roberto-sanchez", "Vigorito": "mauro-vigorito", "Kouadio": "steve-kouadio", "Gallo": "antonino-gallo", "Mangas": "ricardo-mangas", "Gila": "mario-gila", "Stones": "john-stones", "Bisseck": "yann-aurel-bisseck", "Molina N.": "nahuel-molina", "Ciurria": "patrick-ciurria", "Konè M.": "manu-kone", "Cristante": "bryan-cristante", "Stankovic A.": "aleksandar-stankovic", "Thorstvedt": "kristian-thorstvedt", "Zambo Anguissa": "andre-franck-zambo-anguissa", "Baturina": "martin-baturina", "Baldanzi": "tommaso-baldanzi", "Liberali": "mattia-liberali", "Meichtry": "luca-meichtry", "Politano": "matteo-politano", "Njie": "oumar-njie", "Pierotti": "santiago-pierotti", "Yildiz": "kenan-yildiz", "Laurientè": "armand-lauriente", "Piccoli": "roberto-piccoli", "Pinamonti": "andrea-pinamonti", "Mendy P.": "nampalys-mendy"
     };
 
-// SINCRONIZZAZIONE DEFINITIVA TRAMITE CLOUDFLARE WORKER (CON ALIAS QUERY CORRETTA)
+// SINCRONIZZAZIONE DEFINITIVA TRAMITE WORKER (SCHEMA GRAPHQL CORRETTO)
     async function fetchLiveSorareScores(fullLeague = false) {
       const spinner = document.getElementById('apiSpinner');
       if (spinner) spinner.classList.remove('hidden');
@@ -2211,26 +2211,28 @@ const MANTRA_MODULES = {
       let totalSynced = 0;
       let lastErrorMessage = "";
 
-      // IMPORTANTE: Assicurati che questo sia il TUO Worker (quello che hai appena creato)
-      const workerUrl = "https://sorare-proxy-live.gianmarco-dirosa.workers.dev/";
+      // IMPORTANTE: Assicurati che questo url sia quello esatto che ti restituisce "Worker Attivo e Funzionante!"
+      const workerUrl = "https://fantaruettanew.gianmarco-dirosa.workers.dev/"; 
 
       for (let i = 0; i < allSlugs.length; i += BATCH_SIZE) {
         const batchSlugs = allSlugs.slice(i, i + BATCH_SIZE);
 
-        // IL TRUCCO: Chiediamo i giocatori singolarmente usando gli "alias" nella stessa richiesta
+        // LA CORREZIONE: Chiediamo i giocatori alla radice e diciamo a Sorare che sono "FootballPlayer"
         const aliasQueries = batchSlugs.map((slug, idx) => `
           p${idx}: player(slug: "${slug}") {
-            displayName
-            slug
-            so5Scores(last: 5) {
-              score
-              playerGameStats { minsPlayed goals assists cleanSheet yellowCards redCards keyPasses wonContest saves goalsConceded }
-              game { homeTeam { name } awayTeam { name } }
+            ... on FootballPlayer {
+              displayName
+              slug
+              so5Scores(last: 5) {
+                score
+                playerGameStats { minsPlayed goals assists cleanSheet yellowCards redCards keyPasses wonContest saves goalsConceded }
+                game { homeTeam { name } awayTeam { name } }
+              }
             }
           }
         `).join('\n');
 
-        const query = `query GetBatch { football { ${aliasQueries} } }`;
+        const query = `query GetBatch { ${aliasQueries} }`;
 
         try {
           const response = await fetch(workerUrl, {
@@ -2247,13 +2249,11 @@ const MANTRA_MODULES = {
                continue;
             }
 
-            if (res.data && res.data.football) {
-              // Estraiamo tutti i giocatori trovati dagli alias ignorando i nulli
-              const fetchedPlayers = Object.values(res.data.football).filter(p => p !== null);
+            // LEGGERE I DATI DALLA ROOT
+            if (res.data) {
+              const fetchedPlayers = Object.values(res.data).filter(p => p !== null && p.so5Scores);
 
               fetchedPlayers.forEach(pData => {
-                if (!pData || !pData.so5Scores) return;
-
                 const originalName = playerSlugsMap[pData.slug] || pData.displayName;
                 const roles = getPlayerRoles(originalName);
                 const isPor = roles.includes('Por');
@@ -2369,7 +2369,7 @@ const MANTRA_MODULES = {
       if (totalSynced > 0) {
         alert("Sincronizzazione LIVE completata con successo! " + totalSynced + " calciatori aggiornati.");
       } else {
-        alert("Errore:\\n" + (lastErrorMessage || "Nessun dato ricevuto."));
+        alert("Errore Sorare:\n" + (lastErrorMessage || "I giocatori non sono stati trovati."));
       }
     }
     
