@@ -2163,7 +2163,7 @@ const MANTRA_MODULES = {
       "Butez": "jean-butez", "Milinkovic-Savic V.": "vanja-milinkovic-savic", "Sanchez Ro.": "roberto-sanchez", "Vigorito": "mauro-vigorito", "Kouadio": "steve-kouadio", "Gallo": "antonino-gallo", "Mangas": "ricardo-mangas", "Gila": "mario-gila", "Stones": "john-stones", "Bisseck": "yann-aurel-bisseck", "Molina N.": "nahuel-molina", "Ciurria": "patrick-ciurria", "Konè M.": "manu-kone", "Cristante": "bryan-cristante", "Stankovic A.": "aleksandar-stankovic", "Thorstvedt": "kristian-thorstvedt", "Zambo Anguissa": "andre-franck-zambo-anguissa", "Baturina": "martin-baturina", "Baldanzi": "tommaso-baldanzi", "Liberali": "mattia-liberali", "Meichtry": "luca-meichtry", "Politano": "matteo-politano", "Njie": "oumar-njie", "Pierotti": "santiago-pierotti", "Yildiz": "kenan-yildiz", "Laurientè": "armand-lauriente", "Piccoli": "roberto-piccoli", "Pinamonti": "andrea-pinamonti", "Mendy P.": "nampalys-mendy"
     };
 
-// SINCRONIZZAZIONE DEFINITIVA (CHIAVE APIKEY CORRETTA E LIMITE A 30.000)
+// SINCRONIZZAZIONE DEFINITIVA (CON RILEVATORE NOMI MANCANTI)
     async function fetchLiveSorareScores(fullLeague = false) {
       const spinner = document.getElementById('apiSpinner');
       if (spinner) spinner.classList.remove('hidden');
@@ -2187,6 +2187,7 @@ const MANTRA_MODULES = {
 
       const uniquePlayers = [...new Set(targets)];
 
+      // QUI È DOVE ANDREMO AD AGGIUNGERE LE TRADUZIONI MANCANTI
       const SORARE_SLUG_MAP = {
         "Barella": "nicolo-barella", "Thuram": "marcus-thuram", "Maignan": "mike-maignan",
         "Calhanoglu": "hakan-calhanoglu", "Pulisic": "christian-pulisic", "Dybala": "paulo-dybala",
@@ -2210,6 +2211,7 @@ const MANTRA_MODULES = {
       const BATCH_SIZE = 25;
       let totalSynced = 0;
       let lastErrorMessage = "";
+      let notFoundNames = []; // <--- NUOVO: Raccoglitore dei nomi falliti
 
       const workerUrl = "https://sorare-proxy-live.gianmarco-dirosa.workers.dev/"; 
 
@@ -2235,7 +2237,6 @@ const MANTRA_MODULES = {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
-              // RIMOSSO IL TRATTINO: Ora Sorare ci riconosce e sblocca 30.000 punti di complessità!
               'apikey': typeof SORARE_API_KEY !== 'undefined' ? SORARE_API_KEY : '' 
             },
             body: JSON.stringify({ 
@@ -2253,12 +2254,20 @@ const MANTRA_MODULES = {
             }
 
             if (res.data && res.data.players) {
-              const fetchedPlayers = res.data.players.filter(p => p !== null && p.so5Scores);
+              // Modificato per capire chi viene scartato
+              res.data.players.forEach((pData, idx) => {
+                const requestedSlug = batchSlugs[idx];
+                const originalName = playerSlugsMap[requestedSlug];
 
-              fetchedPlayers.forEach(pData => {
-                const originalName = playerSlugsMap[pData.slug] || pData.displayName;
+                if (!pData || !pData.so5Scores) {
+                  // Sorare ha risposto "null", il giocatore non esiste con questo slug
+                  if (originalName && !notFoundNames.includes(originalName)) {
+                    notFoundNames.push(originalName);
+                  }
+                  return; 
+                }
+
                 const roles = getPlayerRoles(originalName);
-                
                 const isPor = roles.includes('Por');
                 const isDef = roles.some(r => ['Dc', 'Dd', 'Ds', 'B'].includes(r));
                 const isMid = roles.some(r => ['M', 'C', 'E'].includes(r));
@@ -2368,11 +2377,12 @@ const MANTRA_MODULES = {
       renderPitch();
       if (typeof renderRosterTab === 'function') renderRosterTab();
 
-      if (totalSynced > 0) {
-        alert("Sincronizzazione LIVE completata! " + totalSynced + " calciatori aggiornati sul campo.");
-      } else {
-        alert("Errore Sorare:\n" + (lastErrorMessage || "Nessun dato sincronizzato."));
+      // MESSAGGIO DI FINE CON LISTA DEI NON TROVATI
+      let finalMessage = "Sincronizzazione completata! " + totalSynced + " calciatori aggiornati.";
+      if (notFoundNames.length > 0) {
+        finalMessage += "\n\nATTENZIONE - Questi giocatori non sono stati trovati su Sorare e vanno aggiunti al dizionario (SORARE_SLUG_MAP):\n\n" + notFoundNames.join(', ');
       }
+      alert(finalMessage);
     }
     
     function applyScore(name, score) {
